@@ -340,23 +340,25 @@
             margin-bottom: 0;
         }
         .add-plane-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            padding: 12px 24px;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            background: none;
+            color: #1e3c72;
+            border: none;
             font-weight: 600;
-            backdrop-filter: blur(10px);
-            margin-top: 0.2em;
-            margin-left: 0;
-            white-space: nowrap;
+            font-size: 1.08rem;
+            letter-spacing: 0.03em;
+            padding: 8px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s, transform 0.2s;
+            box-shadow: none;
+            margin: 0;
+            outline: none;
+            text-align: center;
+            font-family: inherit;
         }
         .add-plane-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            background: #e3eafc;
+            color: #2a5298;
         }
         @media (max-width: 768px) {
             .subtitle-and-button {
@@ -558,6 +560,73 @@
             opacity: 0.18 !important;
             pointer-events: none;
         }
+
+        /* Right Navbar */
+        .right-navbar {
+            position: fixed;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.98);
+            box-shadow: -2px 0 16px 0 rgba(30,60,114,0.10);
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            z-index: 200;
+            padding: 18px 0;
+            min-width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .right-navbar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .right-navbar li {
+            margin: 18px 0;
+        }
+        .right-navbar a {
+            color: #1e3c72;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.08rem;
+            letter-spacing: 0.03em;
+            transition: color 0.2s;
+            padding: 8px 18px;
+            border-radius: 8px;
+            display: block;
+            text-align: center;
+        }
+        .right-navbar a:hover {
+            background: #e3eafc;
+            color: #2a5298;
+        }
+        @media (max-width: 700px) {
+            .right-navbar {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100vw;
+                min-width: 0;
+                border-radius: 0;
+                flex-direction: row;
+                justify-content: center;
+                padding: 8px 0;
+                transform: none;
+                box-shadow: 0 -2px 16px 0 rgba(30,60,114,0.10);
+            }
+            .right-navbar ul {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                justify-content: center;
+            }
+            .right-navbar li {
+                margin: 0 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -611,30 +680,62 @@
                 Technology enthusiast, compiler explorer, and web creator.<br>
                 Building the future of AI-powered software engineering.
             </p>
-            <button class="add-plane-btn" onclick="addMorePlanes()">Fly high</button>
+
         </div>
     </div>
 
     <!-- Cards Section -->
     <section class="cards-section">
-        <div class="card">
+        <div class="card" id="about">
             <h2>About Me</h2>
-            <p>Passionate about technology, AI, and building innovative web experiences. Always learning, always exploring.</p>
+            <p>
+                Passionate about technology, AI, and building innovative web experiences.<br>
+                <strong>🎓 Undergraduate | Computer Science, Economics Minor & Entrepreneurial Leadership | Ashoka University</strong><br>
+                <a href="https://github.com/shreenandbhattad" target="_blank" style="color:#fff;text-decoration:underline;">GitHub</a> &nbsp;|&nbsp;
+                <a href="https://www.linkedin.com/in/shreenandbhattad/" target="_blank" style="color:#fff;text-decoration:underline;">LinkedIn</a>
+            </p>
         </div>
-        <div class="card">
+        <div class="card" id="projects">
             <h2>Projects</h2>
-            <p>Check out my latest projects on GitHub, from compilers to creative web apps and more.</p>
+            <p>
+                Check out my latest projects on 
+                <a href="https://github.com/shreenandbhattad" target="_blank" style="color:#fff;text-decoration:underline;">GitHub</a>.<br>
+                From compilers to creative web apps and more.
+            </p>
         </div>
-        <div class="card">
+        <div class="card" id="contact">
             <h2>Contact</h2>
-            <p>Let's connect! Reach out via email or find me on LinkedIn for collaboration opportunities.</p>
+            <p>
+                Let's connect!<br>
+                <a href="mailto:shreenand.bhattad_ug23@ashoka.edu.in" style="color:#fff;text-decoration:underline;">Email</a> &nbsp;|&nbsp;
+                <a href="https://github.com/shreenandbhattad" target="_blank" style="color:#fff;text-decoration:underline;">GitHub</a> &nbsp;|&nbsp;
+                <a href="https://www.linkedin.com/in/shreenandbhattad/" target="_blank" style="color:#fff;text-decoration:underline;">LinkedIn</a>
+            </p>
+        </div>
+        <!-- Resume Card with PDF Viewer -->
+        <div class="card" id="resume">
+            <h2>Resume</h2>
+            <p>
+                <a href="resume.pdf" target="_blank" style="color:#fff;text-decoration:underline;font-weight:bold;">View My Resume (PDF)</a>
+            </p>
+            <iframe src="resume.pdf" width="100%" height="320px" style="border-radius:12px;border:none;margin-top:12px;background:#fff;"></iframe>
         </div>
         <!-- Button-style Card linking to the second card animation page -->
-        <a href="second-card.html" class="card card-link">
-            <h2>Neural Network Animation</h2>
-            <p>Experience an interactive neural network visualization.<br><strong>Click here to explore!</strong></p>
-        </a>
+       
     </section>
+
+    <!-- Add this before </body> -->
+    <nav class="right-navbar">
+        <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="projects.html">Projects</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="resume">Resume</a></li>
+            <li>
+                <button class="add-plane-btn" onclick="addMorePlanes()" style="margin:0;">Add planes!</button>
+            </li>
+        </ul>
+    </nav>
 
     <script>
         let animationPaused = false;
