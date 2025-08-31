@@ -790,10 +790,7 @@
 
       // Pulse gesture detection (remains independent)
       const anyHandIsOpen = (leftHand && isOpenHandGesture(leftHand)) || (rightHand && isOpenHandGesture(rightHand));
-      if (anyHandIsOpen && !lastAnyHandWasOpen && (currentTime - lastPulseTime > PULSE_COOLDOWN)) {
-        // This is the start of a quick "tap" gesture
-        // The actual pulse trigger happens when the hand closes
-      } else if (!anyHandIsOpen && lastAnyHandWasOpen && (currentTime - lastPulseTime < 0.2)) {
+      if (!anyHandIsOpen && lastAnyHandWasOpen && (currentTime - lastPulseTime > 0.1 && currentTime - lastPulseTime < 0.5)) {
         const pulseHand = leftHand || rightHand;
         if (pulseHand) {
           const handWorldPos = new THREE.Vector3(
@@ -833,8 +830,8 @@
             const deltaX = (currentCentroid.x - handStates.right.lastPosition.x) * window.innerWidth;
             const deltaY = (currentCentroid.y - handStates.right.lastPosition.y) * window.innerHeight;
             
-            const rotationSpeed = 0.0004; // Increased rotation speed
-            const lerpFactor = 0.15; // Smoothing factor
+            const rotationSpeed = 0.002; // Increased rotation speed by a lot
+            const lerpFactor = 0.3; // Increased smoothing factor for fluid movement
             
             neuralNetworkGroup.rotation.y = THREE.MathUtils.lerp(neuralNetworkGroup.rotation.y, neuralNetworkGroup.rotation.y + (-deltaX * rotationSpeed), lerpFactor);
             neuralNetworkGroup.rotation.x = THREE.MathUtils.lerp(neuralNetworkGroup.rotation.x, neuralNetworkGroup.rotation.x + (deltaY * rotationSpeed), lerpFactor);
