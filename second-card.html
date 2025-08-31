@@ -138,8 +138,8 @@
     <div style="margin-top: 10px;">
       <p><strong>Gestures:</strong></p>
       <ul>
-        <li><strong>Pinch (left hand):</strong> Zoom/Scale</li>
-        <li><strong>Open Hand Movement (right hand):</strong> Rotate network</li>
+        <li><strong>Right Hand Only:</strong> Rotate network (all directions)</li>
+        <li><strong>Both Hands:</strong> Zoom/Scale</li>
         <li><strong>Quick Open to Close (any hand):</strong> Trigger pulse</li>
       </ul>
       <p><strong>Keyboard Controls:</strong></p>
@@ -546,10 +546,7 @@
         }
       }
 
-      // Clear existing neural network visuals from the scene if any
       neuralNetworkGroup.clear();
-
-      // Always generate Quantum Cortex
       generateQuantumCortex();
 
       const positions = [];
@@ -588,7 +585,6 @@
         });
       });
 
-      // --- Nodes Geometry and Mesh ---
       nodesGeometry = new THREE.BufferGeometry();
       nodesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
       nodesGeometry.setAttribute('nodeSize', new THREE.Float32BufferAttribute(nodeSizes, 1));
@@ -608,7 +604,6 @@
       neuralNetworkGroup.add(nodesMesh);
 
 
-      // --- Connections Geometry and Mesh ---
       const numConnections = connectionStartPoints.length / 3;
       const segmentCount = 100;
       const totalSegments = numConnections * (segmentCount + 1);
@@ -687,21 +682,31 @@
     let isHandTrackingActive = false;
     let leftHand = null;
     let rightHand = null;
-
-    let leftHandState = {
-        isPinching: false,
-        initialPinchDistance: 0,
-        initialScale: 1
+    
+    let handStates = {
+        right: {
+            isPinching: false,
+            lastPosition: null,
+            initialScale: 1
+        },
+        left: {
+            isPinching: false,
+            initialPinchDistance: 0,
+            initialScale: 1
+        }
     };
-
-    let rightHandState = {
-        lastHandCentroid: null
+    
+    let twoHandState = {
+        isPinching: false,
+        initialDistance: 0,
+        initialScale: 1
     };
 
     const PINCH_THRESHOLD = 0.05;
     const PULSE_COOLDOWN = 0.5;
     let lastPulseTime = 0;
     let pulseIndex = 0;
+    let lastAnyHandWasOpen = false;
 
     function getLandmarkDistance(l1, l2) {
       return Math.sqrt(
@@ -769,9 +774,9 @@
       
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
           for (let i = 0; i < results.multiHandedness.length; i++) {
-              if (results.multiHandedness[i].label === 'Left') {
+              if (results.multiHandedness[i].label === 'Right') {
                   leftHand = results.multiHandLandmarks[i];
-              } else if (results.multiHandedness[i].label === 'Right') {
+              } else if (results.multiHandedness[i].label === 'Left') {
                   rightHand = results.multiHandLandmarks[i];
               }
           }
@@ -783,71 +788,13 @@
     function handleHandGestures(leftHand, rightHand) {
       const currentTime = performance.now() / 1000;
 
-      // Reset states if hands are lost
-      if (!leftHand) {
-        leftHandState.isPinching = false;
-        leftHandState.initialPinchDistance = 0;
-      }
-      if (!rightHand) {
-        rightHandState.lastHandCentroid = null;
-      }
-
-      // Handle left hand for scaling
-      if (leftHand) {
-        const currentPinch = isPinchGesture(leftHand);
-        if (currentPinch && !leftHandState.isPinching) {
-          leftHandState.isPinching = true;
-          leftHandState.initialPinchDistance = getLandmarkDistance(leftHand[4], leftHand[8]);
-          leftHandState.initialScale = neuralNetworkGroup.scale.x;
-          controls.enabled = false;
-        } else if (currentPinch && leftHandState.isPinching) {
-          const newPinchDistance = getLandmarkDistance(leftHand[4], leftHand[8]);
-          if (leftHandState.initialPinchDistance > 0) {
-            let scaleFactor = newPinchDistance / leftHandState.initialPinchDistance;
-            scaleFactor = Math.pow(scaleFactor, 0.8);
-            const newScale = leftHandState.initialScale * scaleFactor;
-            neuralNetworkGroup.scale.set(newScale, newScale, newScale);
-          }
-        } else if (!currentPinch && leftHandState.isPinching) {
-          leftHandState.isPinching = false;
-          leftHandState.initialPinchDistance = 0;
-          controls.enabled = true;
-        }
-      }
-
-      // Handle right hand for rotation
-      if (rightHand) {
-        const currentOpenHand = isOpenHandGesture(rightHand);
-        if (currentOpenHand && !leftHandState.isPinching) {
-          const currentCentroid = getHandCentroid(rightHand);
-          if (rightHandState.lastHandCentroid) {
-            const deltaX = (currentCentroid.x - rightHandState.lastHandCentroid.x) * window.innerWidth;
-            const deltaY = (currentCentroid.y - rightHandState.lastHandCentroid.y) * window.innerHeight;
-            const rotationSpeed = 0.00005;
-            neuralNetworkGroup.rotation.y += -deltaX * rotationSpeed;
-            neuralNetworkGroup.rotation.x += -deltaY * rotationSpeed;
-          }
-          rightHandState.lastHandCentroid = currentCentroid;
-          controls.enabled = false;
-        } else if (!currentOpenHand && rightHandState.lastHandCentroid) {
-          rightHandState.lastHandCentroid = null;
-          controls.enabled = true;
-        }
-      } else {
-        controls.enabled = true; // Re-enable controls if both hands are gone
-      }
-
-      // Handle pulse gesture (works with either hand)
-      const anyHand = leftHand || rightHand;
+      // Pulse gesture detection (remains independent)
       const anyHandIsOpen = (leftHand && isOpenHandGesture(leftHand)) || (rightHand && isOpenHandGesture(rightHand));
-      const prevAnyHandIsOpen = anyHandIsOpen; // Simplified state tracking
-
-      if (anyHandIsOpen && (currentTime - lastPulseTime > PULSE_COOLDOWN)) {
-        // Hand just opened
-        lastOpenHandTime = currentTime;
-      } else if (!anyHandIsOpen && prevAnyHandIsOpen && (currentTime - lastOpenHandTime < 0.2) && (currentTime - lastPulseTime > PULSE_COOLDOWN)) {
-        // Hand just closed quickly
-        const pulseHand = leftHand || rightHand; // Pick one hand for pulse origin
+      if (anyHandIsOpen && !lastAnyHandWasOpen && (currentTime - lastPulseTime > PULSE_COOLDOWN)) {
+        // This is the start of a quick "tap" gesture
+        // The actual pulse trigger happens when the hand closes
+      } else if (!anyHandIsOpen && lastAnyHandWasOpen && (currentTime - lastPulseTime < 0.2)) {
+        const pulseHand = leftHand || rightHand;
         if (pulseHand) {
           const handWorldPos = new THREE.Vector3(
             (pulseHand[0].x - 0.5) * 40,
@@ -858,11 +805,54 @@
           lastPulseTime = currentTime;
         }
       }
-    }
-    
-    // Global variable for previous state of any hand being open, needed for pulse gesture logic
-    let prevAnyHandIsOpen = false;
+      lastAnyHandWasOpen = anyHandIsOpen;
 
+      // Check for two hands first for zoom control
+      if (leftHand && rightHand) {
+        controls.enabled = false;
+        
+        const currentDistance = getLandmarkDistance(leftHand[0], rightHand[0]); // Using wrist landmarks for stability
+        
+        if (!twoHandState.isPinching) {
+            twoHandState.isPinching = true;
+            twoHandState.initialDistance = currentDistance;
+            twoHandState.initialScale = neuralNetworkGroup.scale.x;
+        } else {
+            const scaleFactor = currentDistance / twoHandState.initialDistance;
+            const newScale = twoHandState.initialScale * scaleFactor;
+            const smoothedScale = THREE.MathUtils.lerp(neuralNetworkGroup.scale.x, newScale, 0.15); // Smoothing factor
+            neuralNetworkGroup.scale.set(smoothedScale, smoothedScale, smoothedScale);
+        }
+        
+      } else if (rightHand && !leftHand) {
+        // Only right hand for rotation
+        controls.enabled = false;
+        const currentCentroid = getHandCentroid(rightHand);
+        
+        if (handStates.right.lastPosition) {
+            const deltaX = (currentCentroid.x - handStates.right.lastPosition.x) * window.innerWidth;
+            const deltaY = (currentCentroid.y - handStates.right.lastPosition.y) * window.innerHeight;
+            
+            const rotationSpeed = 0.0004; // Increased rotation speed
+            const lerpFactor = 0.15; // Smoothing factor
+            
+            neuralNetworkGroup.rotation.y = THREE.MathUtils.lerp(neuralNetworkGroup.rotation.y, neuralNetworkGroup.rotation.y + (-deltaX * rotationSpeed), lerpFactor);
+            neuralNetworkGroup.rotation.x = THREE.MathUtils.lerp(neuralNetworkGroup.rotation.x, neuralNetworkGroup.rotation.x + (deltaY * rotationSpeed), lerpFactor);
+        }
+        handStates.right.lastPosition = currentCentroid;
+        
+        // Reset two-hand state
+        twoHandState.isPinching = false;
+        twoHandState.initialDistance = 0;
+        
+      } else {
+        // No hands or only left hand, disable gesture controls
+        controls.enabled = true;
+        handStates.right.lastPosition = null;
+        twoHandState.isPinching = false;
+        twoHandState.initialDistance = 0;
+      }
+    }
 
     video = document.getElementById('cameraFeed');
     hands = new Hands({
@@ -872,7 +862,7 @@
     });
 
     hands.setOptions({
-      maxNumHands: 2, // Now tracking up to two hands
+      maxNumHands: 2,
       modelComplexity: 1,
       minDetectionConfidence: 0.7,
       minTrackingConfidence: 0.7
@@ -899,9 +889,11 @@
       if (!config.paused) {
           if (nodesMesh) {
               nodesMesh.material.uniforms.uTime.value = t;
+              if (controls.enabled) nodesMesh.rotation.y = Math.sin(t * 0.05) * 0.08;
           }
           if (connectionsMesh) {
               connectionsMesh.material.uniforms.uTime.value = t;
+              if (controls.enabled) connectionsMesh.rotation.y = Math.sin(t * 0.05) * 0.08;
           }
       }
       
@@ -979,9 +971,8 @@
     }
     window.addEventListener('resize', onWindowResize);
 
-    // Initial Setup
-    generateNeuralNetwork(config.densityFactor);
-    hands.setOptions({ maxNumHands: 2 }); // Allow tracking of two hands
+    generateNeuralNetwork();
+    hands.setOptions({ maxNumHands: 2 });
     cameraUtil.start();
     animate();
   </script>
