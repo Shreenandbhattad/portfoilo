@@ -483,14 +483,18 @@ function drawBouquet(now) {
   const pB = wy + Math.min(95, H * .2);     // bottom tip
   const pT = wy - 30;                       // top of the gather
 
-  // the paper cone behind the stems, simple and neat
-  const baseG = cx.createLinearGradient(cxm - pw, wy, cxm + pw, wy);
+  // the paper sheet behind the stems: each wing retracts as its half gets folded,
+  // because in real wrapping the wing IS the flap
+  const lX = cxm - pw * (1 - .85 * foldL);
+  const rX = cxm + pw * (1 - .85 * foldR);
+  const baseG = cx.createLinearGradient(lX, wy, rX, wy);
   baseG.addColorStop(0, '#e9ddc2'); baseG.addColorStop(.5, '#f4ecd9'); baseG.addColorStop(1, '#ddcfae');
   cx.fillStyle = baseG;
   cx.beginPath();
-  cx.moveTo(cxm - pw, wy);
-  cx.quadraticCurveTo(cxm, wy + 14, cxm + pw, wy);
-  cx.lineTo(cxm, pB);
+  cx.moveTo(lX, wy);
+  cx.quadraticCurveTo(cxm, wy + 14, rX, wy);
+  cx.quadraticCurveTo(cxm + (rX - cxm) * .3, (wy + pB) / 2 + 8, cxm, pB);
+  cx.quadraticCurveTo(cxm + (lX - cxm) * .3, (wy + pB) / 2 + 8, lX, wy);
   cx.closePath(); cx.fill();
   cx.strokeStyle = '#cbbc97'; cx.lineWidth = 1.2; cx.stroke();
   // faint centre crease
@@ -508,27 +512,60 @@ function drawBouquet(now) {
     drawFlower(it.f, it.rootX, rootY, scale, it.p, true, it.a, it.len / scale);
   });
 
-  // the flaps: each half of the sheet folds across when its side is tapped
+  // the flaps: each half of the sheet folds across when its side is tapped,
+  // bowing and curling the way soft paper actually does
   function drawFlap(side, ft) {
     if (ft <= 0) return;   // until then it is simply part of the sheet
     const x0 = cxm + side * pw;
-    const x1 = cxm - side * pw * .45;
+    const x1 = cxm - side * pw * .42;
     const xc = x0 + (x1 - x0) * ft;
-    const yc = wy - Math.sin(ft * Math.PI) * 26 - ft * 8;
+    const lift = Math.sin(ft * Math.PI);
+    const yc = wy - lift * 30 - ft * 8;
     const lum = -6 + ft * 24;
-    const g = cx.createLinearGradient(xc, yc, cxm, pB);
-    g.addColorStop(0, shade('#eadfc4', lum)); g.addColorStop(1, shade('#d8caa6', lum));
+    // paper billows outward mid-fold, then settles
+    const billow = (1 - ft * .55) * 22 + lift * 14;
+    const foldTopX = cxm + side * 3, foldTopY = pT + 8;
+    const g = cx.createLinearGradient(xc, yc, foldTopX, pB);
+    g.addColorStop(0, shade('#eadfc4', lum + 8));
+    g.addColorStop(.6, shade('#e3d6b8', lum));
+    g.addColorStop(1, shade('#d5c7a2', lum - 4));
     cx.fillStyle = g;
     cx.beginPath();
-    cx.moveTo(xc, yc);
-    cx.quadraticCurveTo((xc + cxm) / 2, (yc + pB) / 2 + 12, cxm, pB - 2);
-    cx.lineTo(cxm, pT + 8);
+    cx.moveTo(foldTopX, foldTopY);
+    // top edge: a lazy S-curve out to the corner
+    cx.bezierCurveTo(
+      cxm + side * pw * .3, foldTopY - lift * 10,
+      xc - side * 14, yc - 8,
+      xc, yc);
+    // softly rounded corner
+    cx.quadraticCurveTo(xc + side * 4, yc + 12, xc - side * 6, yc + 18);
+    // outer edge: bows outward like held paper
+    cx.bezierCurveTo(
+      xc - side * 8, (yc + pB) / 2 + billow * .4,
+      cxm + side * billow, pB - (pB - yc) * .3,
+      cxm, pB - 2);
+    cx.lineTo(foldTopX, foldTopY);
     cx.closePath(); cx.fill();
-    cx.strokeStyle = 'rgba(160,145,110,.55)'; cx.lineWidth = 1.1; cx.stroke();
-    // soft highlight along the fresh fold
+    cx.strokeStyle = 'rgba(160,145,110,.5)'; cx.lineWidth = 1.1; cx.stroke();
+    // shadow tucked along the fold line gives it thickness
+    const sh = cx.createLinearGradient(foldTopX, 0, foldTopX + side * 16, 0);
+    sh.addColorStop(0, 'rgba(120,105,75,' + (.16 * ft) + ')');
+    sh.addColorStop(1, 'rgba(120,105,75,0)');
+    cx.fillStyle = sh;
+    cx.beginPath();
+    cx.moveTo(foldTopX, foldTopY);
+    cx.lineTo(foldTopX + side * 16, foldTopY + 10);
+    cx.lineTo(cxm + side * 10, pB - 8);
+    cx.lineTo(cxm, pB - 2);
+    cx.closePath(); cx.fill();
+    // soft highlight along the fresh crease
     if (ft > .5) {
-      cx.strokeStyle = 'rgba(255,255,255,' + ((ft - .5) * .7) + ')';
-      cx.beginPath(); cx.moveTo(cxm, pT + 12); cx.lineTo((xc + cxm) / 2, (yc + pB) / 2); cx.stroke();
+      cx.strokeStyle = 'rgba(255,255,255,' + ((ft - .5) * .6) + ')';
+      cx.lineWidth = 1.4;
+      cx.beginPath();
+      cx.moveTo(foldTopX, foldTopY + 4);
+      cx.quadraticCurveTo(cxm + side * billow * .5, (foldTopY + pB) / 2, cxm + side * 2, pB - 6);
+      cx.stroke();
     }
   }
   drawFlap(-1, foldL);
