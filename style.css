@@ -1,0 +1,313 @@
+:root{
+  --paper:#faf8f3;
+  --ink:#3a362f;
+  --soft:#8b857a;
+  --faint:#c9c3b8;
+  --blue:#5b7ea3;
+  --blue-light:#a9bfd4;
+  --line:#e9e4da;
+  --serif:'Inter',system-ui,sans-serif;
+  --sans:'Inter',system-ui,sans-serif;
+}
+em,i{font-style:normal}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+::selection{background:#dce6ef;color:var(--ink)}
+body{
+  font-family:var(--sans);
+  background:linear-gradient(180deg,#f2f4ef 0%,var(--paper) 45%,#f6f3ea 100%);
+  color:var(--ink);
+  line-height:1.7;
+  font-weight:300;
+  overflow-x:hidden;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+a{color:inherit;text-decoration:none}
+
+/* sun */
+.sun{position:fixed;top:-90px;right:-70px;width:300px;height:300px;border-radius:50%;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(250,225,160,.55),rgba(250,225,160,0) 68%);animation:sunbreathe 9s ease-in-out infinite}
+@keyframes sunbreathe{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+
+/* clouds */
+.cloud{position:fixed;pointer-events:none;z-index:0;background:#fff;border-radius:999px;opacity:.75;
+  filter:blur(1px);animation:cloudfloat linear infinite}
+.cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:160%;left:16%;bottom:18%}
+.cloud::after{width:38%;height:110%;right:14%;bottom:26%}
+@keyframes cloudfloat{
+  0%{transform:translateX(-30vw)}
+  100%{transform:translateX(130vw)}
+}
+
+/* hills and trees */
+.hills{position:fixed;left:0;right:0;bottom:0;pointer-events:none;z-index:0;display:block;width:100%}
+.hills svg{display:block;width:100%;height:auto}
+
+/* birds */
+.bird{position:fixed;z-index:0;pointer-events:none;width:34px;height:20px;animation:birdfly linear forwards}
+.bird svg{width:100%;height:100%;overflow:visible}
+.bird path{fill:none;stroke:#7b8794;stroke-width:2.4;stroke-linecap:round}
+.bird .wl{transform-origin:17px 10px;animation:flapL .5s ease-in-out infinite alternate}
+.bird .wr{transform-origin:17px 10px;animation:flapR .5s ease-in-out infinite alternate}
+@keyframes flapL{from{transform:rotate(9deg)}to{transform:rotate(-16deg)}}
+@keyframes flapR{from{transform:rotate(-9deg)}to{transform:rotate(16deg)}}
+@keyframes birdfly{
+  0%{transform:translateX(-50px) translateY(0)}
+  25%{transform:translateX(28vw) translateY(-16px)}
+  50%{transform:translateX(55vw) translateY(6px)}
+  75%{transform:translateX(82vw) translateY(-12px)}
+  100%{transform:translateX(110vw) translateY(0)}
+}
+
+/* planes drifting */
+.sky{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.plane{position:absolute;width:26px;height:26px;opacity:0;animation:drift linear infinite}
+.plane svg{width:100%;height:100%;fill:var(--blue-light)}
+@keyframes drift{
+  0%{transform:translateX(-40px) translateY(0) rotate(6deg);opacity:0}
+  8%{opacity:.7}
+  30%{transform:translateX(30vw) translateY(-24px) rotate(-4deg)}
+  60%{transform:translateX(62vw) translateY(14px) rotate(7deg)}
+  92%{opacity:.7}
+  100%{transform:translateX(105vw) translateY(-10px) rotate(3deg);opacity:0}
+}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:10;display:flex;justify-content:space-between;align-items:center;
+  padding:24px clamp(24px,5vw,56px);font-size:.85rem;color:var(--soft);
+  background:linear-gradient(var(--paper) 55%,transparent)}
+nav .home{font-weight:500;font-size:.95rem;color:var(--ink);letter-spacing:.01em}
+nav .pages{display:flex;gap:24px}
+nav a{transition:color .25s;padding-bottom:2px;border-bottom:1px solid transparent}
+nav a:hover{color:var(--ink);border-bottom-color:var(--faint)}
+nav a.here{color:var(--ink);border-bottom-color:var(--blue-light)}
+@media(max-width:520px){nav .pages{gap:15px}nav{font-size:.78rem}}
+
+/* page body */
+main{flex:1;max-width:640px;width:100%;margin:0 auto;padding:130px 24px 60px;position:relative;z-index:1}
+h1.page{font-weight:600;letter-spacing:-.01em;font-size:clamp(1.9rem,4.5vw,2.6rem);margin-bottom:8px}
+h1.page em{color:var(--blue)}
+.sub{color:var(--soft);font-size:.95rem;margin-bottom:40px}
+h2{font-weight:600;font-size:1.05rem;letter-spacing:.01em;margin:52px 0 20px}
+p.lead{font-size:1.02rem;margin-bottom:18px}
+p.quiet{color:var(--soft);font-size:.97rem;margin-bottom:18px}
+
+.fade{opacity:0;transform:translateY(18px);transition:opacity 1s ease,transform 1s ease}
+.fade.in{opacity:1;transform:none}
+
+/* list items */
+.item{padding:20px 0;border-bottom:1px solid var(--line)}
+.item:first-of-type{border-top:1px solid var(--line)}
+.item .top{display:flex;justify-content:space-between;gap:16px;align-items:baseline;flex-wrap:wrap}
+.item h3{font-weight:500;font-size:1rem}
+.item .where{color:var(--soft);font-size:.85rem}
+.item p{color:var(--soft);font-size:.92rem;margin-top:6px}
+a.item{display:block;transition:background .3s;margin:0 -14px;padding-left:14px;padding-right:14px;border-radius:10px}
+a.item:hover{background:#f2eee6}
+a.item h3 span{color:var(--faint);font-size:.9em;margin-left:6px;transition:color .3s,margin-left .3s}
+a.item:hover h3 span{color:var(--blue);margin-left:10px}
+
+/* tech stack chips */
+.stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.stack span{font-size:.68rem;font-weight:400;color:var(--soft);background:#f1ede4;border:1px solid var(--line);
+  border-radius:999px;padding:2px 10px;letter-spacing:.02em;transition:border-color .3s,color .3s}
+a.item:hover .stack span{border-color:var(--blue-light);color:var(--blue)}
+body.night .stack span{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);color:#a8a49b}
+
+/* soft cards (play page) */
+.card{display:block;border:1px solid var(--line);border-radius:16px;padding:26px;margin-bottom:18px;background:#fffdf9;transition:transform .35s ease,box-shadow .35s ease,border-color .35s}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(90,110,140,.08);border-color:var(--blue-light)}
+.card h3{font-weight:500;font-size:1.05rem;margin-bottom:6px}
+.card h3 span{color:var(--faint);margin-left:6px;transition:color .3s}
+.card:hover h3 span{color:var(--blue)}
+.card p{color:var(--soft);font-size:.92rem}
+.card .note{margin-top:10px;font-size:.78rem;color:var(--faint)}
+
+/* footer / next-page link */
+.next{margin-top:64px;text-align:center}
+.next a{font-family:var(--serif);font-size:1.05rem;color:var(--soft);border-bottom:1px solid var(--faint);padding-bottom:2px;transition:color .3s,border-color .3s}
+.next a:hover{color:var(--blue);border-color:var(--blue)}
+footer{text-align:center;padding:28px 24px 40px;color:var(--faint);font-size:.78rem;position:relative;z-index:1}
+
+/* page enter / leave transitions */
+body{animation:pagein .55s ease}
+@keyframes pagein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+body.leaving{opacity:0;transition:opacity .22s ease}
+
+/* butterflies */
+.butterfly{position:fixed;width:18px;height:16px;z-index:0;pointer-events:none;transition:transform 6s ease-in-out}
+.butterfly svg{width:100%;height:100%;overflow:visible;animation:flutterbob 1.6s ease-in-out infinite}
+.butterfly .bw{transform-origin:9px 8px;animation:flutter .22s ease-in-out infinite alternate}
+.butterfly .bw2{animation-direction:alternate-reverse}
+@keyframes flutter{from{transform:scaleX(1)}to{transform:scaleX(.35)}}
+@keyframes flutterbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+/* falling petals */
+.petal{position:fixed;top:-20px;z-index:0;pointer-events:none;border-radius:60% 40% 55% 45%;
+  animation:petalfall linear forwards}
+@keyframes petalfall{
+  0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0}
+  10%{opacity:.85}
+  50%{transform:translateY(50vh) translateX(40px) rotate(200deg)}
+  90%{opacity:.85}
+  100%{transform:translateY(105vh) translateX(-20px) rotate(380deg);opacity:0}
+}
+
+/* day / night cycle: sky crossfades every few minutes */
+body{transition:color 6s ease}
+.nightsky{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 12s ease;
+  background:linear-gradient(180deg,#232838 0%,#2e3345 50%,#3a3d4a 100%)}
+body.night .nightsky{opacity:1}
+.nightlayer{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 12s ease}
+body.night .nightlayer{opacity:1}
+body.night{color:#e8e6e0}
+nav{transition:background 8s ease}
+body.night nav{background:rgba(35,40,56,.85);color:#a8a49b}
+body.night nav .home,body.night nav a:hover,body.night nav a.here{color:#f0eee8}
+.sun{transition:opacity 12s ease}
+body.night .sun{opacity:0}
+.cloud{transition:filter 12s ease}
+body.night .cloud{filter:brightness(.6) opacity(.5)}
+.hills{transition:filter 12s ease,opacity 12s ease}
+body.night .hills{opacity:.8;filter:brightness(.72) saturate(.8)}
+body.night p.quiet,body.night .sub,body.night .item p,body.night .card p{color:#a8a49b}
+body.night .item,body.night .item:first-of-type{border-color:rgba(255,255,255,.1)}
+body.night .card,body.night .book{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+body.night a.item:hover{background:rgba(255,255,255,.05)}
+p.quiet,.sub,.item p,.card p,footer,.where,.stack span,.hint,.card .note,
+canvas,.empty,h1,h2,h3,p.lead{transition-property:color,background,border-color,filter;transition-duration:6s}
+
+/* night: every element follows the sky */
+body.night footer,body.night .hint,body.night .where,body.night .card .note,body.night .empty{color:#7e7a72}
+body.night .next a{color:#a8a49b;border-color:#55524c}
+body.night .next a:hover{color:#a9bfd4;border-color:#a9bfd4}
+body.night nav a{color:#8b8880}
+body.night input,body.night textarea{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);color:#e8e6e0}
+body.night input:focus,body.night textarea:focus{border-color:#7b95b3}
+body.night ::placeholder{color:#6d6a63}
+body.night .clear{color:#a8a49b;border-color:#55524c}
+body.night a.item h3 span,body.night .card h3 span{color:#6d6a63}
+body.night a.item:hover h3 span,body.night .card:hover h3 span{color:#a9bfd4}
+body.night #garden,body.night #flock,body.night #game{background:linear-gradient(180deg,#2a2f3f 0%,#333748 100%);border-color:rgba(255,255,255,.12)}
+body.night #pad{background:#2e3345;border-color:#55524c}
+body.night .dotbtn.on{border-color:#e8e6e0}
+body.night .plane svg{fill:#6b7f95}
+body.night .butterfly{filter:brightness(.6)}
+body.night .petal{filter:brightness(.55) saturate(.6)}
+body.night #adminbar{background:#2e3345;color:#a9bfd4}
+.moon{position:fixed;top:70px;right:90px;width:54px;height:54px;border-radius:50%;pointer-events:none;
+  background:#f0ead8;box-shadow:0 0 40px 14px rgba(240,234,216,.25),inset -10px -6px 0 rgba(205,198,178,.8)}
+.star{position:fixed;border-radius:50%;background:#fff;pointer-events:none;animation:twinkle ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.2}50%{opacity:.9}}
+
+/* the dog */
+.dog{position:fixed;bottom:22px;left:0;width:56px;height:44px;z-index:1;pointer-events:none;will-change:transform}
+.dog svg{width:100%;height:100%;overflow:visible}
+.dog .tail{transform-origin:8px 22px;animation:wag 1.4s ease-in-out infinite}
+.dog.happy .tail{animation-duration:.28s}
+@keyframes wag{0%,100%{transform:rotate(14deg)}50%{transform:rotate(48deg)}}
+.dog .legF,.dog .legB{transform-origin:center 30px}
+.dog.trot .legF{animation:stepA var(--gait,.32s) ease-in-out infinite alternate}
+.dog.trot .legB{animation:stepB var(--gait,.32s) ease-in-out infinite alternate}
+@keyframes stepA{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
+@keyframes stepB{from{transform:rotate(22deg)}to{transform:rotate(-22deg)}}
+.dog.trot .torso{animation:trotbob var(--gait,.32s) ease-in-out infinite alternate}
+@keyframes trotbob{from{transform:translateY(0)}to{transform:translateY(-1.6px)}}
+.dog svg{transition:transform .35s ease}
+.dog .torso{transition:transform .4s ease}
+.dog.sit svg{transform:rotate(-18deg) translateY(3px)}
+.dog.sniff .torso{transform:rotate(10deg) translateY(2px)}
+.dog.crouch svg{transform:scaleY(.82) translateY(4px)}
+.dog .tongue{opacity:0;transition:opacity .3s}
+.dog.happy .tongue{opacity:1}
+.dog .ear{transform-origin:34px 10px}
+.dog.happy .ear{animation:earflop .5s ease-in-out infinite alternate}
+@keyframes earflop{from{transform:rotate(0)}to{transform:rotate(-14deg)}}
+.dog.spin svg{animation:dogspin .45s linear infinite}
+@keyframes dogspin{to{transform:rotate(360deg)}}
+body.night .dog{filter:brightness(.75)}
+
+/* ---------------- climate ---------------- */
+.precip{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 4s ease}
+.precip.on{opacity:1}
+.drop{position:absolute;top:-30px;width:1.5px;height:14px;background:linear-gradient(rgba(140,165,190,0),rgba(140,165,190,.75));
+  animation:rainfall linear infinite}
+@keyframes rainfall{to{transform:translateY(110vh)}}
+.flake{position:absolute;top:-20px;border-radius:50%;background:#fff;box-shadow:0 0 3px rgba(255,255,255,.8);
+  animation:snowfall linear infinite}
+@keyframes snowfall{
+  0%{transform:translateY(-20px) translateX(0)}
+  25%{transform:translateY(27vh) translateX(18px)}
+  50%{transform:translateY(55vh) translateX(-12px)}
+  75%{transform:translateY(82vh) translateX(14px)}
+  100%{transform:translateY(110vh) translateX(-6px)}
+}
+.snowdrift{position:fixed;left:0;right:0;bottom:0;height:38px;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.92) 45%,#f4f6f8);
+  border-radius:50% 50% 0 0 / 18px 18px 0 0;opacity:0;transition:opacity 5s ease}
+body.snow .snowdrift{opacity:1}
+.heatlayer{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 6s ease;
+  background:linear-gradient(180deg,rgba(255,196,110,.14),rgba(255,170,90,.07) 60%,rgba(220,150,80,.12))}
+body.dry .heatlayer{opacity:1}
+
+/* how the scene reacts */
+body.rain .cloud{filter:brightness(.68) saturate(.5) opacity(.95)}
+body.snow .cloud{filter:brightness(.9) saturate(.2)}
+body.rain .sun,body.snow .sun{opacity:0}
+body.dry .sun{transform:scale(1.25);background:radial-gradient(circle,rgba(250,205,120,.75),rgba(250,215,140,0) 70%)}
+body.rain .hills{filter:brightness(.8) saturate(1.25)}
+body.snow .hills{filter:saturate(.12) brightness(1.22)}
+body.dry .hills{filter:saturate(.55) sepia(.35) brightness(1.02)}
+.butterfly{transition:opacity 3s ease}
+body.rain .butterfly{opacity:.3}
+body.snow .butterfly{opacity:0}
+body.rain .plane svg{fill:#8ba3bd}
+body.night.rain .cloud{filter:brightness(.35) opacity(.5)}
+#weatherchip{position:fixed;bottom:14px;left:16px;z-index:5;font-size:15px;opacity:.55;pointer-events:none;
+  transition:opacity .5s;filter:saturate(.8)}
+
+/* the dog and the weather */
+body.snow .dog{bottom:12px}
+.dog{transition:bottom 3s ease}
+.dog.shake svg{animation:dogshake .65s ease-in-out}
+@keyframes dogshake{
+  0%,100%{transform:rotate(0)}
+  15%{transform:rotate(14deg)}30%{transform:rotate(-14deg)}
+  45%{transform:rotate(11deg)}60%{transform:rotate(-11deg)}
+  75%{transform:rotate(6deg)}90%{transform:rotate(-6deg)}
+}
+.dog.pant .tongue{opacity:1}
+.dog.pant .torso{animation:pantbob .55s ease-in-out infinite alternate}
+@keyframes pantbob{from{transform:translateY(0)}to{transform:translateY(1.2px)}}
+
+/* nap time */
+.dog .lid{opacity:0;transition:opacity .3s}
+.dog.sleep .eye{opacity:0}
+.dog.sleep .lid{opacity:1}
+/* settled on the grass: body lowers, legs tuck under, head rests */
+.dog.sleep svg{transform:translateY(10px)}
+.dog.sleep .legF,.dog.sleep .legB{opacity:0;transition:opacity .5s}
+.dog .legF,.dog .legB{transition:opacity .5s}
+.dog .head{transition:transform .8s ease;transform-box:fill-box;transform-origin:15% 85%}
+.dog.sleep .head{transform:rotate(16deg) translate(-1px,1px)}
+.dog.sleep .tail{animation:none;transform:rotate(26deg)}
+.dog.sleep .torso{transform-box:fill-box;transform-origin:center;animation:breathe 2.8s ease-in-out infinite alternate}
+@keyframes breathe{from{transform:scale(1)}to{transform:scale(1.045)}}
+.dog.sleep::after{content:'z';position:absolute;top:-16px;right:-4px;font:600 13px Inter,sans-serif;color:#8b857a;
+  animation:zzz 2.6s ease-in infinite}
+.dog.sleep::before{content:'z';position:absolute;top:-10px;right:2px;font:600 10px Inter,sans-serif;color:#a8a49b;
+  animation:zzz 2.6s ease-in 1.3s infinite}
+@keyframes zzz{
+  0%{opacity:0;transform:translate(0,0) scale(.7)}
+  25%{opacity:1}
+  100%{opacity:0;transform:translate(12px,-24px) scale(1.35)}
+}
+
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001s !important;transition-duration:.001s !important}
+  html{scroll-behavior:auto}
+  .fade{opacity:1;transform:none}
+}

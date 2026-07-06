@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the garden · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌷</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:900px;padding-bottom:30px}
+.tabs{display:flex;gap:8px;margin-bottom:14px}
+.tab{border:1px solid var(--line);background:#fffdf9;color:var(--soft);border-radius:999px;padding:7px 20px;
+  font-family:var(--sans);font-size:.85rem;cursor:pointer;transition:all .3s}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--ink);color:#faf8f3;border-color:var(--ink)}
+body.night .tab{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);color:#a8a49b}
+body.night .tab.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
+#garden{width:100%;height:min(60vh,520px);border:1px solid var(--line);border-radius:16px;
+  background:linear-gradient(180deg,#eef3ec 0%,#f7f5ee 70%,#e4ecd9 100%);cursor:pointer;display:block;touch-action:manipulation;
+  transition:filter .6s ease}
+#garden.bw{filter:grayscale(1) contrast(1.05)}
+body.night #garden{background:linear-gradient(180deg,#2a2f3f 0%,#333748 100%);border-color:rgba(255,255,255,.12)}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:12px;flex-wrap:wrap}
+.picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pick{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:#fffdf9;cursor:pointer;
+  font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;padding:0;transition:transform .2s,border-color .2s,box-shadow .2s}
+.pick:hover{transform:translateY(-2px) scale(1.08)}
+.pick.on{border-color:var(--ink);box-shadow:0 0 0 2px rgba(58,54,47,.15)}
+body.night .pick{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14)}
+body.night .pick.on{border-color:#e8e6e0;box-shadow:0 0 0 2px rgba(232,230,224,.2)}
+.seasons{display:flex;gap:8px;align-items:center}
+.season{width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .2s}
+.season:hover{transform:scale(1.15)}
+.season.on{border-color:var(--ink)}
+body.night .season.on{border-color:#e8e6e0}
+.hint{font-size:.8rem;color:var(--faint)}
+.clear,.bwbtn{background:none;border:none;color:var(--soft);font-size:.82rem;cursor:pointer;font-family:var(--sans);border-bottom:1px solid var(--faint);padding:0 0 1px}
+.clear:hover,.bwbtn:hover{color:var(--ink)}
+body.night .clear:hover,body.night .bwbtn:hover{color:#e8e6e0}
+.gift{margin-top:14px;display:none;gap:12px;align-items:center;flex-wrap:wrap}
+.gift.show{display:flex}
+.giftbtn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:10px 24px;
+  font-family:var(--sans);font-size:.87rem;font-weight:500;cursor:pointer;transition:background .3s,transform .2s}
+.giftbtn:hover{background:#4d6d8f}
+.giftbtn:active{transform:scale(.97)}
+.gifted{font-size:.82rem;color:var(--blue);opacity:0;transition:opacity .4s}
+.gifted.show{opacity:1}
+.stage{position:relative}
+.letter{display:none;position:absolute;right:3.5%;bottom:7%;max-width:250px;background:#fffdf6;border:1px solid var(--line);
+  border-radius:10px;padding:20px 20px 16px;box-shadow:0 12px 32px rgba(90,100,80,.16);transform:rotate(2.5deg);
+  font-size:.93rem;color:var(--ink);line-height:1.65}
+.letter::before{content:'';position:absolute;top:-9px;left:50%;width:52px;height:16px;border-radius:2px;
+  background:rgba(214,199,164,.65);transform:translateX(-50%) rotate(-2deg);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.letter .from{margin-top:12px;font-size:.76rem;color:var(--soft);border-top:1px solid var(--line);padding-top:10px}
+body.night .letter{background:#2e3345;border-color:rgba(255,255,255,.14);color:#e8e6e0}
+body.night .letter .from{color:#a8a49b;border-color:rgba(255,255,255,.1)}
+@media(max-width:640px){.letter{position:static;max-width:none;margin-top:14px;transform:none}}
+/* recipient spotlight: just the flowers and the note */
+body.giftview nav,body.giftview .tabs,body.giftview .bar,body.giftview .gift{display:none !important}
+body.giftview main{padding-top:56px}
+body.giftview .letter{display:block;animation:letterin 1s ease .8s both}
+@keyframes letterin{from{opacity:0;transform:rotate(2.5deg) translateY(16px)}to{opacity:1;transform:rotate(2.5deg) translateY(0)}}
+@media(max-width:640px){@keyframes letterin{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play" class="here">play</a>
+    <a href="guestbook">guestbook</a>
+    <a href="contact">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade in">the garden</h1>
+  <p class="sub fade in">beautiful flowers, delivered digitally. plant a garden, or build someone a bouquet.</p>
+
+  <div class="tabs">
+    <button class="tab on" id="tabGarden">garden</button>
+    <button class="tab" id="tabBouquet">build a bouquet</button>
+  </div>
+
+  <div class="stage">
+    <canvas id="garden"></canvas>
+    <div class="letter" id="letter">
+      <div id="letterMsg"></div>
+      <div class="from">from someone who picked these for you 💐</div>
+    </div>
+  </div>
+
+  <div class="bar">
+    <div class="picker">
+      <button class="pick on" data-k="tree" title="tree">🌳</button>
+      <button class="pick" data-k="tulip" title="tulip">🌷</button>
+      <button class="pick" data-k="daisy" title="daisy">🌼</button>
+      <button class="pick" data-k="rose" title="rose">🌹</button>
+      <button class="pick" data-k="sunflower" title="sunflower">🌻</button>
+      <button class="pick" data-k="lavender" title="lavender">🪻</button>
+    </div>
+    <div class="seasons" id="seasonRow">
+      <button class="season on" style="background:#e8b4c0" data-s="spring" title="spring"></button>
+      <button class="season" style="background:#8fae7e" data-s="summer" title="summer"></button>
+      <button class="season" style="background:#d9975a" data-s="autumn" title="autumn"></button>
+      <button class="season" style="background:#c9d4dc" data-s="winter" title="winter"></button>
+    </div>
+    <span class="hint" id="hint">pick something, then click the grass to plant it</span>
+    <button class="bwbtn" id="surpriseBtn">surprise me ✨</button>
+    <button class="bwbtn" id="bwBtn">black & white</button>
+    <button class="clear" id="clearBtn">start over</button>
+  </div>
+
+  <div class="gift" id="giftRow">
+    <input id="giftMsg" type="text" maxlength="80" placeholder="add a little note for them (optional)"
+      style="flex:1;min-width:200px;font-family:var(--sans);font-weight:300;font-size:.88rem;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:9px 16px;background:#fffdf9;outline:none">
+    <button class="giftbtn" id="giftBtn">🎁 copy gift link</button>
+    <span class="gifted" id="gifted">link copied, send it along ✈</span>
+  </div>
+
+  <div class="next fade in" id="backNext"><a href="play">← back to play</a></div>
+  <div class="next" id="makeOwn" style="display:none"><a href="garden">🌷 make one for someone yourself →</a></div>
+</main>
+
+<script src="site.js"></script>
+<script>
+const cv = document.getElementById('garden');
+const cx = cv.getContext('2d');
+let W, H, DPR;
+
+function fit() {
+  DPR = Math.min(devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  requestDraw();
+}
+addEventListener('resize', fit);
+
+/* ---------------- shared state ---------------- */
+let mode = 'garden';        // 'garden' | 'bouquet'
+let kind = 'tree';
+let season = 'spring';
+const plants = [];          // garden mode
+const bouquet = [];         // bouquet mode: [{k, hue, born}]
+const GROW = 1300;
+
+const SEASONS = {
+  spring: { leaves: ['#e8b4c0', '#f2cdd6', '#f7e3e8', '#a9c99a'], ground: '#dfe9d5' },
+  summer: { leaves: ['#8fae7e', '#7d9b6e', '#a9c99a', '#6d8a5f'], ground: '#d5e3c6' },
+  autumn: { leaves: ['#d9975a', '#c97b46', '#e5b877', '#b0603a'], ground: '#e9dfc8' },
+  winter: { leaves: ['#c9d4dc', '#dde5ea', '#eef2f5', '#b5c2cc'], ground: '#e8ecee' }
+};
+
+const FLOWERS = {
+  tulip:     { hues: ['#e05f6d', '#e88ba0', '#e8a14f', '#c86bb8'] },
+  daisy:     { hues: ['#ffffff', '#fff6e8', '#ffeef4'] },
+  rose:      { hues: ['#c94f5e', '#e07b8c', '#e8a8b8'] },
+  sunflower: { hues: ['#f0c04a', '#e8b23a', '#f4cc63'] },
+  lavender:  { hues: ['#9a8ec4', '#b3a7d6', '#8578b8'] }
+};
+const KIND_CODE = { tulip: 't', daisy: 'd', rose: 'r', sunflower: 's', lavender: 'l' };
+const CODE_KIND = Object.fromEntries(Object.entries(KIND_CODE).map(([k, v]) => [v, k]));
+
+/* ------------- flower painting: layered petals, gradients, highlights ------------- */
+let T = 0;   // shared clock, so everything sways together in one breeze
+function srand(seed) {
+  let s = seed || 1234;
+  return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+}
+function shade(hex, amt) {
+  const n = parseInt(hex.slice(1), 16);
+  const r = Math.max(0, Math.min(255, (n >> 16) + amt));
+  const g = Math.max(0, Math.min(255, ((n >> 8) & 255) + amt));
+  const b = Math.max(0, Math.min(255, (n & 255) + amt));
+  return `rgb(${r},${g},${b})`;
+}
+function petalPath(rx, ry) {
+  // a pointed petal shape, tip up
+  cx.beginPath();
+  cx.moveTo(0, 0);
+  cx.bezierCurveTo(-rx, -ry * .35, -rx * .55, -ry * .95, 0, -ry);
+  cx.bezierCurveTo(rx * .55, -ry * .95, rx, -ry * .35, 0, 0);
+  cx.closePath();
+}
+function petalGrad(hue, ry) {
+  const g = cx.createLinearGradient(0, 0, 0, -ry);
+  g.addColorStop(0, shade(hue, -34));
+  g.addColorStop(.55, hue);
+  g.addColorStop(1, shade(hue, 26));
+  return g;
+}
+function stem(x1, y1, x2, y2, bend, w, p) {
+  const gx = x1 + (x2 - x1) * p, gy = y1 + (y2 - y1) * p;
+  cx.strokeStyle = '#6d8a5f'; cx.lineWidth = w; cx.lineCap = 'round';
+  cx.beginPath(); cx.moveTo(x1, y1);
+  cx.quadraticCurveTo(x1 + bend, (y1 + gy) / 2, gx, gy);
+  cx.stroke();
+  cx.strokeStyle = 'rgba(255,255,255,.18)'; cx.lineWidth = w * .35;
+  cx.beginPath(); cx.moveTo(x1 - w * .2, y1);
+  cx.quadraticCurveTo(x1 + bend - w * .2, (y1 + gy) / 2, gx - w * .2, gy);
+  cx.stroke();
+  return [gx, gy];
+}
+function leafOnStem(x, y, s, flip) {
+  const g = cx.createLinearGradient(x, y, x + (flip ? -14 : 14) * s, y);
+  g.addColorStop(0, '#6d8a5f'); g.addColorStop(1, '#a3c48f');
+  cx.fillStyle = g;
+  cx.beginPath();
+  cx.ellipse(x + (flip ? -8 : 8) * s, y, 9 * s, 3.6 * s, flip ? .6 : -.6, 0, 7);
+  cx.fill();
+  cx.strokeStyle = 'rgba(90,110,80,.4)'; cx.lineWidth = .8;
+  cx.beginPath(); cx.moveTo(x, y);
+  cx.lineTo(x + (flip ? -15 : 15) * s, y + (flip ? 8 : -8) * s * .55); cx.stroke();
+}
+
+function drawHead(f, r) {
+  const rng = srand(f.seed);
+  // the whole head nods faintly in the breeze
+  cx.rotate((f.rot || 0) + Math.sin(T * .0011 * (f.spd || 1) + (f.ph || 0)) * .05);
+  if (f.k === 'tulip') {
+    // back petals
+    cx.fillStyle = shade(f.hue, -26);
+    cx.save(); cx.rotate(-.45); petalPath(r * .62, r * 1.5); cx.fill(); cx.restore();
+    cx.save(); cx.rotate(.45); petalPath(r * .62, r * 1.5); cx.fill(); cx.restore();
+    // cup
+    const g = petalGrad(f.hue, r * 1.4);
+    cx.fillStyle = g;
+    cx.beginPath();
+    cx.moveTo(-r * .75, -r * .9);
+    cx.quadraticCurveTo(-r * .95, r * .25, 0, r * .75);
+    cx.quadraticCurveTo(r * .95, r * .25, r * .75, -r * .9);
+    cx.quadraticCurveTo(r * .38, -r * .45, 0, -r * .95);
+    cx.quadraticCurveTo(-r * .38, -r * .45, -r * .75, -r * .9);
+    cx.closePath(); cx.fill();
+    // center petal + veins + sheen
+    cx.fillStyle = shade(f.hue, 18);
+    cx.save(); cx.rotate(0); petalPath(r * .5, r * 1.25); cx.translate(0, r * .7); cx.fill(); cx.restore();
+    cx.strokeStyle = 'rgba(255,255,255,.25)'; cx.lineWidth = r * .05;
+    cx.beginPath(); cx.moveTo(-r * .3, r * .6); cx.quadraticCurveTo(-r * .38, -r * .2, -r * .28, -r * .75); cx.stroke();
+    cx.beginPath(); cx.moveTo(r * .28, r * .6); cx.quadraticCurveTo(r * .36, -r * .2, r * .26, -r * .72); cx.stroke();
+    cx.strokeStyle = `rgba(0,0,0,.12)`; cx.lineWidth = 1;
+    cx.beginPath(); cx.moveTo(0, r * .72); cx.quadraticCurveTo(r * .04, 0, 0, -r * .9); cx.stroke();
+    cx.fillStyle = 'rgba(255,255,255,.28)';
+    cx.beginPath(); cx.ellipse(-r * .3, -r * .1, r * .16, r * .5, .2, 0, 7); cx.fill();
+  } else if (f.k === 'daisy') {
+    cx.strokeStyle = 'rgba(160,150,130,.35)'; cx.lineWidth = .8;
+    for (let ring = 0; ring < 2; ring++) {
+      const nn = ring ? 9 : 13, rr = ring ? r * .85 : r * 1.15;
+      for (let i = 0; i < nn; i++) {
+        const jit = .85 + rng() * .3;   // every petal its own length, like a real one
+        cx.save(); cx.rotate(i / nn * Math.PI * 2 + ring * .35 + (rng() - .5) * .08);
+        const g = cx.createLinearGradient(0, 0, 0, -rr * jit);
+        g.addColorStop(0, shade(f.hue, -16)); g.addColorStop(1, f.hue);
+        cx.fillStyle = g;
+        petalPath(r * .22 * (0.9 + rng() * .2), rr * jit); cx.fill(); cx.stroke();
+        // a faint crease down the middle of each petal
+        cx.strokeStyle = 'rgba(140,130,110,.22)'; cx.lineWidth = .7;
+        cx.beginPath(); cx.moveTo(0, -rr * jit * .15); cx.lineTo(0, -rr * jit * .85); cx.stroke();
+        cx.strokeStyle = 'rgba(160,150,130,.35)'; cx.lineWidth = .8;
+        cx.restore();
+      }
+    }
+    const cg = cx.createRadialGradient(0, 0, 0, 0, 0, r * .45);
+    cg.addColorStop(0, '#f6d264'); cg.addColorStop(1, '#dfa32e');
+    cx.fillStyle = cg;
+    cx.beginPath(); cx.arc(0, 0, r * .45, 0, 7); cx.fill();
+    cx.fillStyle = 'rgba(150,100,20,.35)';
+    for (let i = 0; i < 12; i++) {
+      const a = i * 2.4, rr = r * .3 * Math.sqrt(i / 12);
+      cx.beginPath(); cx.arc(Math.cos(a) * rr, Math.sin(a) * rr, r * .045, 0, 7); cx.fill();
+    }
+  } else if (f.k === 'rose') {
+    // two rings of open petals, each slightly its own shape
+    for (let ring = 0; ring < 2; ring++) {
+      const nn = ring ? 5 : 7, rr = ring ? r * .78 : r * 1.05;
+      for (let i = 0; i < nn; i++) {
+        const jit = .88 + rng() * .24;
+        cx.save(); cx.rotate(i / nn * Math.PI * 2 + .3 + ring * .6 + (rng() - .5) * .1);
+        const g = cx.createLinearGradient(0, 0, 0, -rr * 1.2);
+        g.addColorStop(0, shade(f.hue, ring ? -18 : -34)); g.addColorStop(1, shade(f.hue, ring ? 20 : 8));
+        cx.fillStyle = g;
+        cx.beginPath(); cx.ellipse(0, -rr * .6 * jit, r * .5 * jit, rr * .62 * jit, 0, 0, 7); cx.fill();
+        cx.strokeStyle = `rgba(0,0,0,.1)`; cx.lineWidth = .8;
+        cx.beginPath(); cx.ellipse(0, -rr * .6 * jit, r * .5 * jit, rr * .62 * jit, 0, -.6, 3.6); cx.stroke();
+        cx.restore();
+      }
+    }
+    // spiral heart
+    for (let i = 5; i >= 0; i--) {
+      cx.fillStyle = i % 2 ? shade(f.hue, -8 * i) : shade(f.hue, 10 - 6 * i);
+      cx.beginPath();
+      cx.arc(Math.cos(i * 2.2) * r * .05, Math.sin(i * 2.2) * r * .05, r * (.16 + i * .13), i * 1.3, i * 1.3 + 5.4);
+      cx.fill();
+    }
+    cx.fillStyle = shade(f.hue, -46);
+    cx.beginPath(); cx.arc(0, 0, r * .13, 0, 7); cx.fill();
+    cx.fillStyle = 'rgba(255,255,255,.22)';
+    cx.beginPath(); cx.ellipse(-r * .35, -r * .4, r * .22, r * .13, .6, 0, 7); cx.fill();
+  } else if (f.k === 'sunflower') {
+    for (let ring = 0; ring < 2; ring++) {
+      const nn = 13, rr = ring ? r * 1.35 : r * 1.05;
+      for (let i = 0; i < nn; i++) {
+        const jit = .86 + rng() * .28;
+        cx.save(); cx.rotate(i / nn * Math.PI * 2 + ring * .24 + (rng() - .5) * .07);
+        const g = cx.createLinearGradient(0, 0, 0, -rr * jit);
+        g.addColorStop(0, shade(f.hue, ring ? -36 : -14));
+        g.addColorStop(1, shade(f.hue, ring ? -6 : 22));
+        cx.fillStyle = g;
+        petalPath(r * .24, rr * jit); cx.fill();
+        // vein down each ray petal
+        cx.strokeStyle = 'rgba(120,80,20,.28)'; cx.lineWidth = .8;
+        cx.beginPath(); cx.moveTo(0, -rr * jit * .15); cx.lineTo(0, -rr * jit * .8); cx.stroke();
+        cx.restore();
+      }
+    }
+    const cg = cx.createRadialGradient(-r * .1, -r * .1, 0, 0, 0, r * .58);
+    cg.addColorStop(0, '#8a6238'); cg.addColorStop(1, '#5d3d20');
+    cx.fillStyle = cg;
+    cx.beginPath(); cx.arc(0, 0, r * .56, 0, 7); cx.fill();
+    // seeds in a golden spiral
+    cx.fillStyle = 'rgba(30,18,8,.4)';
+    for (let i = 0; i < 26; i++) {
+      const a = i * 2.39996, rr = r * .5 * Math.sqrt(i / 26);
+      cx.beginPath(); cx.arc(Math.cos(a) * rr, Math.sin(a) * rr, r * .05, 0, 7); cx.fill();
+    }
+  } else if (f.k === 'lavender') {
+    for (let i = 0; i < 16; i++) {
+      const t = i / 16;
+      const fx = (i % 2 ? 1 : -1) * r * .34 * (1 - t * .65) + (rng() - .5) * r * .12;
+      const fy = -t * r * 2.6 + (rng() - .5) * r * .1;
+      const g = cx.createRadialGradient(fx, fy, 0, fx, fy, r * .34);
+      g.addColorStop(0, shade(f.hue, 26)); g.addColorStop(1, shade(f.hue, -14));
+      cx.fillStyle = g;
+      cx.beginPath();
+      cx.ellipse(fx, fy, r * .3 * (1 - t * .35), r * .36 * (1 - t * .3), (i % 2 ? .5 : -.5), 0, 7);
+      cx.fill();
+    }
+    cx.fillStyle = shade(f.hue, 40);
+    cx.beginPath(); cx.ellipse(0, -r * 2.62, r * .16, r * .22, 0, 0, 7); cx.fill();
+  }
+}
+
+function drawFlower(f, baseX, baseY, scale, p, forBouquet, angle, len0) {
+  const sp = Math.min(p / .6, 1);
+  const bloom = Math.max((p - .6) / .4, 0);
+  const len = (len0 || (forBouquet ? 170 : 100)) * scale;
+  // the breeze: each stem leans on its own rhythm
+  const sw = Math.sin(T * .0009 * (f.spd || 1) + (f.ph || 0));
+  let a2 = angle;
+  let tipX, tipY;
+  if (angle !== undefined && angle !== 0 || forBouquet) {
+    a2 = (angle || 0) + sw * .028;
+    tipX = baseX + Math.sin(a2) * len * .92;
+    tipY = baseY - len * Math.cos(a2);
+  } else {
+    tipX = baseX + f.bend * 2 + sw * 5 * scale;
+    tipY = baseY - len;
+  }
+  const [hx, hy] = stem(baseX, baseY, tipX, tipY, f.bend, 3.2 * scale, sp);
+  if (sp > .5) leafOnStem(baseX + f.bend * .4 + (tipX - baseX) * .3, baseY - len * .34, scale * .95, f.bend < 0);
+  if (bloom <= 0) return;
+  const b = 1 - Math.pow(1 - bloom, 3);
+  const r = 16 * scale * b;
+  cx.save(); cx.translate(hx, hy);
+  drawHead(f, r);
+  cx.restore();
+}
+
+/* little white filler sprigs, like baby's breath */
+function drawGyp(baseX, baseY, angle, len, p, seed) {
+  const sp = Math.min(p / .6, 1);
+  const tipX = baseX + Math.sin(angle) * len * .92;
+  const tipY = baseY - Math.cos(angle) * len;
+  const [hx, hy] = stem(baseX, baseY, tipX, tipY, 0, 1.4, sp);
+  if (p < .6) return;
+  const q = (p - .6) / .4;
+  for (let i = 0; i < 7; i++) {
+    if (i / 7 > q) break;
+    const a = seed + i * 2.4, rr = 4 + (i % 3) * 4;
+    cx.fillStyle = i % 2 ? '#ffffff' : '#f2efe4';
+    cx.beginPath();
+    cx.arc(hx + Math.cos(a) * rr, hy + Math.sin(a) * rr - 3, 2.1, 0, 7);
+    cx.fill();
+  }
+}
+
+/* ---------------- trees (as before) ---------------- */
+function makeTree(x, y) {
+  const scale = .55 + (y / H) * .75 + Math.random() * .2;
+  const branches = [], leaves = [];
+  (function grow(bx, by, angle, len, depth, width) {
+    if (depth > 7 || len < 4) {
+      const pal = SEASONS[season].leaves;
+      const n = 4 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < n; i++) {
+        leaves.push({ x: bx + (Math.random() - .5) * 22 * scale, y: by + (Math.random() - .5) * 18 * scale,
+          r: (3.5 + Math.random() * 5.5) * scale, c: pal[Math.floor(Math.random() * pal.length)] });
+      }
+      return;
+    }
+    const ex = bx + Math.cos(angle) * len, ey = by + Math.sin(angle) * len;
+    branches.push({ x1: bx, y1: by, x2: ex, y2: ey, w: width, depth });
+    const forks = depth < 2 ? 2 : (Math.random() < .8 ? 2 : 3);
+    for (let i = 0; i < forks; i++)
+      grow(ex, ey, angle + (Math.random() - .5) * 1.1, len * (.66 + Math.random() * .14), depth + 1, width * .68);
+  })(x, y, -Math.PI / 2 + (Math.random() - .5) * .18, (34 + Math.random() * 18) * scale, 0, 7 * scale);
+  return { kind: 'tree', branches, leaves, trunk: `hsl(${25 + Math.random() * 12} 26% 38%)`, born: performance.now() };
+}
+function drawTree(t, p) {
+  cx.lineCap = 'round';
+  t.branches.forEach(b => {
+    const start = b.depth / 8, end = (b.depth + 1) / 8;
+    if (p <= start) return;
+    const q = Math.min((p - start) / (end - start), 1);
+    cx.strokeStyle = t.trunk; cx.lineWidth = Math.max(b.w, .7);
+    cx.beginPath(); cx.moveTo(b.x1, b.y1);
+    cx.lineTo(b.x1 + (b.x2 - b.x1) * q, b.y1 + (b.y2 - b.y1) * q); cx.stroke();
+  });
+  if (p > .8) {
+    const lp = (p - .8) / .2;
+    t.leaves.forEach((l, i) => {
+      const show = i / t.leaves.length;
+      if (lp <= show) return;
+      cx.fillStyle = l.c; cx.globalAlpha = .9;
+      cx.beginPath(); cx.arc(l.x, l.y, l.r * Math.min((lp - show) * 3, 1), 0, 7); cx.fill();
+      cx.globalAlpha = 1;
+    });
+  }
+}
+
+/* ---------------- rendering ---------------- */
+function ground() {
+  cx.fillStyle = SEASONS[season].ground;
+  cx.beginPath(); cx.moveTo(0, H); cx.quadraticCurveTo(W * .5, H - 26, W, H);
+  cx.closePath(); cx.fill();
+}
+
+let wrapped = false, wrapStart = 0, foldLS = 0, foldRS = 0;
+function drawBouquet(now) {
+  const cxm = W / 2, rootY = H * .74;
+  const n = bouquet.length;
+  if (!n) {
+    cx.fillStyle = '#a9a396'; cx.font = '300 15px Inter'; cx.textAlign = 'center';
+    cx.fillText('tap flowers below, they all grow from the same bundle', cxm, H / 2);
+    return false;
+  }
+  const easeO = x => 1 - Math.pow(1 - x, 3);
+  const foldL = foldLS ? easeO(Math.min((now - foldLS) / 480, 1)) : 0;
+  const foldR = foldRS ? easeO(Math.min((now - foldRS) / 480, 1)) : 0;
+  if (foldL >= 1 && foldR >= 1 && !wrapped) {
+    wrapped = true; wrapStart = now;
+    if (!document.body.classList.contains('giftview'))
+      document.getElementById('giftRow').classList.add('show');
+    bqHint();
+  }
+  const we = wrapped ? easeO(Math.min((now - wrapStart) / 600, 1)) : 0;
+  let growing = false;
+  const scale = Math.max(1.8, 2.7 - n * .08);
+  // loose until the paper closes around it
+  const spread = Math.min(1.3, .4 + n * .1) * (1 + .2 * (1 - we));
+
+  const items = bouquet.map((f, i) => {
+    const a = n === 1 ? 0 : (i / (n - 1) - .5) * spread;
+    const len = Math.max(100, (150 + 58 * Math.cos(a * 1.1)) * (f.tier || 1) + f.lenJ);
+    const pr = Math.min((now - f.born) / GROW, 1);
+    if (pr < 1) growing = true;
+    return { f, a, len, p: pr, rootX: cxm + a * 12 };
+  });
+
+  const wy = rootY - 10;
+  const pw = Math.min(120, W * .16);        // paper half-width
+  const pB = wy + Math.min(95, H * .2);     // bottom tip
+  const pT = wy - 30;                       // top of the gather
+
+  // the paper cone behind the stems, simple and neat
+  const baseG = cx.createLinearGradient(cxm - pw, wy, cxm + pw, wy);
+  baseG.addColorStop(0, '#e9ddc2'); baseG.addColorStop(.5, '#f4ecd9'); baseG.addColorStop(1, '#ddcfae');
+  cx.fillStyle = baseG;
+  cx.beginPath();
+  cx.moveTo(cxm - pw, wy);
+  cx.quadraticCurveTo(cxm, wy + 14, cxm + pw, wy);
+  cx.lineTo(cxm, pB);
+  cx.closePath(); cx.fill();
+  cx.strokeStyle = '#cbbc97'; cx.lineWidth = 1.2; cx.stroke();
+  // faint centre crease
+  cx.strokeStyle = 'rgba(170,155,120,.3)'; cx.lineWidth = 1;
+  cx.beginPath(); cx.moveTo(cxm, wy + 10); cx.lineTo(cxm, pB - 6); cx.stroke();
+
+  // greenery + filler behind the flowers
+  items.forEach((it, i) => {
+    if (i % 3 === 0) drawGyp(it.rootX + 6, rootY, it.a * 1.25 + .12, it.len * .8, it.p, i * 3.1);
+    if (i % 3 === 2) drawGyp(it.rootX - 6, rootY, it.a * 1.25 - .12, it.len * .75, it.p, i * 1.7);
+  });
+
+  // long stems behind, short ones in front
+  [...items].sort((x, y) => y.len - x.len).forEach(it => {
+    drawFlower(it.f, it.rootX, rootY, scale, it.p, true, it.a, it.len / scale);
+  });
+
+  // the flaps: each half of the sheet folds across when its side is tapped
+  function drawFlap(side, ft) {
+    if (ft <= 0) return;   // until then it is simply part of the sheet
+    const x0 = cxm + side * pw;
+    const x1 = cxm - side * pw * .45;
+    const xc = x0 + (x1 - x0) * ft;
+    const yc = wy - Math.sin(ft * Math.PI) * 26 - ft * 8;
+    const lum = -6 + ft * 24;
+    const g = cx.createLinearGradient(xc, yc, cxm, pB);
+    g.addColorStop(0, shade('#eadfc4', lum)); g.addColorStop(1, shade('#d8caa6', lum));
+    cx.fillStyle = g;
+    cx.beginPath();
+    cx.moveTo(xc, yc);
+    cx.quadraticCurveTo((xc + cxm) / 2, (yc + pB) / 2 + 12, cxm, pB - 2);
+    cx.lineTo(cxm, pT + 8);
+    cx.closePath(); cx.fill();
+    cx.strokeStyle = 'rgba(160,145,110,.55)'; cx.lineWidth = 1.1; cx.stroke();
+    // soft highlight along the fresh fold
+    if (ft > .5) {
+      cx.strokeStyle = 'rgba(255,255,255,' + ((ft - .5) * .7) + ')';
+      cx.beginPath(); cx.moveTo(cxm, pT + 12); cx.lineTo((xc + cxm) / 2, (yc + pB) / 2); cx.stroke();
+    }
+  }
+  drawFlap(-1, foldL);
+  drawFlap(1, foldR);
+
+  // ribbon ties it once the paper is snug
+  if (we > .5) {
+    const pop = (we - .5) / .5;
+    const ry = wy + 26, rw = pw * .36;
+    cx.save();
+    cx.translate(cxm, ry); cx.scale(.6 + pop * .4, .6 + pop * .4); cx.globalAlpha = pop;
+    cx.strokeStyle = '#c25562'; cx.lineWidth = 5; cx.lineCap = 'round';
+    cx.beginPath(); cx.moveTo(-rw, 0); cx.lineTo(rw, 0); cx.stroke();
+    cx.fillStyle = '#b03e4d';
+    cx.beginPath(); cx.ellipse(-7, 0, 6.5, 4, -.35, 0, 7); cx.fill();
+    cx.beginPath(); cx.ellipse(7, 0, 6.5, 4, .35, 0, 7); cx.fill();
+    cx.fillStyle = '#d4677a';
+    cx.beginPath(); cx.arc(0, 0, 3.2, 0, 7); cx.fill();
+    cx.restore();
+  }
+  return growing;
+}
+
+function requestDraw() {}   // the loop below repaints every frame
+function draw(now) {
+  T = now;
+  cx.clearRect(0, 0, W, H);
+  if (mode === 'garden') {
+    ground();
+    plants.forEach(pl => {
+      const p = Math.min((now - pl.born) / GROW, 1);
+      if (pl.kind === 'tree') drawTree(pl, p);
+      else drawFlower(pl, pl.x, pl.y, pl.scale, p, false, 0);
+    });
+  } else {
+    drawBouquet(now);
+  }
+}
+(function breeze(now) { draw(now || 0); requestAnimationFrame(breeze); })(0);
+
+/* ---------------- interactions ---------------- */
+cv.addEventListener('pointerdown', e => {
+  const rB = cv.getBoundingClientRect();
+  if (mode === 'bouquet') {
+    const bxp = e.clientX - rB.left, by = e.clientY - rB.top;
+    if (!wrapped && bouquet.length && by > H * .5) {
+      if (bxp < W / 2 && !foldLS) foldLS = performance.now();
+      else if (bxp >= W / 2 && !foldRS) foldRS = performance.now();
+    }
+    return;
+  }
+  const r = cv.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = Math.min(Math.max(e.clientY - r.top, H * .3), H - 8);
+  if (plants.length > 60) plants.shift();
+  if (kind === 'tree') plants.push(makeTree(x, y));
+  else {
+    const F = FLOWERS[kind];
+    plants.push({ kind, k: kind, x, y, scale: 1.15 + (y / H) * .9,
+      hue: F.hues[Math.floor(Math.random() * F.hues.length)],
+      bend: (Math.random() - .5) * 14, rot: (Math.random() - .5) * .3,
+      born: performance.now(),
+      seed: Math.floor(Math.random() * 1e6), ph: Math.random() * 7, spd: .6 + Math.random() * .8 });
+  }
+  requestDraw();
+});
+
+document.querySelectorAll('.pick').forEach(b => b.addEventListener('click', () => {
+  kind = b.dataset.k;
+  document.querySelectorAll('.pick').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  if (mode === 'bouquet' && kind !== 'tree') addToBouquet(kind);
+}));
+
+function addToBouquet(k) {
+  if (bouquet.length >= 13 || wrapped) return;
+  const F = FLOWERS[k];
+  bouquet.push({ k, hue: F.hues[Math.floor(Math.random() * F.hues.length)],
+    bend: (Math.random() - .5) * 10, rot: (Math.random() - .5) * .3,
+    lenJ: (Math.random() - .5) * 26, born: performance.now(),
+    tier: [.68, .85, 1, 1.16][Math.floor(Math.random() * 4)],
+    seed: Math.floor(Math.random() * 1e6), ph: Math.random() * 7, spd: .6 + Math.random() * .8 });
+  requestDraw();
+}
+
+document.querySelectorAll('.season').forEach(b => b.addEventListener('click', () => {
+  season = b.dataset.s;
+  document.querySelectorAll('.season').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  requestDraw();
+}));
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  if (mode === 'garden') plants.length = 0;
+  else { bouquet.length = 0; wrapped = false; foldLS = foldRS = 0; document.getElementById('giftRow').classList.remove('show'); }
+  history.replaceState(null, '', location.pathname);
+  bqHint();
+  requestDraw();
+});
+
+document.getElementById('bwBtn').addEventListener('click', () => cv.classList.toggle('bw'));
+
+/* ---------------- tabs ---------------- */
+function bqHint() {
+  document.getElementById('hint').textContent =
+    mode === 'garden' ? 'pick something, then click the grass to plant it'
+    : !bouquet.length ? 'tap flowers to add them to the bouquet'
+    : !wrapped ? 'tap flowers to add more'
+    : 'wrapped! add a note below and copy your gift link';
+}
+const tabG = document.getElementById('tabGarden'), tabB = document.getElementById('tabBouquet');
+function setMode(m) {
+  mode = m;
+  tabG.classList.toggle('on', m === 'garden');
+  tabB.classList.toggle('on', m === 'bouquet');
+  document.getElementById('seasonRow').style.display = m === 'garden' ? 'flex' : 'none';
+  document.querySelector('.pick[data-k="tree"]').style.display = m === 'garden' ? 'flex' : 'none';
+  document.getElementById('giftRow').classList.toggle('show', m === 'bouquet' && wrapped);
+  bqHint();
+  if (m === 'bouquet' && kind === 'tree') {
+    kind = 'tulip';
+    document.querySelectorAll('.pick').forEach(x => x.classList.toggle('on', x.dataset.k === 'tulip'));
+  }
+  requestDraw();
+}
+tabG.addEventListener('click', () => setMode('garden'));
+tabB.addEventListener('click', () => setMode('bouquet'));
+
+/* ---------------- surprise me: it grows on its own ---------------- */
+const FLOWER_KINDS = Object.keys(FLOWERS);
+document.getElementById('surpriseBtn').addEventListener('click', () => {
+  if (mode === 'bouquet') {
+    bouquet.length = 0; wrapped = false; foldLS = foldRS = 0;
+    document.getElementById('giftRow').classList.remove('show');
+    bqHint();
+    const n = 6 + Math.floor(Math.random() * 6);
+    for (let i = 0; i < n; i++) {
+      setTimeout(() => addToBouquet(FLOWER_KINDS[Math.floor(Math.random() * FLOWER_KINDS.length)]), i * 260);
+    }
+  } else {
+    plants.length = 0;
+    const n = 10 + Math.floor(Math.random() * 8);
+    for (let i = 0; i < n; i++) {
+      setTimeout(() => {
+        const x = 20 + Math.random() * (W - 40);
+        const y = H * .35 + Math.random() * (H * .62 - 8);
+        if (Math.random() < .25) plants.push(makeTree(x, y));
+        else {
+          const k = FLOWER_KINDS[Math.floor(Math.random() * FLOWER_KINDS.length)];
+          const F = FLOWERS[k];
+          plants.push({ kind: k, k, x, y, scale: 1.15 + (y / H) * .9,
+            hue: F.hues[Math.floor(Math.random() * F.hues.length)],
+            bend: (Math.random() - .5) * 14, rot: (Math.random() - .5) * .3,
+            born: performance.now(),
+            seed: Math.floor(Math.random() * 1e6), ph: Math.random() * 7, spd: .6 + Math.random() * .8 });
+        }
+        requestDraw();
+      }, i * 200);
+    }
+  }
+});
+
+/* ------- digital delivery: the bouquet and a note, all in the link ------- */
+document.getElementById('giftBtn').addEventListener('click', () => {
+  if (!bouquet.length) return;
+  const code = bouquet.map(f => KIND_CODE[f.k]).join('');
+  const msg = document.getElementById('giftMsg').value.trim().slice(0, 80);
+  const cleanPath = /^https?:$/.test(location.protocol)
+    ? location.pathname.replace(/\.html$/, '') : location.pathname;
+  const url = location.origin + cleanPath + '#b=' + code +
+    (msg ? '&m=' + encodeURIComponent(msg) : '');
+  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+    .catch(() => prompt('copy this link:', url));
+  const g = document.getElementById('gifted');
+  g.classList.add('show'); setTimeout(() => g.classList.remove('show'), 2600);
+});
+
+function loadFromHash() {
+  const m = location.hash.match(/#b=([tdrsl]{1,13})(?:&m=([^&]*))?/);
+  if (!m) return;
+  // recipient spotlight: no builder, just the flowers and a letter
+  document.body.classList.add('giftview');
+  document.querySelector('h1.page').textContent = 'for you';
+  document.querySelector('.sub').textContent = 'someone sent you flowers, picked one by one.';
+  document.getElementById('backNext').style.display = 'none';
+  document.getElementById('makeOwn').style.display = 'block';
+  setMode('bouquet');
+  bouquet.length = 0;
+  [...m[1]].forEach((c, i) => setTimeout(() => addToBouquet(CODE_KIND[c]), 500 + i * 260));
+  const total = 500 + m[1].length * 260 + 900;
+  setTimeout(() => { foldLS = performance.now(); }, total);
+  setTimeout(() => { foldRS = performance.now(); }, total + 550);
+  document.getElementById('letterMsg').textContent =
+    m[2] ? '“' + decodeURIComponent(m[2]).slice(0, 80) + '”' : 'thinking of you.';
+}
+
+document.querySelector('#makeOwn a').addEventListener('click', e => {
+  e.preventDefault();
+  history.replaceState(null, '', location.pathname);
+  location.reload();
+});
+
+fit();
+loadFromHash();
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>say hi · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{text-align:center;display:flex;flex-direction:column;justify-content:center}
+.mail{font-family:var(--serif);font-size:clamp(1.05rem,3vw,1.45rem);border-bottom:1px solid var(--faint);padding-bottom:3px;transition:color .3s,border-color .3s;word-break:break-all;align-self:center}
+.mail:hover{color:var(--blue);border-color:var(--blue)}
+.links{margin-top:28px;display:flex;gap:26px;justify-content:center;font-size:.9rem;color:var(--soft)}
+.links a{border-bottom:1px solid transparent;padding-bottom:2px;transition:color .3s,border-color .3s}
+.links a:hover{color:var(--blue);border-color:var(--blue-light)}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play">play</a>
+    <a href="guestbook">guestbook</a>
+    <a href="contact" class="here">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade"><em>say hi</em></h1>
+  <p class="sub fade" style="margin-bottom:30px">Always happy to talk about interesting problems.</p>
+  <a class="mail fade" href="mailto:shreenand.bhattad_ug2023@ashoka.edu.in">shreenand.bhattad_ug2023@ashoka.edu.in</a>
+  <div class="links fade">
+    <a href="https://github.com/Shreenandbhattad" target="_blank" rel="noopener">github</a>
+    <a href="https://www.linkedin.com/in/shreenandbhattad/" target="_blank" rel="noopener">linkedin</a>
+    <a href="resume.pdf" target="_blank">résumé</a>
+  </div>
+  <div class="next fade"><a href="guestbook">or sign the guestbook before you go →</a></div>
+</main>
+
+<footer>✈ click anywhere to send a plane</footer>
+
+<script src="site.js"></script>
+</body>
+</html>

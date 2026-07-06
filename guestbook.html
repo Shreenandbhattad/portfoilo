@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>guestbook · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✏️</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:760px}
+.book{border:1px solid var(--line);border-radius:16px;background:#fffdf9;padding:22px;margin-bottom:44px}
+#pad{width:100%;height:220px;border:1px dashed var(--faint);border-radius:12px;background:#fff;touch-action:none;cursor:crosshair;display:block}
+.pad-row{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px}
+.pad-row .hint{font-size:.78rem;color:var(--faint)}
+.tools{display:flex;gap:8px;align-items:center}
+.dotbtn{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .2s}
+.dotbtn:hover{transform:scale(1.15)}
+.dotbtn.on{border-color:var(--ink)}
+.clear{background:none;border:none;color:var(--soft);font-size:.8rem;cursor:pointer;font-family:var(--sans);border-bottom:1px solid var(--faint);padding:0 0 1px}
+.clear:hover{color:var(--ink)}
+.fields{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+.fields input,.fields textarea{font-family:var(--sans);font-weight:300;font-size:.92rem;color:var(--ink);
+  border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:#fff;outline:none;resize:none;transition:border-color .3s}
+.fields input:focus,.fields textarea:focus{border-color:var(--blue-light)}
+.fields ::placeholder{color:var(--faint)}
+.sign{margin-top:14px;background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
+  font-family:var(--sans);font-size:.9rem;font-weight:500;cursor:pointer;transition:background .3s,transform .2s}
+.sign:hover{background:#4d6d8f}
+.sign:active{transform:scale(.97)}
+.thanks{font-size:.85rem;color:var(--blue);margin-top:10px;opacity:0;transition:opacity .4s}
+.thanks.show{opacity:1}
+
+/* ---- the note wall: a pinboard where notes size to what was left ---- */
+.wall{columns:220px 3;column-gap:18px}
+.note{background:var(--tint,#fffdf6);border:1px solid var(--line);border-radius:10px;padding:16px 14px 12px;position:relative;
+  display:inline-block;width:100%;break-inside:avoid;margin:0 0 18px;
+  box-shadow:0 3px 12px rgba(90,100,80,.07);
+  opacity:0;transform:translateY(16px) scale(.94);
+  transition:opacity .6s ease,transform .6s ease,box-shadow .35s ease}
+.note::before{content:'';position:absolute;top:-8px;left:50%;width:48px;height:15px;border-radius:2px;
+  background:rgba(214,199,164,.6);transform:translateX(-50%) rotate(var(--tilt,-2deg));box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.note.show{opacity:1;transform:translateY(0) scale(1) rotate(var(--tilt,0deg))}
+.note:hover{box-shadow:0 12px 28px rgba(90,100,80,.16);transform:translateY(-5px) scale(1.03) rotate(0deg) !important;z-index:2}
+.note.s .msg{font-size:.82rem}
+.note.m .msg{font-size:.9rem}
+.note.l{padding:20px 18px 14px}
+.note.l .msg{font-size:1rem}
+.note img{width:100%;border-radius:7px;border:1px solid var(--line);background:#fff;display:block;margin-bottom:10px}
+.note .msg{color:var(--ink);white-space:pre-wrap;word-break:break-word;line-height:1.55}
+body.night .note{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12)}
+body.night .note::before{background:rgba(255,255,255,.12)}
+body.night .note .msg{color:#e8e6e0}
+.note .byline{margin-top:10px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.note .who{font-weight:500;font-size:.8rem;color:var(--soft)}
+.note .when2{color:var(--faint);font-size:.7rem;flex-shrink:0}
+.note .zap{position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:none;cursor:pointer;
+  background:#c66;color:#fff;font-size:13px;line-height:1;display:none;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+body.admin .note .zap{display:flex}
+.empty{color:var(--faint);font-size:.9rem;text-align:center;padding:26px 0}
+.wallhead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px}
+.wallhead h2{margin:0}
+.wallhead .count{font-size:.78rem;color:var(--faint)}
+
+/* ---- owner's little gear ---- */
+#gear{position:fixed;bottom:16px;right:16px;z-index:20;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
+  background:transparent;color:var(--faint);font-size:16px;opacity:.45;transition:opacity .3s,transform .4s ease,color .3s}
+#gear:hover{opacity:1;transform:rotate(60deg)}
+body.admin #gear{color:var(--blue);opacity:1}
+#adminbar{position:fixed;bottom:16px;right:58px;z-index:20;font-size:.75rem;color:var(--blue);background:#fffdf9;
+  border:1px solid var(--blue-light);border-radius:999px;padding:5px 14px;display:none}
+body.admin #adminbar{display:block}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play">play</a>
+    <a href="guestbook" class="here">guestbook</a>
+    <a href="contact">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade">guestbook</h1>
+  <p class="sub fade">Welcome to my guestbook! Leave me a message, draw a dino, or even a duck if you're feeling fancy!</p>
+
+  <div class="book fade">
+    <canvas id="pad" width="1000" height="400"></canvas>
+    <div class="pad-row">
+      <div class="tools">
+        <button class="dotbtn on" style="background:#3a362f" data-c="#3a362f" aria-label="ink"></button>
+        <button class="dotbtn" style="background:#5b7ea3" data-c="#5b7ea3" aria-label="blue"></button>
+        <button class="dotbtn" style="background:#c47a5a" data-c="#c47a5a" aria-label="clay"></button>
+        <button class="dotbtn" style="background:#7d9b76" data-c="#7d9b76" aria-label="sage"></button>
+        <button class="dotbtn" style="background:#e8b4c0" data-c="#e8b4c0" aria-label="pink"></button>
+      </div>
+      <span class="hint">doodle here ✏</span>
+      <button class="clear" id="clearPad">start over</button>
+    </div>
+    <div class="fields">
+      <input id="gName" type="text" maxlength="40" placeholder="your name (or stay a mystery)">
+      <textarea id="gMsg" rows="2" maxlength="280" placeholder="leave a little note..."></textarea>
+    </div>
+    <button class="sign" id="signBtn">Sign my guestbook</button>
+    <div class="thanks" id="thanks">thank you! it's lovely to have you here ✈</div>
+  </div>
+
+  <div class="wallhead fade">
+    <h2>the wall</h2>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="wall" id="entries"></div>
+</main>
+
+<footer>✈ click anywhere to send a plane</footer>
+
+<button id="gear" title="owner settings">⚙</button>
+<div id="adminbar">owner mode · click × to remove a note</div>
+
+<script src="site.js"></script>
+<script>
+const pad = document.getElementById('pad');
+const ctx = pad.getContext('2d');
+let ink = '#3a362f', drawing = false, drewSomething = false;
+ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+
+function pos(e) {
+  const r = pad.getBoundingClientRect();
+  return { x: (e.clientX - r.left) * pad.width / r.width, y: (e.clientY - r.top) * pad.height / r.height };
+}
+pad.addEventListener('pointerdown', e => {
+  drawing = true; drewSomething = true;
+  pad.setPointerCapture(e.pointerId);
+  const p = pos(e);
+  ctx.strokeStyle = ink;
+  ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + .1, p.y + .1); ctx.stroke();
+});
+pad.addEventListener('pointermove', e => {
+  if (!drawing) return;
+  const p = pos(e);
+  ctx.lineTo(p.x, p.y); ctx.stroke();
+});
+['pointerup', 'pointercancel'].forEach(ev => pad.addEventListener(ev, () => drawing = false));
+
+document.querySelectorAll('.dotbtn').forEach(b => b.addEventListener('click', () => {
+  ink = b.dataset.c;
+  document.querySelectorAll('.dotbtn').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+}));
+document.getElementById('clearPad').addEventListener('click', () => {
+  ctx.clearRect(0, 0, pad.width, pad.height); drewSomething = false;
+});
+
+/* ---------------- storage ---------------- */
+const KEY = 'sb-guestbook';
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
+const save = list => localStorage.setItem(KEY, JSON.stringify(list.slice(0, 80)));
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* -------- the wall: note size follows how much they left -------- */
+function sizeOf(e) {
+  const len = (e.msg || '').length;
+  if (e.art && len > 80) return 'l';
+  if (e.art || len > 120) return e.art ? 'm' : 'l';
+  if (len > 50) return 'm';
+  return 's';
+}
+const TILTS = [-2.2, 1.6, -1.1, 2.4, -1.8, 1.2];
+
+function render() {
+  const list = load();
+  const box = document.getElementById('entries');
+  document.getElementById('count').textContent = list.length ? list.length + (list.length === 1 ? ' note' : ' notes') : '';
+  if (!list.length) {
+    box.innerHTML = '<div class="empty">no notes yet... be the first to say hello</div>';
+    return;
+  }
+  const TINTS = ['#fffdf6', '#fdf5ee', '#f3f7ef', '#eff4f8', '#fbf1f3', '#f7f4ea'];
+  box.innerHTML = list.map((e, i) => `
+    <div class="note ${sizeOf(e)}" style="--tilt:${TILTS[i % TILTS.length]}deg;--tint:${TINTS[i % TINTS.length]}">
+      <button class="zap" data-i="${i}" title="remove">×</button>
+      ${e.art ? `<img src="${e.art}" alt="a doodle by ${e.name}">` : ''}
+      ${e.msg ? `<div class="msg">${e.msg}</div>` : ''}
+      <div class="byline"><span class="who">${e.name}</span><span class="when2">${e.date}</span></div>
+    </div>`).join('');
+  // staggered entrance
+  [...box.querySelectorAll('.note')].forEach((n, i) => setTimeout(() => n.classList.add('show'), 60 * i));
+  box.querySelectorAll('.zap').forEach(z => z.addEventListener('click', () => {
+    const list2 = load();
+    list2.splice(+z.dataset.i, 1);
+    save(list2); render();
+  }));
+}
+
+document.getElementById('signBtn').addEventListener('click', () => {
+  const name = esc(document.getElementById('gName').value.trim()) || 'a mysterious visitor';
+  const msg = esc(document.getElementById('gMsg').value.trim());
+  if (!msg && !drewSomething) return;
+  let art = null;
+  if (drewSomething) {
+    const small = document.createElement('canvas');
+    small.width = 320; small.height = 128;
+    const sctx = small.getContext('2d');
+    sctx.fillStyle = '#fff'; sctx.fillRect(0, 0, 320, 128);
+    sctx.drawImage(pad, 0, 0, 320, 128);
+    art = small.toDataURL('image/jpeg', .8);
+  }
+  const list = load();
+  list.unshift({ name, msg, art, date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) });
+  save(list); render();
+  ctx.clearRect(0, 0, pad.width, pad.height); drewSomething = false;
+  document.getElementById('gName').value = '';
+  document.getElementById('gMsg').value = '';
+  const t = document.getElementById('thanks');
+  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600);
+});
+
+/* -------- owner mode: the little gear -------- */
+const ADMIN_PASS = 'paperplane2026'; // change this to your own secret
+if (sessionStorage.getItem('sb-owner') === '1') document.body.classList.add('admin');
+document.getElementById('gear').addEventListener('click', () => {
+  if (document.body.classList.contains('admin')) {
+    document.body.classList.remove('admin');
+    sessionStorage.removeItem('sb-owner');
+    return;
+  }
+  const p = prompt('owner password:');
+  if (p === ADMIN_PASS) {
+    document.body.classList.add('admin');
+    sessionStorage.setItem('sb-owner', '1');
+  } else if (p !== null) {
+    alert('hmm, that is not it');
+  }
+});
+
+render();
+</script>
+</body>
+</html>

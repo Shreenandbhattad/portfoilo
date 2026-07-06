@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the flock · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕊️</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:900px;padding-bottom:30px}
+#flock{width:100%;height:min(62vh,540px);border:1px solid var(--line);border-radius:16px;background:linear-gradient(180deg,#eef2f5 0%,#f7f5ee 100%);display:block;cursor:crosshair;touch-action:none}
+.hint{font-size:.8rem;color:var(--faint);margin-top:12px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play" class="here">play</a>
+    <a href="guestbook">guestbook</a>
+    <a href="contact">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade in"><em>the flock</em></h1>
+  <p class="sub fade in">a small murmuration. it will follow you, if you're gentle.</p>
+
+  <canvas id="flock"></canvas>
+  <div class="hint">move your cursor to lead them · click to startle them</div>
+
+  <div class="next fade in"><a href="play">← back to play</a></div>
+</main>
+
+<script src="site.js"></script>
+<script>
+const cv = document.getElementById('flock');
+const cx = cv.getContext('2d');
+let W, H;
+
+function fit() {
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', fit);
+fit();
+
+const N = 70;
+const shades = ['#5b7ea3', '#7b8794', '#8fa3b8', '#3a362f', '#a9bfd4'];
+const boids = Array.from({ length: N }, () => ({
+  x: Math.random() * W, y: Math.random() * H,
+  vx: (Math.random() - .5) * 2, vy: (Math.random() - .5) * 2,
+  c: shades[Math.floor(Math.random() * shades.length)],
+  s: .8 + Math.random() * .6
+}));
+
+const mouse = { x: null, y: null };
+cv.addEventListener('pointermove', e => {
+  const r = cv.getBoundingClientRect();
+  mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top;
+});
+cv.addEventListener('pointerleave', () => { mouse.x = mouse.y = null; });
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect();
+  const px = e.clientX - r.left, py = e.clientY - r.top;
+  boids.forEach(b => {
+    const dx = b.x - px, dy = b.y - py;
+    const d = Math.hypot(dx, dy) || 1;
+    const f = Math.min(2600 / (d * d), 6);
+    b.vx += dx / d * f; b.vy += dy / d * f;
+  });
+});
+
+const MAXV = 3.1;
+function step() {
+  for (const b of boids) {
+    let cxx = 0, cyy = 0, ax = 0, ay = 0, sx = 0, sy = 0, n = 0;
+    for (const o of boids) {
+      if (o === b) continue;
+      const dx = o.x - b.x, dy = o.y - b.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 4900) {
+        cxx += o.x; cyy += o.y; ax += o.vx; ay += o.vy; n++;
+        if (d2 < 500) { sx -= dx; sy -= dy; }
+      }
+    }
+    if (n) {
+      b.vx += ((cxx / n - b.x) * .0045) + ((ax / n - b.vx) * .05);
+      b.vy += ((cyy / n - b.y) * .0045) + ((ay / n - b.vy) * .05);
+    }
+    b.vx += sx * .028; b.vy += sy * .028;
+    if (mouse.x !== null) {
+      b.vx += (mouse.x - b.x) * .0006;
+      b.vy += (mouse.y - b.y) * .0006;
+    }
+    // soft walls
+    if (b.x < 40) b.vx += .12; if (b.x > W - 40) b.vx -= .12;
+    if (b.y < 40) b.vy += .12; if (b.y > H - 40) b.vy -= .12;
+    const v = Math.hypot(b.vx, b.vy);
+    if (v > MAXV) { b.vx = b.vx / v * MAXV; b.vy = b.vy / v * MAXV; }
+    if (v < .6) { b.vx *= 1.06; b.vy *= 1.06; }
+    b.x += b.vx; b.y += b.vy;
+  }
+}
+
+function draw() {
+  cx.clearRect(0, 0, W, H);
+  for (const b of boids) {
+    const a = Math.atan2(b.vy, b.vx);
+    cx.save();
+    cx.translate(b.x, b.y);
+    cx.rotate(a);
+    cx.scale(b.s, b.s);
+    cx.fillStyle = b.c;
+    cx.globalAlpha = .85;
+    cx.beginPath();
+    cx.moveTo(6, 0);
+    cx.lineTo(-5, 3.6);
+    cx.lineTo(-2.5, 0);
+    cx.lineTo(-5, -3.6);
+    cx.closePath();
+    cx.fill();
+    cx.restore();
+  }
+  cx.globalAlpha = 1;
+}
+
+(function loop() { step(); draw(); requestAnimationFrame(loop); })();
+</script>
+</body>
+</html>

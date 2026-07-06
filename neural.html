@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the brain · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:960px;padding-bottom:30px}
+.lab{display:grid;grid-template-columns:1fr 220px;gap:16px}
+@media(max-width:760px){.lab{grid-template-columns:1fr}}
+#board{width:100%;height:min(58vh,500px);border:1px solid var(--line);border-radius:16px;background:#fff;display:block;cursor:crosshair;touch-action:none}
+body.night #board{border-color:rgba(255,255,255,.14)}
+.panel{display:flex;flex-direction:column;gap:14px;font-size:.82rem;color:var(--soft)}
+.panel .grp{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fffdf9}
+body.night .panel .grp{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+.panel .lbl{font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.chipbtn{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:999px;padding:5px 12px;
+  font-family:var(--sans);font-size:.78rem;cursor:pointer;transition:all .25s}
+.chipbtn:hover{color:var(--ink);border-color:var(--faint)}
+.chipbtn.on{background:var(--ink);color:#faf8f3;border-color:var(--ink)}
+body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
+.stat{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums}
+.stat b{color:var(--ink);font-weight:500}
+body.night .stat b{color:#e8e6e0}
+#losscv{width:100%;height:46px;display:block;margin-top:6px}
+.legend{display:flex;gap:14px;align-items:center;margin-top:4px}
+.legend span{display:flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.hint{font-size:.78rem;color:var(--faint);margin-top:10px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play" class="here">play</a>
+    <a href="guestbook">guestbook</a>
+    <a href="contact">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade in">the brain</h1>
+  <p class="sub fade in">a tiny neural network, learning live in your browser. no libraries, just math.</p>
+
+  <div class="lab">
+    <div>
+      <canvas id="board"></canvas>
+      <canvas id="netcv" style="width:100%;height:150px;display:block;margin-top:12px"></canvas>
+    </div>
+    <div class="panel">
+      <div class="grp">
+        <div class="lbl">pattern to learn</div>
+        <div class="row">
+          <button class="chipbtn on" data-d="spiral">spiral</button>
+          <button class="chipbtn" data-d="rings">rings</button>
+          <button class="chipbtn" data-d="xor">xor</button>
+          <button class="chipbtn" data-d="moons">moons</button>
+          <button class="chipbtn" data-d="blank">blank slate</button>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="lbl">training speed</div>
+        <div class="row">
+          <button class="chipbtn" data-s="1">chill</button>
+          <button class="chipbtn on" data-s="6">normal</button>
+          <button class="chipbtn" data-s="20">turbo</button>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="lbl">brain size</div>
+        <div class="row">
+          <button class="chipbtn" data-h="4">tiny</button>
+          <button class="chipbtn on" data-h="8,8">small</button>
+          <button class="chipbtn" data-h="16,16,16">big</button>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="lbl">training</div>
+        <div class="stat"><span>epoch</span><b id="epoch">0</b></div>
+        <div class="stat"><span>loss</span><b id="loss">–</b></div>
+        <div class="stat"><span>accuracy</span><b id="acc">–</b></div>
+        <div id="mastered" style="display:none;margin-top:8px;font-size:.78rem;color:#7d9b6e;font-weight:600">✓ learned it</div>
+        <canvas id="losscv"></canvas>
+        <div class="row" style="margin-top:10px">
+          <button class="chipbtn" id="pauseBtn">pause</button>
+          <button class="chipbtn" id="resetBtn">restart</button>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="lbl">teach it yourself</div>
+        <div class="legend">
+          <span><i style="background:#5b7ea3"></i>click</span>
+          <span><i style="background:#e05f6d"></i>shift+click</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hint" id="probeHint">the shading is what the network currently believes. hover the board to peek inside its head below.</div>
+
+  <div class="next fade in"><a href="play">← back to play</a></div>
+</main>
+
+<script src="site.js"></script>
+<script>
+/* a full multi-layer perceptron with backprop, from scratch */
+const board = document.getElementById('board');
+const bx = board.getContext('2d');
+let W, H;
+function fit() {
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const r = board.getBoundingClientRect();
+  W = r.width; H = r.height;
+  board.width = W * DPR; board.height = H * DPR;
+  bx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', fit);
+fit();
+
+/* ---------------- datasets ---------------- */
+function dataset(name) {
+  const pts = [];
+  const R = () => Math.random();
+  if (name === 'spiral') {
+    for (let c = 0; c < 2; c++)
+      for (let i = 0; i < 120; i++) {
+        const t = i / 120 * 3.2 * Math.PI + (c ? Math.PI : 0);
+        const r = .04 + i / 120 * .82;
+        pts.push({ x: Math.cos(t) * r + (R() - .5) * .1, y: Math.sin(t) * r + (R() - .5) * .1, l: c });
+      }
+  } else if (name === 'rings') {
+    for (let i = 0; i < 120; i++) { const a = R() * 7, r = R() * .34; pts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r, l: 0 }); }
+    for (let i = 0; i < 120; i++) { const a = R() * 7, r = .58 + R() * .3; pts.push({ x: Math.cos(a) * r, y: Math.sin(a) * r, l: 1 }); }
+  } else if (name === 'xor') {
+    for (let i = 0; i < 240; i++) {
+      const x = R() * 1.8 - .9, y = R() * 1.8 - .9;
+      pts.push({ x, y, l: (x > 0) === (y > 0) ? 0 : 1 });
+    }
+  } else { // moons
+    for (let i = 0; i < 120; i++) { const t = R() * Math.PI; pts.push({ x: Math.cos(t) * .6 - .15, y: Math.sin(t) * .6 - .18, l: 0 }); }
+    for (let i = 0; i < 120; i++) { const t = R() * Math.PI; pts.push({ x: .15 - Math.cos(t) * .6, y: .22 - Math.sin(t) * .6, l: 1 }); }
+    pts.forEach(p => { p.x += (R() - .5) * .12; p.y += (R() - .5) * .12; });
+  }
+  return pts;
+}
+
+/* ---------------- the network ---------------- */
+let net, data, epoch, lossHist;
+const LR = .15, MOM = .9;
+
+function makeNet(sizes) {
+  const layers = [];
+  const all = [2, ...sizes, 1];
+  for (let i = 1; i < all.length; i++) {
+    const nin = all[i - 1], nout = all[i];
+    layers.push({
+      w: Array.from({ length: nout }, () => Array.from({ length: nin }, () => (Math.random() - .5) * Math.sqrt(4 / nin))),
+      b: new Array(nout).fill(0),
+      vw: Array.from({ length: nout }, () => new Array(nin).fill(0)),
+      vb: new Array(nout).fill(0),
+      nin, nout, last: i === all.length - 1
+    });
+  }
+  return layers;
+}
+const tanh = x => Math.tanh(x);
+const sig = x => 1 / (1 + Math.exp(-x));
+
+function forward(net, x, y, keep) {
+  let a = [x, y];
+  const acts = keep ? [a] : null;
+  for (const L of net) {
+    const out = new Array(L.nout);
+    for (let j = 0; j < L.nout; j++) {
+      let s = L.b[j];
+      const wj = L.w[j];
+      for (let i = 0; i < L.nin; i++) s += wj[i] * a[i];
+      out[j] = L.last ? sig(s) : tanh(s);
+    }
+    a = out;
+    if (keep) acts.push(a);
+  }
+  return keep ? acts : a[0];
+}
+
+function trainEpoch() {
+  let loss = 0, correct = 0;
+  // accumulate gradients over the full batch
+  const gw = net.map(L => L.w.map(r => r.map(() => 0)));
+  const gb = net.map(L => L.b.map(() => 0));
+  for (const p of data) {
+    const acts = forward(net, p.x, p.y, true);
+    const out = acts[acts.length - 1][0];
+    loss += -(p.l * Math.log(out + 1e-9) + (1 - p.l) * Math.log(1 - out + 1e-9));
+    if ((out > .5 ? 1 : 0) === p.l) correct++;
+    // backprop
+    let delta = [out - p.l];   // dL/dz for sigmoid + BCE
+    for (let li = net.length - 1; li >= 0; li--) {
+      const L = net[li], ain = acts[li];
+      const newDelta = new Array(L.nin).fill(0);
+      for (let j = 0; j < L.nout; j++) {
+        gb[li][j] += delta[j];
+        for (let i = 0; i < L.nin; i++) {
+          gw[li][j][i] += delta[j] * ain[i];
+          newDelta[i] += delta[j] * L.w[j][i];
+        }
+      }
+      if (li > 0) for (let i = 0; i < L.nin; i++) {
+        const a = acts[li][i];
+        newDelta[i] *= (1 - a * a);   // tanh'
+      }
+      delta = newDelta;
+    }
+  }
+  const n = data.length;
+  net.forEach((L, li) => {
+    for (let j = 0; j < L.nout; j++) {
+      L.vb[j] = MOM * L.vb[j] - LR * gb[li][j] / n;
+      L.b[j] += L.vb[j];
+      for (let i = 0; i < L.nin; i++) {
+        L.vw[j][i] = MOM * L.vw[j][i] - LR * gw[li][j][i] / n;
+        L.w[j][i] += L.vw[j][i];
+      }
+    }
+  });
+  return { loss: loss / n, acc: correct / n };
+}
+
+/* ---------------- painting ---------------- */
+const heatcv = document.createElement('canvas');
+const GX = 96, GY = 64;
+heatcv.width = GX; heatcv.height = GY;
+const hx = heatcv.getContext('2d');
+const heatImg = hx.createImageData(GX, GY);
+
+// class colours: soft blue and soft red, blending to paper in the middle
+const CA = [91, 126, 163], CB = [224, 95, 109], MID = [250, 248, 243];
+function mix(c1, c2, t) { return c1.map((v, i) => v + (c2[i] - v) * t); }
+
+function drawHeat() {
+  const d = heatImg.data;
+  let k = 0;
+  for (let gy = 0; gy < GY; gy++) {
+    for (let gx = 0; gx < GX; gx++) {
+      const x = (gx / GX) * 2.4 - 1.2;
+      const y = (gy / GY) * 1.7 - .85;
+      const o = forward(net, x, y);
+      const t = Math.abs(o - .5) * 2;
+      const c = o > .5 ? mix(MID, CB, t * .45) : mix(MID, CA, t * .45);
+      d[k++] = c[0]; d[k++] = c[1]; d[k++] = c[2]; d[k++] = 255;
+    }
+  }
+  hx.putImageData(heatImg, 0, 0);
+}
+
+function toScreen(p) { return [(p.x + 1.2) / 2.4 * W, (p.y + .85) / 1.7 * H]; }
+
+function draw() {
+  bx.imageSmoothingEnabled = true;
+  bx.drawImage(heatcv, 0, 0, W, H);
+  for (const p of data) {
+    const [sx, sy] = toScreen(p);
+    bx.fillStyle = p.l ? '#e05f6d' : '#5b7ea3';
+    bx.strokeStyle = '#fff';
+    bx.lineWidth = 1.4;
+    bx.beginPath(); bx.arc(sx, sy, 4.2, 0, 7); bx.fill(); bx.stroke();
+  }
+  // probe crosshair
+  if (probe) {
+    const [sx, sy] = toScreen(probe);
+    bx.strokeStyle = 'rgba(58,54,47,.5)'; bx.lineWidth = 1;
+    bx.beginPath(); bx.arc(sx, sy, 9, 0, 7); bx.stroke();
+    bx.beginPath(); bx.moveTo(sx - 13, sy); bx.lineTo(sx + 13, sy);
+    bx.moveTo(sx, sy - 13); bx.lineTo(sx, sy + 13); bx.stroke();
+  }
+  // celebration sparks
+  for (let i = sparks.length - 1; i >= 0; i--) {
+    const s = sparks[i];
+    s.x += s.vx; s.y += s.vy; s.vy += .06; s.life--;
+    if (s.life <= 0) { sparks.splice(i, 1); continue; }
+    bx.globalAlpha = Math.min(s.life / 40, 1);
+    bx.fillStyle = s.c;
+    bx.beginPath(); bx.arc(s.x, s.y, 2.6, 0, 7); bx.fill();
+  }
+  bx.globalAlpha = 1;
+}
+
+/* loss sparkline */
+const lcv = document.getElementById('losscv');
+const lx = lcv.getContext('2d');
+function drawLoss() {
+  const r = lcv.getBoundingClientRect();
+  lcv.width = r.width * 2; lcv.height = r.height * 2;
+  lx.setTransform(2, 0, 0, 2, 0, 0);
+  lx.clearRect(0, 0, r.width, r.height);
+  if (lossHist.length < 2) return;
+  const max = Math.max(...lossHist, .01);
+  lx.strokeStyle = '#5b7ea3'; lx.lineWidth = 1.5;
+  lx.beginPath();
+  lossHist.forEach((v, i) => {
+    const x = i / (lossHist.length - 1) * r.width;
+    const y = r.height - (v / max) * (r.height - 4) - 2;
+    i ? lx.lineTo(x, y) : lx.moveTo(x, y);
+  });
+  lx.stroke();
+}
+
+/* ---------------- the network diagram: peek inside its head ---------------- */
+const netCv = document.getElementById('netcv');
+const ncx = netCv.getContext('2d');
+let NW, NH;
+function fitNet() {
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const r = netCv.getBoundingClientRect();
+  NW = r.width; NH = r.height;
+  netCv.width = NW * DPR; netCv.height = NH * DPR;
+  ncx.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', fitNet);
+fitNet();
+
+function nodePositions() {
+  const counts = [2, ...net.map(L => L.nout)];
+  const xs = counts.map((_, i) => 30 + i / (counts.length - 1) * (NW - 60));
+  return counts.map((n, li) =>
+    Array.from({ length: n }, (_, j) => [xs[li], NH / 2 + (j - (n - 1) / 2) * Math.min(26, (NH - 24) / Math.max(n, 1))])
+  );
+}
+
+function drawNet(acts) {
+  ncx.clearRect(0, 0, NW, NH);
+  const pos = nodePositions();
+  // connections: thickness is how much the weight matters, colour is its sign
+  net.forEach((L, li) => {
+    for (let j = 0; j < L.nout; j++) for (let i = 0; i < L.nin; i++) {
+      const w = L.w[j][i];
+      const mag = Math.min(Math.abs(w) / 2.2, 1);
+      if (mag < .04) continue;
+      ncx.strokeStyle = w > 0 ? `rgba(91,126,163,${.12 + mag * .55})` : `rgba(224,95,109,${.12 + mag * .55})`;
+      ncx.lineWidth = .4 + mag * 2.6;
+      ncx.beginPath();
+      ncx.moveTo(pos[li][i][0], pos[li][i][1]);
+      ncx.lineTo(pos[li + 1][j][0], pos[li + 1][j][1]);
+      ncx.stroke();
+    }
+  });
+  // neurons: brightness is how hard each one is firing right now
+  pos.forEach((layer, li) => {
+    layer.forEach(([x, y], j) => {
+      const a = acts ? acts[li][j] : 0;
+      const t = li === pos.length - 1 ? a : (a + 1) / 2;   // sigmoid vs tanh range
+      ncx.fillStyle = `rgba(58,54,47,${.15 + Math.abs(t - .5) * 1.4})`;
+      ncx.strokeStyle = 'rgba(58,54,47,.4)';
+      ncx.lineWidth = 1;
+      ncx.beginPath(); ncx.arc(x, y, li === 0 || li === pos.length - 1 ? 7 : 5.5, 0, 7);
+      ncx.fill(); ncx.stroke();
+    });
+  });
+}
+
+/* ---------------- probe: hover the board, watch the brain fire ---------------- */
+let probe = null;
+board.addEventListener('pointermove', e => {
+  const r = board.getBoundingClientRect();
+  probe = { x: ((e.clientX - r.left) / W) * 2.4 - 1.2, y: ((e.clientY - r.top) / H) * 1.7 - .85 };
+});
+board.addEventListener('pointerleave', () => { probe = null; });
+const probeHint = document.getElementById('probeHint');
+const HINT_DEFAULT = probeHint.textContent;
+
+/* ---------------- celebration when it masters the pattern ---------------- */
+let mastered = false, sparks = [];
+function celebrate() {
+  mastered = true;
+  document.getElementById('mastered').style.display = 'block';
+  const cols = ['#5b7ea3', '#e05f6d', '#f0c04a', '#7d9b6e', '#c86bb8'];
+  for (let i = 0; i < 50; i++) {
+    const a = Math.random() * 7, v = 1.5 + Math.random() * 3.5;
+    sparks.push({ x: W / 2, y: H / 2, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 1.5,
+      c: cols[i % cols.length], life: 70 + Math.random() * 30 });
+  }
+}
+
+/* ---------------- loop ---------------- */
+let paused = false, dsName = 'spiral', hidden = [8, 8], EPF = 6;
+function reset() {
+  data = dsName === 'blank' ? [] : dataset(dsName);
+  net = makeNet(hidden);
+  epoch = 0; lossHist = [];
+  mastered = false; sparks = [];
+  document.getElementById('mastered').style.display = 'none';
+  document.getElementById('epoch').textContent = 0;
+  document.getElementById('loss').textContent = '–';
+  document.getElementById('acc').textContent = '–';
+  drawHeat();
+  drawLoss();
+}
+reset();
+
+(function loop() {
+  if (!paused && data.length > 3) {
+    let m;
+    for (let i = 0; i < EPF; i++) m = trainEpoch();
+    epoch += EPF;
+    lossHist.push(m.loss);
+    if (lossHist.length > 120) lossHist.shift();
+    document.getElementById('epoch').textContent = epoch;
+    document.getElementById('loss').textContent = m.loss.toFixed(4);
+    document.getElementById('acc').textContent = (m.acc * 100).toFixed(1) + '%';
+    if (!mastered && m.acc >= .995 && epoch > 60) celebrate();
+    drawHeat();
+    drawLoss();
+  }
+  draw();
+
+  // the diagram fires with whatever point you're hovering, or a wandering one
+  let px, py;
+  if (probe) { px = probe.x; py = probe.y; }
+  else {
+    const t = performance.now() / 1600;
+    px = Math.cos(t) * .7; py = Math.sin(t * 1.3) * .5;
+  }
+  const acts = forward(net, px, py, true);
+  drawNet(acts);
+  if (probe) {
+    const o = acts[acts.length - 1][0];
+    const pct = Math.round((o > .5 ? o : 1 - o) * 100);
+    probeHint.textContent = `right here, the network is ${pct}% sure this is ${o > .5 ? 'red' : 'blue'} territory`;
+  } else if (data.length <= 3) {
+    probeHint.textContent = 'blank slate: click to add blue points, shift+click for red, and it will start learning (needs 4+)';
+  } else {
+    probeHint.textContent = HINT_DEFAULT;
+  }
+
+  requestAnimationFrame(loop);
+})();
+
+/* ---------------- controls ---------------- */
+document.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => {
+  dsName = b.dataset.d;
+  document.querySelectorAll('[data-d]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  reset();
+}));
+document.querySelectorAll('[data-h]').forEach(b => b.addEventListener('click', () => {
+  hidden = b.dataset.h.split(',').map(Number);
+  document.querySelectorAll('[data-h]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  reset();
+}));
+document.querySelectorAll('[data-s]').forEach(b => b.addEventListener('click', () => {
+  EPF = +b.dataset.s;
+  document.querySelectorAll('[data-s]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+}));
+document.getElementById('resetBtn').addEventListener('click', reset);
+const pauseBtn = document.getElementById('pauseBtn');
+pauseBtn.addEventListener('click', () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'resume' : 'pause';
+  pauseBtn.classList.toggle('on', paused);
+});
+
+/* click to add your own points: click = blue, shift+click = red */
+board.addEventListener('pointerdown', e => {
+  const r = board.getBoundingClientRect();
+  const x = ((e.clientX - r.left) / W) * 2.4 - 1.2;
+  const y = ((e.clientY - r.top) / H) * 1.7 - .85;
+  data.push({ x, y, l: e.shiftKey ? 1 : 0 });
+});
+</script>
+</body>
+</html>
