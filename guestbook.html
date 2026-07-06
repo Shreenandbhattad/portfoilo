@@ -161,11 +161,42 @@ document.getElementById('clearPad').addEventListener('click', () => {
   ctx.clearRect(0, 0, pad.width, pad.height); drewSomething = false;
 });
 
-/* ---------------- storage ---------------- */
-const KEY = 'sb-guestbook';
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
-const save = list => localStorage.setItem(KEY, JSON.stringify(list.slice(0, 80)));
-const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+/* ---------------- storage: one shared wall for everyone (Supabase) ---------------- */
+const SB_URL = 'https://srqvnofktmdwsdiypxgu.supabase.co';
+const SB_KEY = 'sb_publishable_1uGdJaLTzlEFX0E8qnuXSA_AzWixk7y';
+const SB_HEADERS = {
+  apikey: SB_KEY,
+  Authorization: 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json'
+};
+let wall = [];
+
+async function loadWall() {
+  const r = await fetch(SB_URL + '/rest/v1/guestbook?select=id,created_at,name,msg,art&order=created_at.desc&limit=100',
+    { headers: SB_HEADERS });
+  if (!r.ok) throw new Error('load failed');
+  wall = await r.json();
+}
+async function signWall(entry) {
+  const r = await fetch(SB_URL + '/rest/v1/guestbook', {
+    method: 'POST',
+    headers: { ...SB_HEADERS, Prefer: 'return=representation' },
+    body: JSON.stringify(entry)
+  });
+  if (!r.ok) throw new Error('sign failed');
+  const [row] = await r.json();
+  wall.unshift(row);
+}
+async function deleteNote(id, secret) {
+  const r = await fetch(SB_URL + '/rest/v1/rpc/guestbook_delete', {
+    method: 'POST',
+    headers: SB_HEADERS,
+    body: JSON.stringify({ note_id: id, secret })
+  });
+  return r.ok;
+}
+const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const niceDate = iso => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 
 /* -------- the wall: note size follows how much they left -------- */
 function sizeOf(e) {
@@ -178,33 +209,40 @@ function sizeOf(e) {
 const TILTS = [-2.2, 1.6, -1.1, 2.4, -1.8, 1.2];
 
 function render() {
-  const list = load();
   const box = document.getElementById('entries');
-  document.getElementById('count').textContent = list.length ? list.length + (list.length === 1 ? ' note' : ' notes') : '';
-  if (!list.length) {
+  document.getElementById('count').textContent = wall.length ? wall.length + (wall.length === 1 ? ' note' : ' notes') : '';
+  if (!wall.length) {
     box.innerHTML = '<div class="empty">no notes yet... be the first to say hello</div>';
     return;
   }
   const TINTS = ['#fffdf6', '#fdf5ee', '#f3f7ef', '#eff4f8', '#fbf1f3', '#f7f4ea'];
-  box.innerHTML = list.map((e, i) => `
+  box.innerHTML = wall.map((e, i) => `
     <div class="note ${sizeOf(e)}" style="--tilt:${TILTS[i % TILTS.length]}deg;--tint:${TINTS[i % TINTS.length]}">
-      <button class="zap" data-i="${i}" title="remove">×</button>
-      ${e.art ? `<img src="${e.art}" alt="a doodle by ${e.name}">` : ''}
-      ${e.msg ? `<div class="msg">${e.msg}</div>` : ''}
-      <div class="byline"><span class="who">${e.name}</span><span class="when2">${e.date}</span></div>
+      <button class="zap" data-id="${e.id}" title="remove">×</button>
+      ${e.art && /^data:image\//.test(e.art) ? `<img src="${e.art}" alt="a doodle by ${esc(e.name)}">` : ''}
+      ${e.msg ? `<div class="msg">${esc(e.msg)}</div>` : ''}
+      <div class="byline"><span class="who">${esc(e.name)}</span><span class="when2">${niceDate(e.created_at)}</span></div>
     </div>`).join('');
   // staggered entrance
   [...box.querySelectorAll('.note')].forEach((n, i) => setTimeout(() => n.classList.add('show'), 60 * i));
-  box.querySelectorAll('.zap').forEach(z => z.addEventListener('click', () => {
-    const list2 = load();
-    list2.splice(+z.dataset.i, 1);
-    save(list2); render();
+  box.querySelectorAll('.zap').forEach(z => z.addEventListener('click', async () => {
+    const secret = sessionStorage.getItem('sb-owner-pass');
+    if (!secret) return;
+    z.textContent = '…';
+    if (await deleteNote(+z.dataset.id, secret)) {
+      wall = wall.filter(e => e.id !== +z.dataset.id);
+      render();
+    } else {
+      alert('hmm, that is not the right password');
+      document.body.classList.remove('admin');
+      sessionStorage.removeItem('sb-owner-pass');
+    }
   }));
 }
 
-document.getElementById('signBtn').addEventListener('click', () => {
-  const name = esc(document.getElementById('gName').value.trim()) || 'a mysterious visitor';
-  const msg = esc(document.getElementById('gMsg').value.trim());
+document.getElementById('signBtn').addEventListener('click', async () => {
+  const name = document.getElementById('gName').value.trim().slice(0, 40) || 'a mysterious visitor';
+  const msg = document.getElementById('gMsg').value.trim().slice(0, 280) || null;
   if (!msg && !drewSomething) return;
   let art = null;
   if (drewSomething) {
@@ -215,35 +253,43 @@ document.getElementById('signBtn').addEventListener('click', () => {
     sctx.drawImage(pad, 0, 0, 320, 128);
     art = small.toDataURL('image/jpeg', .8);
   }
-  const list = load();
-  list.unshift({ name, msg, art, date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) });
-  save(list); render();
-  ctx.clearRect(0, 0, pad.width, pad.height); drewSomething = false;
-  document.getElementById('gName').value = '';
-  document.getElementById('gMsg').value = '';
-  const t = document.getElementById('thanks');
-  t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600);
+  const btn = document.getElementById('signBtn');
+  btn.disabled = true; btn.textContent = 'sending...';
+  try {
+    await signWall({ name, msg, art });
+    render();
+    ctx.clearRect(0, 0, pad.width, pad.height); drewSomething = false;
+    document.getElementById('gName').value = '';
+    document.getElementById('gMsg').value = '';
+    const t = document.getElementById('thanks');
+    t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2600);
+  } catch {
+    alert('the wall is having a nap, please try again in a moment');
+  }
+  btn.disabled = false; btn.textContent = 'Sign my guestbook';
 });
 
-/* -------- owner mode: the little gear -------- */
-const ADMIN_PASS = 'paperplane2026'; // change this to your own secret
-if (sessionStorage.getItem('sb-owner') === '1') document.body.classList.add('admin');
+/* -------- owner mode: the gear asks for the password, the server checks it -------- */
+if (sessionStorage.getItem('sb-owner-pass')) document.body.classList.add('admin');
 document.getElementById('gear').addEventListener('click', () => {
   if (document.body.classList.contains('admin')) {
     document.body.classList.remove('admin');
-    sessionStorage.removeItem('sb-owner');
+    sessionStorage.removeItem('sb-owner-pass');
     return;
   }
   const p = prompt('owner password:');
-  if (p === ADMIN_PASS) {
+  if (p) {
+    sessionStorage.setItem('sb-owner-pass', p);
     document.body.classList.add('admin');
-    sessionStorage.setItem('sb-owner', '1');
-  } else if (p !== null) {
-    alert('hmm, that is not it');
   }
 });
 
-render();
+loadWall()
+  .then(render)
+  .catch(() => {
+    document.getElementById('entries').innerHTML =
+      '<div class="empty">the wall is having a little nap... refresh in a moment</div>';
+  });
 </script>
 </body>
 </html>
