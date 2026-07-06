@@ -65,10 +65,12 @@ body.admin .note .zap{display:flex}
 .wallhead .count{font-size:.78rem;color:var(--faint)}
 
 /* ---- owner's little gear ---- */
-#gear{position:fixed;bottom:16px;right:16px;z-index:20;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;
-  background:transparent;color:var(--faint);font-size:16px;opacity:.45;transition:opacity .3s,transform .4s ease,color .3s}
-#gear:hover{opacity:1;transform:rotate(60deg)}
-body.admin #gear{color:var(--blue);opacity:1}
+#gear{position:fixed;bottom:16px;right:16px;z-index:20;width:38px;height:38px;border-radius:50%;cursor:pointer;
+  background:#fffdf9;border:1px solid var(--line);color:var(--soft);font-size:18px;line-height:1;opacity:.85;
+  box-shadow:0 3px 10px rgba(90,100,80,.1);transition:opacity .3s,transform .4s ease,color .3s,border-color .3s}
+#gear:hover{opacity:1;transform:rotate(60deg);border-color:var(--blue-light);color:var(--ink)}
+body.admin #gear{color:var(--blue);border-color:var(--blue-light);opacity:1}
+body.night #gear{background:#2e3345;border-color:rgba(255,255,255,.16);color:#a8a49b}
 #adminbar{position:fixed;bottom:16px;right:58px;z-index:20;font-size:.75rem;color:var(--blue);background:#fffdf9;
   border:1px solid var(--blue-light);border-radius:999px;padding:5px 14px;display:none}
 body.admin #adminbar{display:block}
