@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wimbledon</title>
     
-    <!-- Video.js Player Styles -->
     <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
 
     <style>
@@ -19,7 +18,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
-        /* Fullscreen Player Container */
         .video-container {
             position: relative;
             width: 100%;
@@ -31,7 +29,6 @@
             height: 100% !important;
         }
 
-        /* Stream Selector Control Bar */
         #selector-overlay {
             position: absolute;
             top: 15px;
@@ -49,7 +46,6 @@
             transition: opacity 0.25s, transform 0.25s;
         }
 
-        /* Auto-dim overlay when cursor is away */
         #selector-overlay:not(:hover) {
             opacity: 0.15;
             transform: scale(0.98);
@@ -64,7 +60,7 @@
         }
 
         select {
-            width: 320px;
+            width: 380px;
             padding: 8px;
             border: 1px solid #444;
             background: #222;
@@ -84,7 +80,7 @@
             color: #00ff66;
             margin-top: 2px;
             word-break: break-all;
-            max-width: 320px;
+            max-width: 380px;
         }
         
         .error-text {
@@ -95,31 +91,34 @@
 <body>
 
     <div class="video-container">
-        <!-- Floating Selector Panel -->
         <div id="selector-overlay">
             <label for="stream-menu">Select Stream to Test:</label>
             <select id="stream-menu" onchange="changeChannel()">
-                <!-- Standard Live Channels -->
-                <optgroup label="Standard Live Feeds">
-                    <option value="http://a.files.bbci.co.uk/media/live/manifesto/audio_video/simulcast/hls/uk/abr_hdtv/ak/bbc_one_hd.m3u8">BBC One HD (HLS)</option>
-                    <option value="https://vs-cmaf-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_london/pc_hd_abr_v2.fmp4.m3u8">BBC One London (Alternative 720p HLS)</option>
-                    <option value="http://a.files.bbci.co.uk/media/live/manifesto/audio_video/simulcast/hls/uk/abr_hdtv/ak/bbc_two_england.m3u8">BBC Two HD (HLS)</option>
-                    <option value="http://a.files.bbci.co.uk/media/live/manifesto/audio_video/simulcast/hls/uk/abr_hdtv/ak/bbc_four.m3u8">BBC Four HD (HLS)</option>
-                    <option value="https://stvwest.akamaized.net/out/v1/0a8c175eec414b0d8bf7ac8178ad7aae/index.m3u8">ITV1 / STV1 (Alternative HLS)</option>
-                </optgroup>
                 
-                <!-- Temporary Match UHD/HEVC Feeds -->
-                <optgroup label="Temporary UHD Feeds (Only Active During Matches)">
-                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_041/iptv_uhd_v1.mpd">BBC UHD Court Stream 41 (DASH)</option>
-                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_042/iptv_uhd_v1.mpd">BBC UHD Court Stream 42 (DASH)</option>
-                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_043/iptv_uhd_v1.mpd">BBC UHD Court Stream 43 (DASH)</option>
-                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_044/iptv_uhd_v1.mpd">BBC UHD Court Stream 44 (DASH)</option>
+                <optgroup label="Temporary BBC UHD Court Streams">
+                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_041/iptv_uhd_v1.mpd">Stream 41 (UHD DASH)</option>
+                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_042/iptv_uhd_v1.mpd">Stream 42 (UHD DASH)</option>
+                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_043/iptv_uhd_v1.mpd">Stream 43 (UHD DASH)</option>
+                    <option value="https://ve-uhd-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:uk_bbc_stream_044/iptv_uhd_v1.mpd">Stream 44 (UHD DASH)</option>
                 </optgroup>
+
+                <optgroup label="Popup & Alternative Fallbacks">
+                    <option value="https://vs-cmaf-pushb-uk.live.fastly.md.bbci.co.uk/x=4/i=urn:bbc:pips:service:video_pop_up_channel_02/pc_hd_abr_v2.fmp4.m3u8">BBC Video Pop-Up Channel 02</option>
+                    <option value="https://vs-cmaf-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_london/pc_hd_abr_v2.fmp4.m3u8">BBC One London 720p (CMAF Variant)</option>
+                    <option value="https://vs-cmaf-push-uk-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_one_london/iptv_hd_abr_v1.mpd">BBC One London HD (DASH Variant)</option>
+                </optgroup>
+
+                <optgroup label="Standard 24/7 Channels">
+                    <option value="http://a.files.bbci.co.uk/media/live/manifesto/audio_video/simulcast/hls/uk/abr_hdtv/ak/bbc_one_hd.m3u8">BBC One HD</option>
+                    <option value="http://a.files.bbci.co.uk/media/live/manifesto/audio_video/simulcast/hls/uk/abr_hdtv/ak/bbc_two_england.m3u8">BBC Two HD</option>
+                    <option value="http://a.files.bbci.co.uk/media/live/manifesto/audio_video/simulcast/hls/uk/abr_hdtv/ak/bbc_four.m3u8">BBC Four HD</option>
+                    <option value="https://stvwest.akamaized.net/out/v1/0a8c175eec414b0d8bf7ac8178ad7aae/index.m3u8">ITV1 / STV1</option>
+                </optgroup>
+
             </select>
             <div id="status-display">Ready to initialize stream...</div>
         </div>
 
-        <!-- HTML5 Video Component -->
         <video 
             id="live-player" 
             class="video-js vjs-default-skin" 
@@ -130,18 +129,15 @@
         </video>
     </div>
 
-    <!-- Core Video Engine Script -->
     <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
 
     <script>
-        // Initialize VideoJS Media Engine
         var player = videojs('live-player', {
             liveui: true,
             fluid: false,
             playbackRates: [1]
         });
 
-        // Run default channel configuration on page bootup
         window.onload = function() {
             changeChannel();
         };
@@ -152,15 +148,13 @@
             var statusDiv = document.getElementById('status-display');
             
             statusDiv.classList.remove('error-text');
-            statusDiv.innerText = "Loading target manifest...";
+            statusDiv.innerText = "Connecting to CDN...";
 
-            // Determine appropriate MIME streaming profile
-            var mimeType = 'application/x-mpegURL'; // HLS (.m3u8) default
+            var mimeType = 'application/x-mpegURL'; 
             if (selectedUrl.includes('.mpd')) {
-                mimeType = 'application/dash+xml'; // MPEG-DASH (.mpd)
+                mimeType = 'application/dash+xml'; 
             }
 
-            // Mount and play new resource URL
             player.src({
                 src: selectedUrl,
                 type: mimeType
@@ -168,11 +162,11 @@
 
             player.play()
                 .then(function() {
-                    statusDiv.innerText = "Playing stream successfully.";
+                    statusDiv.innerText = "Stream loaded successfully.";
                 })
                 .catch(function(error) {
                     statusDiv.classList.add('error-text');
-                    statusDiv.innerText = "Active Block or Offline (404/403 Error). Check VPN routing.";
+                    statusDiv.innerText = "Blocked or Offline (Check VPN & Match Time).";
                     console.log("Playback error details:", error);
                 });
         }
