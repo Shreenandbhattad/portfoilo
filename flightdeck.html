@@ -11,16 +11,42 @@
 <link rel="stylesheet" href="style.css">
 <style>
 main{max-width:720px}
-.book{border:1px solid var(--line);border-radius:16px;background:#fffdf9;padding:22px;margin-bottom:34px}
-body.night .book{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
-.frm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.frm .full{grid-column:1/-1}
-.frm label{font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:4px}
-.frm input{width:100%;font-family:var(--sans);font-weight:300;font-size:.92rem;color:var(--ink);
-  border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;outline:none;transition:border-color .3s}
-.frm input:focus{border-color:var(--blue-light)}
-body.night .frm input{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);color:#e8e6e0}
-.sharebtn{margin-top:14px;background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
+/* ---- fill in your own boarding pass ---- */
+.bpass{border:2px solid var(--line);border-radius:18px;background:#fffdf9;display:grid;grid-template-columns:1fr 200px;
+  overflow:hidden;box-shadow:0 10px 30px rgba(90,100,80,.08);margin-bottom:16px;position:relative}
+.bmain{padding:20px 24px 18px}
+.bstub{border-left:2px dashed var(--line);padding:18px 18px 14px;display:flex;flex-direction:column;gap:9px;background:#fbf6ea;position:relative}
+.bstub::before,.bstub::after{content:'';position:absolute;left:-13px;width:24px;height:24px;border-radius:50%;
+  background:var(--paper);border:2px solid var(--line)}
+.bstub::before{top:-14px}
+.bstub::after{bottom:-14px}
+.bhead{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.bpass input{font-family:var(--sans);color:var(--ink);background:none;border:none;outline:none;
+  border-bottom:2px solid var(--line);transition:border-color .3s;border-radius:0}
+.bpass input:focus{border-color:var(--blue)}
+#fFlight{width:110px;text-align:right;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.06em}
+.broute{display:flex;align-items:flex-end;gap:16px;margin:22px 0 6px}
+.broute input{flex:1;min-width:0;font-size:clamp(1.3rem,4vw,1.7rem);font-weight:700;text-transform:uppercase;text-align:center;letter-spacing:.04em}
+.broute .plane-ic{color:var(--blue);font-size:1.3rem;padding-bottom:6px}
+.blabels{display:flex;justify-content:space-between;font-size:.64rem;color:var(--faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px;padding:4px 8px 0}
+#fNote{width:100%;font-weight:300;font-size:.9rem;border-bottom-style:dashed}
+.bstub label{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:2px}
+.bstub input{width:100%;font-weight:600;font-size:.88rem;padding-bottom:2px}
+.barcode{margin-top:10px;height:32px;border-radius:2px;opacity:.75;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px)}
+@media(max-width:560px){
+  .bpass{grid-template-columns:1fr}
+  .bstub{border-left:none;border-top:2px dashed var(--line)}
+  .bstub::before{top:-14px;left:-14px}
+  .bstub::after{top:-14px;left:auto;right:-14px;bottom:auto}
+}
+body.night .bpass{background:#2e3345;border-color:rgba(255,255,255,.16)}
+body.night .bstub{background:#293043;border-color:rgba(255,255,255,.16)}
+body.night .bstub::before,body.night .bstub::after{background:#232838;border-color:rgba(255,255,255,.16)}
+body.night .bpass input{color:#e8e6e0;border-color:rgba(255,255,255,.2)}
+body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,transparent 2px 5px,#e8e6e0 5px 6px,transparent 6px 11px,#e8e6e0 11px 14px,transparent 14px 17px)}
+.sharerow{margin-bottom:34px}
+.sharebtn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
   font-family:var(--sans);font-size:.9rem;font-weight:500;cursor:pointer;transition:background .3s,transform .2s}
 .sharebtn:hover{background:#4d6d8f}
 .sharebtn:active{transform:scale(.97)}
@@ -64,7 +90,7 @@ body.night .notecard{background:#2e3345;border-color:rgba(255,255,255,.14)}
 .hintline{font-size:.78rem;color:var(--faint);text-align:center;margin-top:14px}
 
 /* recipient spotlight, exactly like receiving a bouquet */
-body.shareview nav,body.shareview .book{display:none !important}
+body.shareview nav,body.shareview .bpass,body.shareview .sharerow{display:none !important}
 body.shareview main{padding-top:56px}
 </style>
 </head>
@@ -86,23 +112,30 @@ body.shareview main{padding-top:56px}
 
 <main>
   <h1 class="page fade in" id="fdTitle">flight deck</h1>
-  <p class="sub fade in" id="fdSub">flying somewhere? share your flight with the people waiting for you.</p>
+  <p class="sub fade in" id="fdSub">share your flight status.</p>
 
-  <div class="book fade in">
-    <div class="frm">
-      <div><label>flight no.</label><input id="fFlight" placeholder="IX 1234" maxlength="10"></div>
-      <div><label>your name (optional)</label><input id="fName" placeholder="who's flying?" maxlength="30"></div>
-      <div><label>from</label><input id="fFrom" placeholder="BLR · Bengaluru" maxlength="30"></div>
-      <div><label>to</label><input id="fTo" placeholder="ISK · Nashik" maxlength="30"></div>
-      <div><label>date</label><input id="fDate" type="date"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div><label>departs</label><input id="fDep" type="time"></div>
-        <div><label>lands</label><input id="fArr" type="time"></div>
+  <div class="bpass fade in" id="bpass">
+    <div class="bmain">
+      <div class="bhead"><span>boarding pass</span><input id="fFlight" placeholder="IX 1234" maxlength="10"></div>
+      <div class="broute">
+        <input id="fFrom" placeholder="BLR" maxlength="30">
+        <span class="plane-ic">✈</span>
+        <input id="fTo" placeholder="ISK" maxlength="30">
       </div>
-      <div class="full"><label>a little note (optional)</label><input id="fNote" placeholder="see you on the other side ✈" maxlength="80"></div>
+      <div class="blabels"><span>from</span><span>to</span></div>
+      <input id="fNote" placeholder="a note for them (optional)" maxlength="80">
     </div>
+    <div class="bstub">
+      <div><label>date</label><input id="fDate" type="date"></div>
+      <div><label>departs</label><input id="fDep" type="time"></div>
+      <div><label>lands</label><input id="fArr" type="time"></div>
+      <div><label>traveller</label><input id="fName" placeholder="optional" maxlength="30"></div>
+      <div class="barcode"></div>
+    </div>
+  </div>
+  <div class="sharerow fade in">
     <button class="sharebtn" id="shareBtn">✈ copy share link</button>
-    <span class="shared" id="sharedMsg">link copied, send it along ✈</span>
+    <span class="shared" id="sharedMsg">link copied ✈</span>
   </div>
 
   <div class="pass" id="pass" style="display:none">
@@ -130,8 +163,6 @@ body.shareview main{padding-top:56px}
     <div id="noteText"></div>
     <div class="fromline" id="noteFrom">safe travels ✈</div>
   </div>
-
-  <div class="hintline" id="fdHint" style="display:none">status updates itself from the times, and checks live radar while in the air</div>
 
   <div class="next fade in" id="backNext"><a href="play">← back to play</a></div>
   <div class="next" id="shareOwn" style="display:none"><a href="flightdeck">✈ share your own flight →</a></div>
@@ -210,7 +241,6 @@ function showPass(f) {
     document.getElementById('noteText').textContent = '“' + f.nt + '”';
     document.getElementById('noteFrom').textContent = f.nm ? 'from ' + f.nm + ' ✈' : 'safe travels ✈';
   } else nc.style.display = 'none';
-  document.getElementById('fdHint').style.display = 'block';
   tickStatus();
 }
 
@@ -330,7 +360,7 @@ function loadShared() {
   F = f;
   document.body.classList.add('shareview');
   document.getElementById('fdTitle').textContent = f.nm ? f.nm + ' is flying' : 'someone is flying';
-  document.getElementById('fdSub').textContent = 'follow along, this page keeps itself up to date ✈';
+  document.getElementById('fdSub').textContent = 'follow along ✈';
   document.getElementById('backNext').style.display = 'none';
   document.getElementById('shareOwn').style.display = 'block';
   showPass(f);
