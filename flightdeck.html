@@ -405,7 +405,7 @@ $('swapBtn').addEventListener('click', () => {
 
 /* ================= flight-number lookup: the real thing ================= */
 // swap this for your own Supabase project ref once the edge function is deployed
-const FLIGHT_API = 'https://srqvnofktmdwsdiypxgu.functions.supabase.co/flight-status';
+const FLIGHT_API = 'https://srqvnofktmdwsdiypxgu.supabase.co/functions/v1/flight-status';
 
 function findByIata(iata) {
   return byCode[iata] || [iata, iata, 0, 0];
