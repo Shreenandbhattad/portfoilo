@@ -15,20 +15,30 @@
 main{max-width:780px}
 
 /* ================= boarding pass form ================= */
-.bpass{border-radius:20px;background:#fffdf9;display:grid;grid-template-columns:1fr 210px;
-  overflow:hidden;box-shadow:0 16px 44px rgba(90,100,80,.14);margin-bottom:16px;position:relative;
+.bpass{border-radius:22px;background:#fffdf9;display:grid;grid-template-columns:1fr 220px;
+  overflow:hidden;box-shadow:0 20px 54px rgba(90,100,80,.16),0 2px 8px rgba(90,100,80,.08);margin-bottom:16px;position:relative;
   border:1px solid var(--line)}
-.bband{grid-column:1/-1;background:linear-gradient(100deg,#5b7ea3,#7495b5);color:#fff;
-  display:flex;justify-content:space-between;align-items:center;padding:13px 22px;gap:14px;position:relative;overflow:hidden}
-.bband::before{content:'✈';position:absolute;right:-6px;top:50%;transform:translateY(-50%) rotate(8deg);
-  font-size:2.6rem;opacity:.13;pointer-events:none}
-.bband .t{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;font-weight:700;opacity:.95;position:relative;z-index:1}
-.bband input{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:8px;
-  color:#fff;font-family:var(--sans);font-weight:700;font-size:.9rem;text-transform:uppercase;
-  letter-spacing:.08em;padding:6px 10px;width:118px;text-align:center;outline:none;position:relative;z-index:1;transition:border-color .3s}
-.bband input:focus{border-color:#fff}
-.bband input::placeholder{color:rgba(255,255,255,.6);font-weight:500}
-.lookupbar{display:flex;gap:10px;align-items:center;padding:16px 24px 0}
+.bband{grid-column:1/-1;background:linear-gradient(115deg,#4d6f92 0%,#5b7ea3 45%,#82a2c2 100%);color:#fff;
+  display:flex;justify-content:space-between;align-items:center;padding:16px 22px;gap:14px;position:relative;overflow:hidden}
+.bband::before{content:'';position:absolute;inset:0;opacity:.5;pointer-events:none;
+  background-image:radial-gradient(circle at 15% 30%,rgba(255,255,255,.16) 0,transparent 45%),
+    radial-gradient(circle at 85% 75%,rgba(255,255,255,.12) 0,transparent 40%)}
+.bband::after{content:'✈';position:absolute;right:-8px;top:50%;transform:translateY(-50%) rotate(8deg);
+  font-size:3.2rem;opacity:.14;pointer-events:none}
+.bband .brandwrap{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px}
+.bband .t{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;font-weight:700;opacity:.9}
+.bband .sub{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;opacity:.65;font-weight:500}
+.bband input{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);border-radius:9px;
+  color:#fff;font-family:var(--sans);font-weight:800;font-size:.95rem;text-transform:uppercase;
+  letter-spacing:.1em;padding:7px 10px;width:124px;text-align:center;outline:none;position:relative;z-index:1;transition:border-color .3s,background .3s}
+.bband input:focus{border-color:#fff;background:rgba(255,255,255,.28)}
+.bband input::placeholder{color:rgba(255,255,255,.62);font-weight:500;letter-spacing:.04em}
+.lookupbar{display:flex;gap:10px;align-items:center;padding:16px 24px 0;flex-wrap:wrap}
+.lookupdate{font-family:var(--sans);font-weight:600;font-size:.8rem;color:var(--ink);
+  background:#faf7f0;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;
+  color-scheme:light;transition:border-color .3s;flex-shrink:0}
+.lookupdate:focus{border-color:var(--blue)}
+body.night .lookupdate{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0;color-scheme:dark}
 .lookupbtn{background:#3a362f;color:#fffdf9;border:none;border-radius:10px;padding:9px 16px;
   font-family:var(--sans);font-weight:600;font-size:.82rem;cursor:pointer;white-space:nowrap;
   transition:transform .2s,background .3s;display:flex;align-items:center;gap:7px}
@@ -37,33 +47,46 @@ main{max-width:780px}
 .lookupbtn:disabled{opacity:.6;cursor:wait}
 .lookupbtn .spin{display:inline-block;animation:spin360 .9s linear infinite}
 @keyframes spin360{to{transform:rotate(360deg)}}
-.lookupmsg{font-size:.8rem;color:var(--soft);flex:1;min-width:0}
+.lookupmsg{font-size:.8rem;color:var(--soft);flex:1;min-width:120px}
 .lookupmsg.err{color:#c25562}
 .lookupmsg.ok{color:#5a8a52}
-.ordivider{display:flex;align-items:center;gap:10px;padding:14px 24px 2px;font-size:.7rem;
-  letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
-.ordivider::before,.ordivider::after{content:'';flex:1;height:1px;background:var(--line)}
+.ordivider{display:flex;align-items:center;gap:10px;padding:16px 24px 0;font-size:.66rem;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.ordivider::before,.ordivider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
 body.night .lookupbtn{background:#e8e6e0;color:#232838}
 body.night .lookupbtn:hover{background:#c9c6bd}
 body.night .lookupmsg{color:#a8a49b}
 .bmain{padding:22px 24px 18px}
-.bstub{border-left:2px dashed var(--line);padding:16px 18px 14px;display:flex;flex-direction:column;gap:8px;background:#fbf6ea;position:relative}
+.bstub{border-left:2px dashed var(--line);padding:18px 18px 16px;display:flex;flex-direction:column;gap:9px;
+  background:linear-gradient(175deg,#fbf6ea,#f6efdd);position:relative}
 .bstub::before,.bstub::after{content:'';position:absolute;left:-13px;width:24px;height:24px;border-radius:50%;
   background:var(--paper);border:1px solid var(--line)}
 .bstub::before{top:-13px}
 .bstub::after{bottom:-13px}
-.broute{display:flex;align-items:flex-start;gap:10px}
+.bstub .seatbadge{position:absolute;top:14px;right:14px;font-size:1.3rem;opacity:.22;pointer-events:none}
+.timesFound{background:rgba(143,174,126,.14);border:1px solid rgba(143,174,126,.35);border-radius:10px;padding:9px 11px;margin-bottom:2px}
+.timesFound label{margin-bottom:3px}
+.foundwhen{font-size:.84rem;font-weight:700;color:#4d7048}
+body.night .foundwhen{color:#9fc48f}
+.edittimes{margin-top:5px;background:none;border:none;color:var(--blue);font-size:.68rem;font-weight:600;
+  letter-spacing:.04em;text-decoration:underline;cursor:pointer;padding:0;font-family:var(--sans)}
+.timesManual{display:flex;flex-direction:column;gap:9px}
+.broute{display:flex;align-items:flex-start;gap:6px;position:relative}
 .portbox{flex:1;min-width:0;position:relative;text-align:center}
 .portbox .codein{width:100%;font-family:var(--sans);font-weight:800;font-size:clamp(1.5rem,5vw,2.1rem);
   letter-spacing:.05em;text-transform:uppercase;text-align:center;color:var(--ink);
-  background:#faf7f0;border:2px solid var(--line);border-radius:14px;padding:10px 6px;outline:none;transition:border-color .3s,background .3s}
-.portbox .codein:focus{border-color:var(--blue);background:#fff}
-.portbox .codein.ok{border-color:#8fae7e}
+  background:#faf7f0;border:2px solid var(--line);border-radius:14px;padding:10px 6px;outline:none;transition:border-color .3s,background .3s,box-shadow .3s}
+.portbox .codein:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(91,126,163,.12)}
+.portbox .codein.ok{border-color:#8fae7e;box-shadow:0 0 0 4px rgba(143,174,126,.12)}
 .portbox .cityname{font-size:.74rem;color:var(--soft);margin-top:7px;min-height:1.1em;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.swapbtn{margin-top:14px;width:36px;height:36px;flex-shrink:0;border-radius:50%;border:2px solid var(--line);
-  background:#fffdf9;color:var(--blue);font-size:15px;cursor:pointer;transition:transform .4s ease,border-color .3s}
-.swapbtn:hover{transform:rotate(180deg);border-color:var(--blue-light)}
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.routeflourish{position:absolute;left:50%;top:24px;transform:translateX(-50%);width:calc(100% - 130px);
+  display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;opacity:.5}
+.routeflourish svg{width:100%;height:20px}
+.swapbtn{margin-top:14px;width:38px;height:38px;flex-shrink:0;border-radius:50%;border:2px solid var(--line);
+  background:#fffdf9;color:var(--blue);font-size:15px;cursor:pointer;transition:transform .4s ease,border-color .3s,box-shadow .3s;
+  position:relative;z-index:1;box-shadow:0 3px 8px rgba(90,100,80,.1)}
+.swapbtn:hover{transform:rotate(180deg);border-color:var(--blue-light);box-shadow:0 4px 12px rgba(91,126,163,.2)}
 .sugg{position:absolute;top:calc(100% - 26px);left:0;right:0;background:#fff;border:1px solid var(--line);
   border-radius:12px;box-shadow:0 14px 34px rgba(60,60,50,.16);z-index:30;overflow:hidden;text-align:left;display:none}
 .sugg.open{display:block}
@@ -74,14 +97,31 @@ body.night .lookupmsg{color:#a8a49b}
 #fNote{width:100%;margin-top:16px;font-family:var(--sans);font-weight:300;font-size:.9rem;color:var(--ink);
   background:none;border:none;border-bottom:2px dashed var(--line);outline:none;padding:6px 2px;transition:border-color .3s}
 #fNote:focus{border-color:var(--blue)}
+
+/* the instant sketch-preview: appears the moment both airports are chosen */
+.previewbox{max-height:0;overflow:hidden;opacity:0;transition:max-height .5s ease,opacity .4s ease,margin .5s ease}
+.previewbox.show{max-height:120px;opacity:1;margin-top:16px}
+.previewinner{background:linear-gradient(135deg,#f4f8fb,#eef3ec);border:1px solid var(--line);border-radius:14px;
+  padding:14px 16px;display:flex;align-items:center;gap:14px}
+body.night .previewinner{background:linear-gradient(135deg,#232838,#262c3d);border-color:rgba(255,255,255,.14)}
+#previewSvg{flex-shrink:0;width:110px;height:56px}
+.previewstats{flex:1;min-width:0}
+.previewstats .row1{font-size:.86rem;font-weight:600;color:var(--ink)}
+.previewstats .row2{font-size:.72rem;color:var(--soft);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap}
+body.night .previewstats .row1{color:#e8e6e0}
+body.night .previewstats .row2{color:#a8a49b}
+.previewstats .row2 b{color:var(--blue);font-weight:600}
+.prev-dot{animation:prevpulse 1.6s ease-in-out infinite}
+@keyframes prevpulse{0%,100%{opacity:1}50%{opacity:.4}}
 .bstub label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:2px}
 .bstub input{width:100%;font-family:var(--sans);font-weight:600;font-size:.88rem;color:var(--ink);
   background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 8px;outline:none;color-scheme:light;transition:border-color .3s}
 .bstub input:focus{border-color:var(--blue-light)}
 .stubrow{display:flex;gap:8px}
 .stubrow>div{flex:1;min-width:0}
-.barcode{margin-top:auto;height:30px;border-radius:2px;opacity:.75;
+.barcode{margin-top:auto;height:34px;border-radius:3px;opacity:.78;
   background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px)}
+.barcode-label{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:center;margin-top:3px}
 @media(max-width:600px){
   .bpass{grid-template-columns:1fr}
   .bstub{border-left:none;border-top:2px dashed var(--line)}
@@ -117,35 +157,45 @@ body.night .pass{background:#2e3345;border-color:rgba(255,255,255,.14)}
 .pass .code{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:800;letter-spacing:.02em}
 .pass .city{font-size:.76rem;color:var(--soft);margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pass .mid{flex:1;text-align:center;color:var(--faint);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}
-#lmapbox{height:340px;position:relative;z-index:1;border-bottom:1px solid var(--line)}
-#lmapbox .leaflet-container{height:100%;width:100%;background:#dce8ef;font-family:var(--sans);outline:none}
-body.night #lmapbox .leaflet-container{background:#232838}
-#lmapbox .leaflet-tile-pane{filter:saturate(1.08)}
-body.night #lmapbox .leaflet-tile-pane{filter:brightness(.66) contrast(.94) saturate(.65) hue-rotate(-4deg)}
-.leaflet-control-attribution{font-size:8.5px !important;opacity:.55;background:rgba(255,253,249,.75) !important}
-body.night .leaflet-control-attribution{background:rgba(46,51,69,.75) !important;color:#a8a49b}
+#lmapbox{height:380px;position:relative;z-index:1;border-bottom:1px solid var(--line)}
+#lmapbox .leaflet-container{height:100%;width:100%;background:#c8dceb;font-family:var(--sans);outline:none}
+body.night #lmapbox .leaflet-container{background:#1a2030}
+#lmapbox .leaflet-tile-pane{filter:saturate(1.18) contrast(1.03)}
+body.night #lmapbox .leaflet-tile-pane{filter:brightness(.6) contrast(1) saturate(.55) hue-rotate(-6deg)}
+.leaflet-control-attribution{font-size:8.5px !important;opacity:.5;background:rgba(255,253,249,.7) !important}
+body.night .leaflet-control-attribution{background:rgba(35,40,56,.7) !important;color:#a8a49b}
 .leaflet-control-attribution a{color:inherit !important}
-/* soft vignette so the map fades into the card rather than cutting off hard */
+/* soft vignette + top gradient so the map reads as part of the pass, not a widget dropped in */
 #lmapbox::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
-  box-shadow:inset 0 0 46px 6px rgba(58,54,47,.1)}
-body.night #lmapbox::after{box-shadow:inset 0 0 46px 6px rgba(0,0,0,.35)}
+  box-shadow:inset 0 0 60px 10px rgba(40,45,40,.14),inset 0 30px 40px -30px rgba(40,45,40,.35)}
+body.night #lmapbox::after{box-shadow:inset 0 0 60px 10px rgba(0,0,0,.4),inset 0 30px 40px -30px rgba(0,0,0,.55)}
+.maplabel-corner{position:absolute;top:12px;left:14px;z-index:5;background:rgba(255,253,249,.85);backdrop-filter:blur(4px);
+  border-radius:8px;padding:5px 11px;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--soft);box-shadow:0 3px 10px rgba(0,0,0,.1);pointer-events:none}
+body.night .maplabel-corner{background:rgba(46,51,69,.85);color:#a8a49b}
+
 /* map markers */
-.pin-origin{width:16px;height:16px;position:relative}
-.pin-origin i{position:absolute;inset:3px;border-radius:50%;background:#5b7ea3;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.3)}
-.pin-origin::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(91,126,163,.55);animation:pinpulse 1.8s ease-out infinite}
-@keyframes pinpulse{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.5);opacity:0}}
-.pin-dest{font-size:22px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));transform:translateY(-4px)}
-.leaflet-tooltip.flabel{background:rgba(58,54,47,.88);color:#fffdf9;border:none;border-radius:7px;
-  font-weight:700;font-size:.72rem;letter-spacing:.06em;padding:3px 8px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
-.leaflet-tooltip.flabel::before{border-top-color:rgba(58,54,47,.88) !important;border-bottom-color:rgba(58,54,47,.88) !important}
-.planewrap{width:46px;height:46px;display:flex;align-items:center;justify-content:center;
-  filter:drop-shadow(0 3px 5px rgba(0,0,0,.3))}
-.planewrap svg{width:40px;height:40px;transition:transform 1s linear}
+.pin-origin{width:18px;height:18px;position:relative}
+.pin-origin i{position:absolute;inset:3px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#7ea0c4,#4a6d92);
+  border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pin-origin::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:2px solid rgba(91,126,163,.6);animation:pinpulse 1.8s ease-out infinite}
+.pin-origin::before{content:'';position:absolute;inset:-16px;border-radius:50%;border:1.5px solid rgba(91,126,163,.3);animation:pinpulse 1.8s ease-out .5s infinite}
+@keyframes pinpulse{0%{transform:scale(.4);opacity:1}100%{transform:scale(1.8);opacity:0}}
+.pin-dest-wrap{width:30px;height:38px;position:relative;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3))}
+.pin-dest-wrap svg{width:100%;height:100%}
+.leaflet-tooltip.flabel{background:rgba(30,34,26,.9);color:#fffdf9;border:none;border-radius:8px;
+  font-weight:700;font-size:.74rem;letter-spacing:.06em;padding:4px 10px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.leaflet-tooltip.flabel::before{border-top-color:rgba(30,34,26,.9) !important;border-bottom-color:rgba(30,34,26,.9) !important}
+.leaflet-tooltip.flabel small{opacity:.65;font-weight:400;text-transform:none;letter-spacing:0;display:block;font-size:.68rem;margin-top:1px}
+.planewrap{width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 4px 7px rgba(0,0,0,.35))}
+.planewrap svg{width:42px;height:42px;transition:transform 1s linear}
 .planewrap.waiting svg{animation:planebob 2.2s ease-in-out infinite}
-@keyframes planebob{0%,100%{translate:0 0}50%{translate:0 -5px}}
-.progressbar{height:5px;background:var(--line);position:relative}
-.progressbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8fae7e,#5b7ea3);
-  border-radius:0 3px 3px 0;transition:width 1s linear}
+@keyframes planebob{0%,100%{translate:0 0}50%{translate:0 -6px}}
+.progressbar{height:6px;background:var(--line);position:relative;overflow:hidden}
+.progressbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8fae7e,#5b7ea3,#7495b5);
+  background-size:200% 100%;border-radius:0 3px 3px 0;transition:width 1s linear;animation:pgshimmer 3s linear infinite}
+@keyframes pgshimmer{to{background-position:-200% 0}}
 .statusline{text-align:center;padding:16px 20px 18px}
 .chip{display:inline-block;border-radius:999px;padding:7px 18px;font-size:.85rem;font-weight:500;
   background:#eef3ec;color:#5a7a52;border:1px solid #d5e3c6}
@@ -218,16 +268,21 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
 
   <div class="bpass fade in" id="bpass">
     <div class="bband">
-      <span class="t">Boarding pass</span>
+      <div class="brandwrap">
+        <span class="t">Boarding pass</span>
+        <span class="sub">handle with excitement</span>
+      </div>
       <input id="fFlight" placeholder="e.g. 6E123" maxlength="8">
     </div>
     <div class="lookupbar">
+      <input class="lookupdate" id="lookupDate" type="date" title="which day is this flight number flying?">
       <button class="lookupbtn" id="lookupBtn">🔍 look up my flight</button>
-      <span class="lookupmsg" id="lookupMsg">type a flight number above, we'll find the rest</span>
+      <span class="lookupmsg" id="lookupMsg">same flight number, different day? pick the date first</span>
     </div>
     <div class="ordivider">or fill it in yourself</div>
     <div class="bmain">
       <div class="broute">
+        <div class="routeflourish"><svg viewBox="0 0 200 20" preserveAspectRatio="none"><path d="M0 10 Q100 -6 200 10" fill="none" stroke="#5b7ea3" stroke-width="1.6" stroke-dasharray="2 6" stroke-linecap="round"/></svg></div>
         <div class="portbox">
           <input class="codein" id="fFrom" placeholder="BLR" maxlength="30" autocomplete="off" spellcheck="false">
           <div class="sugg" id="sgFrom"></div>
@@ -241,18 +296,39 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
         </div>
       </div>
       <input id="fNote" placeholder="a note for them (optional)" maxlength="80">
+      <div class="previewbox" id="previewBox">
+        <div class="previewinner">
+          <svg id="previewSvg" viewBox="0 0 110 56"><path id="prevArc" d="" fill="none" stroke="#5b7ea3" stroke-width="1.6" stroke-dasharray="3 4"/>
+            <circle id="prevA" class="prev-dot" r="3.2" fill="#5b7ea3"/><circle id="prevB" r="3.2" fill="#c25562"/>
+            <text id="prevPlane" font-size="13">✈️</text>
+          </svg>
+          <div class="previewstats">
+            <div class="row1" id="prevRoute">–</div>
+            <div class="row2"><span><b id="prevDist">–</b> km</span><span>about <b id="prevDur">–</b> in the air</span></div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="bstub">
-      <div><label>date</label><input id="fDate" type="date"></div>
-      <div class="stubrow">
-        <div><label>departs</label><input id="fDep" type="time"></div>
-        <div><label>lands</label><input id="fArr" type="time"></div>
+      <div class="timesFound" id="timesFound" style="display:none">
+        <label>when</label>
+        <div class="foundwhen" id="foundWhen">–</div>
+        <button class="edittimes" id="editTimesBtn" type="button">edit times</button>
+      </div>
+      <div class="timesManual" id="timesManual">
+        <div><label>date</label><input id="fDate" type="date"></div>
+        <div class="stubrow">
+          <div><label>departs</label><input id="fDep" type="time"></div>
+          <div><label>lands</label><input id="fArr" type="time"></div>
+        </div>
       </div>
       <div class="stubrow">
         <div><label>traveller</label><input id="fName" placeholder="you" maxlength="30"></div>
         <div><label>seat</label><input id="fSeat" placeholder="12A" maxlength="4"></div>
       </div>
+      <span class="seatbadge">🎫</span>
       <div class="barcode"></div>
+      <div class="barcode-label">scan for good vibes only</div>
     </div>
   </div>
   <div class="sharerow fade in">
@@ -356,11 +432,13 @@ function hookAutocomplete(inputId, suggId, labelId, assign) {
     inp.classList.add('ok');
     lbl.textContent = a[1];
     sg.classList.remove('open');
+    updatePreview();
     refresh();
   }
   inp.addEventListener('input', () => {
     assign(null); inp.classList.remove('ok');
     lbl.textContent = inputId === 'fFrom' ? 'from' : 'to';
+    updatePreview();
     const q = inp.value.trim().toUpperCase();
     if (q.length < 2) { sg.classList.remove('open'); refresh(); return; }
     // exact code typed? take it instantly
@@ -390,13 +468,44 @@ $('swapBtn').addEventListener('click', () => {
   $('lblTo').textContent = selTo ? selTo[1] : 'to';
   $('fFrom').classList.toggle('ok', !!selFrom);
   $('fTo').classList.toggle('ok', !!selTo);
+  updatePreview();
   refresh();
 });
+
+/* the instant sketch preview: shows the moment both airports are chosen,
+   well before there's enough info to build the full tracking card */
+function haversineQuick(a, b) {
+  const R = 6371, r = Math.PI / 180;
+  const dLa = (b[2] - a[2]) * r, dLo = (b[3] - a[3]) * r;
+  const s = Math.sin(dLa / 2) ** 2 + Math.cos(a[2] * r) * Math.cos(b[2] * r) * Math.sin(dLo / 2) ** 2;
+  return Math.round(2 * R * Math.asin(Math.sqrt(s)));
+}
+function updatePreview() {
+  const box = $('previewBox');
+  if (!selFrom || !selTo || selFrom[0] === selTo[0]) { box.classList.remove('show'); return; }
+  const km = haversineQuick(selFrom, selTo);
+  // a gentle bow, same spirit as the real map route but drawn tiny and fast
+  const x0 = 8, x1 = 102, y = 40, bow = 16;
+  $('prevArc').setAttribute('d', `M${x0} ${y} Q 55 ${y - bow} ${x1} ${y}`);
+  $('prevA').setAttribute('cx', x0); $('prevA').setAttribute('cy', y);
+  $('prevB').setAttribute('cx', x1); $('prevB').setAttribute('cy', y);
+  $('prevPlane').setAttribute('x', 46); $('prevPlane').setAttribute('y', y - bow * .55 + 4);
+  $('prevRoute').textContent = selFrom[0] + ' → ' + selTo[0];
+  $('prevDist').textContent = km.toLocaleString();
+  // rough cruise-speed estimate: ~800km/h average including climb/descent
+  const hrs = km / 800;
+  const h = Math.floor(hrs), m = Math.round((hrs - h) * 60);
+  $('prevDur').textContent = (h ? h + 'h ' : '') + m + 'm';
+  box.classList.add('show');
+}
 
 /* ================= form ================= */
 (function prefill() {
   const now = new Date();
-  $('fDate').value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  $('fDate').value = todayStr;
+  $('lookupDate').value = todayStr;
+  $('lookupDate').min = todayStr;
   const dep = new Date(now.getTime() + 2 * 3600e3);
   $('fDep').value = String(dep.getHours()).padStart(2, '0') + ':00';
   const arr = new Date(dep.getTime() + 1.75 * 3600e3);
@@ -407,9 +516,6 @@ $('swapBtn').addEventListener('click', () => {
 // swap this for your own Supabase project ref once the edge function is deployed
 const FLIGHT_API = 'https://srqvnofktmdwsdiypxgu.supabase.co/functions/v1/flight-status';
 
-function findByIata(iata) {
-  return byCode[iata] || [iata, iata, 0, 0];
-}
 function toLocalDate(iso) {
   // "2026-07-18 09:05+05:30" -> {dt,tm}
   const m = iso.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
@@ -418,20 +524,29 @@ function toLocalDate(iso) {
 
 async function lookupFlight() {
   const raw = $('fFlight').value.trim().toUpperCase().replace(/\s+/g, '');
+  const day = $('lookupDate').value;
   const msg = $('lookupMsg'), btn = $('lookupBtn');
   if (raw.length < 3) { msg.textContent = 'that flight number looks a bit short 🤔'; msg.className = 'lookupmsg err'; return; }
   btn.disabled = true;
   btn.innerHTML = '<span class="spin">✈</span> checking the skies...';
   msg.textContent = ''; msg.className = 'lookupmsg';
   try {
-    const r = await fetch(`${FLIGHT_API}?fl=${encodeURIComponent(raw)}`);
+    const dateParam = day ? `&date=${encodeURIComponent(day)}` : '';
+    const r = await fetch(`${FLIGHT_API}?fl=${encodeURIComponent(raw)}${dateParam}`);
     const data = await r.json();
-    const flight = Array.isArray(data) ? data[0] : data;
-    if (!flight || flight.error || !flight.departure) {
-      msg.textContent = "couldn't find that one, try the airport fields below instead";
+    const list = Array.isArray(data) ? data : (data && !data.error ? [data] : []);
+    if (!list.length) {
+      msg.textContent = day
+        ? "couldn't find that flight on that date, try the airport fields below instead"
+        : "couldn't find that one, try the airport fields below instead";
       msg.className = 'lookupmsg err';
       return;
     }
+    // a flight number can fly more than one leg a day; prefer whichever hasn't landed yet
+    const flight = list.find(f => {
+      const arrLocal = f.arrival && f.arrival.scheduledTime && f.arrival.scheduledTime.local;
+      return !arrLocal || new Date(arrLocal.replace(' ', 'T')) > new Date();
+    }) || list[0];
     const depAp = flight.departure.airport, arrAp = flight.arrival.airport;
     const A = [depAp.iata, depAp.shortName || depAp.name, depAp.location.lat, depAp.location.lon];
     const B = [arrAp.iata, arrAp.shortName || arrAp.name, arrAp.location.lat, arrAp.location.lon];
@@ -440,6 +555,7 @@ async function lookupFlight() {
     selFrom = A; selTo = B;
     $('fFrom').value = A[0]; $('fFrom').classList.add('ok'); $('lblFrom').textContent = A[1];
     $('fTo').value = B[0]; $('fTo').classList.add('ok'); $('lblTo').textContent = B[1];
+    updatePreview();
 
     const depT = toLocalDate(flight.departure.scheduledTime.local);
     const arrT = toLocalDate(flight.arrival.scheduledTime.local);
@@ -450,6 +566,7 @@ async function lookupFlight() {
     const airline = flight.airline ? flight.airline.name : '';
     msg.textContent = `found it! ${airline} ${flight.number || raw} · ${A[0]} → ${B[0]}`;
     msg.className = 'lookupmsg ok';
+    showFoundTimes(depT, arrT);
     refresh();
   } catch (e) {
     msg.textContent = 'the lookup hiccupped, try again in a moment';
@@ -461,6 +578,21 @@ async function lookupFlight() {
 }
 $('lookupBtn').addEventListener('click', lookupFlight);
 $('fFlight').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookupFlight(); } });
+
+/* once a flight number lookup fills in real times, tuck the manual fields away
+   behind a tidy summary, since re-typing them defeats the point of the lookup */
+function showFoundTimes(depT, arrT) {
+  if (!depT) return;
+  const d = new Date(depT.dt + 'T00:00');
+  const dayStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  $('foundWhen').textContent = `${dayStr} · ${depT.tm}${arrT ? ' → ' + arrT.tm : ''}`;
+  $('timesFound').style.display = 'block';
+  $('timesManual').style.display = 'none';
+}
+$('editTimesBtn').addEventListener('click', () => {
+  $('timesFound').style.display = 'none';
+  $('timesManual').style.display = 'flex';
+});
 
 let F = null;   // {fl,nm,st,fr:[code,name,lat,lon],to:[...],dt,dp,ar,nt}
 
@@ -583,14 +715,19 @@ function launchConfetti() {
   setTimeout(() => wrap.remove(), 4200);
 }
 
-/* ================= the map (Leaflet + soft Carto tiles) ================= */
-const PLANE_SVG = `<svg viewBox="0 0 48 48"><g>
+/* ================= the map (Leaflet + rich Carto terrain tiles) ================= */
+const PLANE_SVG = `<svg viewBox="0 0 48 48"><defs>
+  <linearGradient id="pwing" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#7fa0c4"/><stop offset="1" stop-color="#4a6d92"/>
+  </linearGradient></defs><g>
   <path d="M24 4 C26 4 27.5 6 27.5 9 L27.5 18 L44 27 L44 31 L27.5 26.5 L27.5 37 L33 41.5 L33 44.5 L24 42 L15 44.5 L15 41.5 L20.5 37 L20.5 26.5 L4 31 L4 27 L20.5 18 L20.5 9 C20.5 6 22 4 24 4 Z"
-    fill="#5b7ea3" stroke="#fffdf9" stroke-width="1.6"/>
+    fill="url(#pwing)" stroke="#fffdf9" stroke-width="1.8"/>
   <ellipse cx="24" cy="10.5" rx="1.7" ry="3.2" fill="#dce8ef"/>
 </g></svg>`;
+const PIN_DEST_SVG = `<svg viewBox="0 0 30 38"><path d="M15 0C6.7 0 0 6.7 0 15c0 10.5 15 23 15 23s15-12.5 15-23C30 6.7 23.3 0 15 0z"
+    fill="#c25562" stroke="#fffdf9" stroke-width="1.6"/><circle cx="15" cy="15" r="5.5" fill="#fffdf9"/></svg>`;
 
-let lmap = null, routeLine = null, routeGhost = null, planeMarker = null, routePts = [];
+let lmap = null, routeLine = null, routeGhost = null, planeMarker = null, routePts = [], trailLine = null;
 
 /* real great-circle interpolation (spherical slerp), the actual path a plane flies */
 function greatCirclePts(A, B, n) {
@@ -621,37 +758,46 @@ function greatCirclePts(A, B, n) {
 function buildMap(f) {
   if (!lmap) {
     lmap = L.map('lmap', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, dragging: !L.Browser.mobile, worldCopyJump: true });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 18
+    // richer terrain-style base with hillshading, then place names on top
+    L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap &copy; OpenTopoMap (CC-BY-SA)', subdomains: 'abc', maxZoom: 15, opacity: .85
     }).addTo(lmap);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 18, opacity: .9
+    }).addTo(lmap);
+    const corner = L.control({ position: 'topleft' });
+    corner.onAdd = () => { const d = L.DomUtil.create('div', 'maplabel-corner'); d.textContent = '✈ live route'; return d; };
+    corner.addTo(lmap);
   }
   if (routeLine) { routeLine.remove(); routeLine = null; }
   if (routeGhost) { routeGhost.remove(); routeGhost = null; }
+  if (trailLine) { trailLine.remove(); trailLine = null; }
   lmap.eachLayer(l => { if (l instanceof L.Marker) l.remove(); });
 
-  routePts = greatCirclePts(f.fr, f.to, 96);
+  routePts = greatCirclePts(f.fr, f.to, 120);
 
-  // a soft glow line beneath the dashed route, for a bit of polish
-  routeGhost = L.polyline(routePts, { color: '#5b7ea3', weight: 7, opacity: .12, lineCap: 'round' }).addTo(lmap);
-  routeLine = L.polyline([routePts[0]], { color: '#5b7ea3', weight: 2.6, dashArray: '1 9', dashOffset: '0', opacity: .9, lineCap: 'round' }).addTo(lmap);
+  // a soft double-glow beneath the dashed route for depth, plus the flown trail behind the plane
+  routeGhost = L.polyline(routePts, { color: '#5b7ea3', weight: 9, opacity: .1, lineCap: 'round' }).addTo(lmap);
+  L.polyline(routePts, { color: '#5b7ea3', weight: 4, opacity: .16, lineCap: 'round' }).addTo(lmap);
+  trailLine = L.polyline([routePts[0]], { color: '#8fae7e', weight: 3, opacity: .85, lineCap: 'round' }).addTo(lmap);
+  routeLine = L.polyline([routePts[0]], { color: '#3a5a7a', weight: 2.4, dashArray: '1 8', opacity: .9, lineCap: 'round' }).addTo(lmap);
 
-  L.marker([f.fr[2], f.fr[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-origin"><i></i></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) })
-    .addTo(lmap).bindTooltip(f.fr[0], { direction: 'bottom', offset: [0, 10], className: 'flabel' });
-  L.marker([f.to[2], f.to[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-dest">🚩</div>', iconSize: [24, 24], iconAnchor: [5, 22] }) })
-    .addTo(lmap).bindTooltip(f.to[0], { direction: 'bottom', offset: [0, 6], className: 'flabel' });
+  L.marker([f.fr[2], f.fr[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-origin"><i></i></div>', iconSize: [18, 18], iconAnchor: [9, 9] }) })
+    .addTo(lmap).bindTooltip(`<b>${f.fr[0]}</b><small>${f.fr[1]}</small>`, { direction: 'top', offset: [0, -6], className: 'flabel' });
+  L.marker([f.to[2], f.to[3]], { icon: L.divIcon({ className: '', html: `<div class="pin-dest-wrap">${PIN_DEST_SVG}</div>`, iconSize: [30, 38], iconAnchor: [15, 37] }) })
+    .addTo(lmap).bindTooltip(`<b>${f.to[0]}</b><small>${f.to[1]}</small>`, { direction: 'top', offset: [0, -34], className: 'flabel' });
 
   planeMarker = L.marker(routePts[0], {
-    icon: L.divIcon({ className: '', html: `<div class="planewrap waiting">${PLANE_SVG}</div>`, iconSize: [46, 46], iconAnchor: [23, 23] }),
+    icon: L.divIcon({ className: '', html: `<div class="planewrap waiting">${PLANE_SVG}</div>`, iconSize: [52, 52], iconAnchor: [26, 26] }),
     zIndexOffset: 1000
   }).addTo(lmap);
 
   // zoom to fit the whole route with breathing room, but never so close it
   // clips the pins on very short hops, and never so far it looks like a dot
   const bounds = L.latLngBounds(routePts);
-  lmap.once('load', () => {});
   requestAnimationFrame(() => {
     lmap.invalidateSize();
-    lmap.fitBounds(bounds.pad(0.28));
+    lmap.fitBounds(bounds.pad(0.3));
     const maxSensible = bounds.getEast() - bounds.getWest() > 40 || bounds.getNorth() - bounds.getSouth() > 40 ? 4 : 9;
     if (lmap.getZoom() > maxSensible) lmap.setZoom(maxSensible);
     if (lmap.getZoom() < 2) lmap.setZoom(2);
