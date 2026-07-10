@@ -97,16 +97,27 @@ body.night .pass{background:#2e3345;border-color:rgba(255,255,255,.14)}
 .pass .code{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:800;letter-spacing:.02em}
 .pass .city{font-size:.76rem;color:var(--soft);margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pass .mid{flex:1;text-align:center;color:var(--faint);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}
-#lmapbox{height:300px;position:relative;z-index:1}
-#lmapbox .leaflet-container{height:100%;width:100%;background:#dce8ef;font-family:var(--sans)}
-body.night #lmapbox .leaflet-tile{filter:brightness(.62) contrast(.92) saturate(.7)}
-.leaflet-control-attribution{font-size:9px !important;opacity:.7}
+#lmapbox{height:340px;position:relative;z-index:1;border-bottom:1px solid var(--line)}
+#lmapbox .leaflet-container{height:100%;width:100%;background:#dce8ef;font-family:var(--sans);outline:none}
+body.night #lmapbox .leaflet-container{background:#232838}
+#lmapbox .leaflet-tile-pane{filter:saturate(1.08)}
+body.night #lmapbox .leaflet-tile-pane{filter:brightness(.66) contrast(.94) saturate(.65) hue-rotate(-4deg)}
+.leaflet-control-attribution{font-size:8.5px !important;opacity:.55;background:rgba(255,253,249,.75) !important}
+body.night .leaflet-control-attribution{background:rgba(46,51,69,.75) !important;color:#a8a49b}
+.leaflet-control-attribution a{color:inherit !important}
+/* soft vignette so the map fades into the card rather than cutting off hard */
+#lmapbox::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
+  box-shadow:inset 0 0 46px 6px rgba(58,54,47,.1)}
+body.night #lmapbox::after{box-shadow:inset 0 0 46px 6px rgba(0,0,0,.35)}
 /* map markers */
 .pin-origin{width:16px;height:16px;position:relative}
 .pin-origin i{position:absolute;inset:3px;border-radius:50%;background:#5b7ea3;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.3)}
 .pin-origin::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(91,126,163,.55);animation:pinpulse 1.8s ease-out infinite}
 @keyframes pinpulse{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.5);opacity:0}}
 .pin-dest{font-size:22px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));transform:translateY(-4px)}
+.leaflet-tooltip.flabel{background:rgba(58,54,47,.88);color:#fffdf9;border:none;border-radius:7px;
+  font-weight:700;font-size:.72rem;letter-spacing:.06em;padding:3px 8px;box-shadow:0 3px 10px rgba(0,0,0,.2)}
+.leaflet-tooltip.flabel::before{border-top-color:rgba(58,54,47,.88) !important;border-bottom-color:rgba(58,54,47,.88) !important}
 .planewrap{width:46px;height:46px;display:flex;align-items:center;justify-content:center;
   filter:drop-shadow(0 3px 5px rgba(0,0,0,.3))}
 .planewrap svg{width:40px;height:40px;transition:transform 1s linear}
@@ -409,60 +420,93 @@ const PLANE_SVG = `<svg viewBox="0 0 48 48"><g>
   <ellipse cx="24" cy="10.5" rx="1.7" ry="3.2" fill="#dce8ef"/>
 </g></svg>`;
 
-let lmap = null, routeLine = null, planeMarker = null, routePts = [];
+let lmap = null, routeLine = null, routeGhost = null, planeMarker = null, routePts = [];
 
-function bezPts(A, B) {
-  // a gently bowed route between the two airports
-  const p0 = [A[2], A[3]], p1 = [B[2], B[3]];
-  const mx2 = (p0[0] + p1[0]) / 2, my2 = (p0[1] + p1[1]) / 2;
-  const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
-  const dist = Math.hypot(dx, dy) || .1;
-  const c = [mx2 + (-dy / dist) * dist * .18, my2 + (dx / dist) * dist * .18];
+/* real great-circle interpolation (spherical slerp), the actual path a plane flies */
+function greatCirclePts(A, B, n) {
+  const r = Math.PI / 180;
+  const lat1 = A[2] * r, lon1 = A[3] * r, lat2 = B[2] * r, lon2 = B[3] * r;
+  const d = 2 * Math.asin(Math.sqrt(
+    Math.sin((lat2 - lat1) / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin((lon2 - lon1) / 2) ** 2
+  ));
   const pts = [];
-  for (let i = 0; i <= 64; i++) {
-    const t = i / 64, u = 1 - t;
-    pts.push([u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0],
-              u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1]]);
+  if (d < 1e-9) { pts.push([A[2], A[3]]); return pts; }
+  // unwrap longitude so the route never wraps the wrong way round the globe
+  let lon2u = lon2;
+  if (lon2u - lon1 > Math.PI) lon2u -= 2 * Math.PI;
+  if (lon2u - lon1 < -Math.PI) lon2u += 2 * Math.PI;
+  for (let i = 0; i <= n; i++) {
+    const f = i / n;
+    const a = Math.sin((1 - f) * d) / Math.sin(d), b = Math.sin(f * d) / Math.sin(d);
+    const x = a * Math.cos(lat1) * Math.cos(lon1) + b * Math.cos(lat2) * Math.cos(lon2u);
+    const y = a * Math.cos(lat1) * Math.sin(lon1) + b * Math.cos(lat2) * Math.sin(lon2u);
+    const z = a * Math.sin(lat1) + b * Math.sin(lat2);
+    const lat = Math.atan2(z, Math.sqrt(x * x + y * y));
+    const lon = Math.atan2(y, x);
+    pts.push([lat / r, lon / r]);
   }
   return pts;
 }
 
 function buildMap(f) {
   if (!lmap) {
-    lmap = L.map('lmap', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, dragging: !L.Browser.mobile });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OSM &copy; CARTO', subdomains: 'abcd', maxZoom: 12
-    }).addTo(lmap);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
-      subdomains: 'abcd', maxZoom: 12, opacity: .85
+    lmap = L.map('lmap', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, dragging: !L.Browser.mobile, worldCopyJump: true });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 18
     }).addTo(lmap);
   }
   if (routeLine) { routeLine.remove(); routeLine = null; }
+  if (routeGhost) { routeGhost.remove(); routeGhost = null; }
   lmap.eachLayer(l => { if (l instanceof L.Marker) l.remove(); });
 
-  routePts = bezPts(f.fr, f.to);
-  routeLine = L.polyline(routePts, { color: '#5b7ea3', weight: 3, dashArray: '7 9', opacity: .85 }).addTo(lmap);
+  routePts = greatCirclePts(f.fr, f.to, 96);
+
+  // a soft glow line beneath the dashed route, for a bit of polish
+  routeGhost = L.polyline(routePts, { color: '#5b7ea3', weight: 7, opacity: .12, lineCap: 'round' }).addTo(lmap);
+  routeLine = L.polyline([routePts[0]], { color: '#5b7ea3', weight: 2.6, dashArray: '1 9', dashOffset: '0', opacity: .9, lineCap: 'round' }).addTo(lmap);
 
   L.marker([f.fr[2], f.fr[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-origin"><i></i></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) })
-    .addTo(lmap).bindTooltip(f.fr[0], { direction: 'bottom', offset: [0, 10] });
+    .addTo(lmap).bindTooltip(f.fr[0], { direction: 'bottom', offset: [0, 10], className: 'flabel' });
   L.marker([f.to[2], f.to[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-dest">🚩</div>', iconSize: [24, 24], iconAnchor: [5, 22] }) })
-    .addTo(lmap).bindTooltip(f.to[0], { direction: 'bottom', offset: [0, 6] });
+    .addTo(lmap).bindTooltip(f.to[0], { direction: 'bottom', offset: [0, 6], className: 'flabel' });
 
   planeMarker = L.marker(routePts[0], {
     icon: L.divIcon({ className: '', html: `<div class="planewrap waiting">${PLANE_SVG}</div>`, iconSize: [46, 46], iconAnchor: [23, 23] }),
     zIndexOffset: 1000
   }).addTo(lmap);
 
-  lmap.fitBounds(routeLine.getBounds(), { padding: [46, 46] });
-  positionPlane(true);
+  // zoom to fit the whole route with breathing room, but never so close it
+  // clips the pins on very short hops, and never so far it looks like a dot
+  const bounds = L.latLngBounds(routePts);
+  lmap.once('load', () => {});
+  requestAnimationFrame(() => {
+    lmap.invalidateSize();
+    lmap.fitBounds(bounds.pad(0.28));
+    const maxSensible = bounds.getEast() - bounds.getWest() > 40 || bounds.getNorth() - bounds.getSouth() > 40 ? 4 : 9;
+    if (lmap.getZoom() > maxSensible) lmap.setZoom(maxSensible);
+    if (lmap.getZoom() < 2) lmap.setZoom(2);
+    animateRouteDrawIn();
+    positionPlane();
+  });
 }
 
-function positionPlane(force) {
-  if (!planeMarker || !routePts.length) return;
+/* the dashed route draws itself in like a route being plotted */
+function animateRouteDrawIn() {
+  let i = 1;
+  const total = routePts.length;
+  (function step() {
+    i = Math.min(i + Math.ceil(total / 40), total);
+    routeLine.setLatLngs(routePts.slice(0, i));
+    if (i < total) requestAnimationFrame(step);
+  })();
+}
+
+function positionPlane() {
+  if (!planeMarker || !routePts.length || !lmap) return;
   const t = Math.max(0, Math.min(1, progress));
-  const idx = Math.min(Math.round(t * 64), 64);
+  const idx = Math.min(Math.round(t * (routePts.length - 1)), routePts.length - 1);
   planeMarker.setLatLng(routePts[idx]);
-  const a = routePts[Math.max(idx - 1, 0)], b = routePts[Math.min(idx + 1, 64)];
+  const a = routePts[Math.max(idx - 1, 0)], b = routePts[Math.min(idx + 1, routePts.length - 1)];
   const pA = lmap.latLngToLayerPoint(a), pB = lmap.latLngToLayerPoint(b);
   const deg = Math.atan2(pB.y - pA.y, pB.x - pA.x) * 180 / Math.PI + 90;
   const el = planeMarker.getElement();
