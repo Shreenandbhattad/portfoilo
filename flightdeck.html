@@ -6,47 +6,79 @@
 <title>flight deck · Shreenand Bhattad</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛫</text></svg>">
 <link rel="stylesheet" href="style.css">
 <style>
-main{max-width:760px}
-/* ---- fill in your boarding pass ---- */
-.bpass{border:2px solid var(--line);border-radius:18px;background:#fffdf9;display:grid;grid-template-columns:1fr 205px;
-  overflow:hidden;box-shadow:0 10px 30px rgba(90,100,80,.08);margin-bottom:16px;position:relative}
-.bmain{padding:20px 24px 18px}
-.bstub{border-left:2px dashed var(--line);padding:18px 18px 14px;display:flex;flex-direction:column;gap:9px;background:#fbf6ea;position:relative}
+main{max-width:780px}
+
+/* ================= boarding pass form ================= */
+.bpass{border-radius:20px;background:#fffdf9;display:grid;grid-template-columns:1fr 210px;
+  overflow:hidden;box-shadow:0 16px 44px rgba(90,100,80,.14);margin-bottom:16px;position:relative;
+  border:1px solid var(--line)}
+.bband{grid-column:1/-1;background:linear-gradient(100deg,#5b7ea3,#7495b5);color:#fff;
+  display:flex;justify-content:space-between;align-items:center;padding:13px 22px;gap:14px}
+.bband .t{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;font-weight:700;opacity:.95}
+.bband .t span{opacity:.6;font-weight:400;margin-left:8px;letter-spacing:.1em}
+.bband input{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:8px;
+  color:#fff;font-family:var(--sans);font-weight:700;font-size:.9rem;text-transform:uppercase;
+  letter-spacing:.08em;padding:6px 10px;width:110px;text-align:center;outline:none}
+.bband input::placeholder{color:rgba(255,255,255,.55);font-weight:500}
+.bmain{padding:22px 24px 18px}
+.bstub{border-left:2px dashed var(--line);padding:16px 18px 14px;display:flex;flex-direction:column;gap:8px;background:#fbf6ea;position:relative}
 .bstub::before,.bstub::after{content:'';position:absolute;left:-13px;width:24px;height:24px;border-radius:50%;
-  background:var(--paper);border:2px solid var(--line)}
-.bstub::before{top:-14px}
-.bstub::after{bottom:-14px}
-.bhead{display:flex;justify-content:space-between;align-items:center;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
-.bpass input{font-family:var(--sans);color:var(--ink);background:none;border:none;outline:none;
-  border-bottom:2px solid var(--line);transition:border-color .3s;border-radius:0}
-.bpass input:focus{border-color:var(--blue)}
-.bpass input.ok{border-color:#8fae7e}
-#fFlight{width:110px;text-align:right;font-weight:700;font-size:.95rem;text-transform:uppercase;letter-spacing:.06em}
-.broute{display:flex;align-items:flex-end;gap:16px;margin:22px 0 4px}
-.broute input{flex:1;min-width:0;font-size:clamp(1.2rem,4vw,1.6rem);font-weight:700;text-transform:uppercase;text-align:center;letter-spacing:.04em}
-.broute .plane-ic{color:var(--blue);font-size:1.3rem;padding-bottom:6px}
-.blabels{display:flex;justify-content:space-between;font-size:.68rem;color:var(--soft);margin-bottom:16px;padding:4px 4px 0;min-height:1em}
-.blabels span{max-width:46%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#fNote{width:100%;font-weight:300;font-size:.9rem;border-bottom-style:dashed}
-.bstub label{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:2px}
-.bstub input{width:100%;font-weight:600;font-size:.88rem;padding-bottom:2px;color-scheme:light}
-body.night .bstub input{color-scheme:dark}
-.barcode{margin-top:10px;height:32px;border-radius:2px;opacity:.75;
+  background:var(--paper);border:1px solid var(--line)}
+.bstub::before{top:-13px}
+.bstub::after{bottom:-13px}
+.broute{display:flex;align-items:flex-start;gap:10px}
+.portbox{flex:1;min-width:0;position:relative;text-align:center}
+.portbox .codein{width:100%;font-family:var(--sans);font-weight:800;font-size:clamp(1.5rem,5vw,2.1rem);
+  letter-spacing:.05em;text-transform:uppercase;text-align:center;color:var(--ink);
+  background:#faf7f0;border:2px solid var(--line);border-radius:14px;padding:10px 6px;outline:none;transition:border-color .3s,background .3s}
+.portbox .codein:focus{border-color:var(--blue);background:#fff}
+.portbox .codein.ok{border-color:#8fae7e}
+.portbox .cityname{font-size:.74rem;color:var(--soft);margin-top:7px;min-height:1.1em;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.swapbtn{margin-top:14px;width:36px;height:36px;flex-shrink:0;border-radius:50%;border:2px solid var(--line);
+  background:#fffdf9;color:var(--blue);font-size:15px;cursor:pointer;transition:transform .4s ease,border-color .3s}
+.swapbtn:hover{transform:rotate(180deg);border-color:var(--blue-light)}
+.sugg{position:absolute;top:calc(100% - 26px);left:0;right:0;background:#fff;border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 14px 34px rgba(60,60,50,.16);z-index:30;overflow:hidden;text-align:left;display:none}
+.sugg.open{display:block}
+.sugg div{padding:9px 13px;font-size:.82rem;cursor:pointer;display:flex;gap:9px;align-items:baseline}
+.sugg div:hover,.sugg div.hi{background:#f2f6f9}
+.sugg b{font-weight:700;letter-spacing:.04em;min-width:38px}
+.sugg small{color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#fNote{width:100%;margin-top:16px;font-family:var(--sans);font-weight:300;font-size:.9rem;color:var(--ink);
+  background:none;border:none;border-bottom:2px dashed var(--line);outline:none;padding:6px 2px;transition:border-color .3s}
+#fNote:focus{border-color:var(--blue)}
+.bstub label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:2px}
+.bstub input{width:100%;font-family:var(--sans);font-weight:600;font-size:.88rem;color:var(--ink);
+  background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 8px;outline:none;color-scheme:light;transition:border-color .3s}
+.bstub input:focus{border-color:var(--blue-light)}
+.stubrow{display:flex;gap:8px}
+.stubrow>div{flex:1;min-width:0}
+.barcode{margin-top:auto;height:30px;border-radius:2px;opacity:.75;
   background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px)}
-@media(max-width:560px){
+@media(max-width:600px){
   .bpass{grid-template-columns:1fr}
   .bstub{border-left:none;border-top:2px dashed var(--line)}
-  .bstub::before{top:-14px;left:-14px}
-  .bstub::after{top:-14px;left:auto;right:-14px;bottom:auto}
+  .bstub::before{top:-13px;left:-13px}
+  .bstub::after{top:-13px;left:auto;right:-13px;bottom:auto}
 }
 body.night .bpass{background:#2e3345;border-color:rgba(255,255,255,.16)}
+body.night .bmain .codein{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0}
+body.night .portbox .codein:focus{background:#232838}
 body.night .bstub{background:#293043;border-color:rgba(255,255,255,.16)}
 body.night .bstub::before,body.night .bstub::after{background:#232838;border-color:rgba(255,255,255,.16)}
-body.night .bpass input{color:#e8e6e0;border-color:rgba(255,255,255,.2)}
+body.night .bstub input{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0;color-scheme:dark}
+body.night #fNote{color:#e8e6e0;border-color:rgba(255,255,255,.2)}
+body.night .sugg{background:#2e3345;border-color:rgba(255,255,255,.16)}
+body.night .sugg div:hover,body.night .sugg div.hi{background:#38405a}
+body.night .sugg small{color:#a8a49b}
+body.night .swapbtn{background:#2e3345;border-color:rgba(255,255,255,.18)}
 body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,transparent 2px 5px,#e8e6e0 5px 6px,transparent 6px 11px,#e8e6e0 11px 14px,transparent 14px 17px)}
 .sharerow{margin-bottom:34px;display:flex;align-items:center;gap:12px}
 .sharebtn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
@@ -56,17 +88,34 @@ body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,tra
 .shared{font-size:.85rem;color:var(--blue);opacity:0;transition:opacity .4s}
 .shared.show{opacity:1}
 
-/* ---- the live card ---- */
-.pass{border:1px solid var(--line);border-radius:18px;background:#fffdf9;overflow:hidden;position:relative;
-  box-shadow:0 14px 40px rgba(90,100,80,.1)}
+/* ================= live tracking card ================= */
+.pass{border:1px solid var(--line);border-radius:20px;background:#fffdf9;overflow:hidden;position:relative;
+  box-shadow:0 16px 44px rgba(90,100,80,.12)}
 body.night .pass{background:#2e3345;border-color:rgba(255,255,255,.14)}
-.pass .route{display:flex;justify-content:space-between;align-items:center;padding:24px 30px 12px}
-.pass .port{text-align:center;min-width:90px}
-.pass .code{font-size:clamp(1.8rem,5vw,2.5rem);font-weight:700;letter-spacing:.02em}
-.pass .city{font-size:.78rem;color:var(--soft);margin-top:2px}
-.pass .mid{flex:1;text-align:center;color:var(--faint);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase}
-#map{width:100%;height:230px;display:block}
-.statusline{text-align:center;padding:14px 20px 18px}
+.pass .route{display:flex;justify-content:space-between;align-items:center;padding:22px 30px 14px}
+.pass .port{text-align:center;min-width:88px}
+.pass .code{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:800;letter-spacing:.02em}
+.pass .city{font-size:.76rem;color:var(--soft);margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pass .mid{flex:1;text-align:center;color:var(--faint);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}
+#lmapbox{height:300px;position:relative;z-index:1}
+#lmapbox .leaflet-container{height:100%;width:100%;background:#dce8ef;font-family:var(--sans)}
+body.night #lmapbox .leaflet-tile{filter:brightness(.62) contrast(.92) saturate(.7)}
+.leaflet-control-attribution{font-size:9px !important;opacity:.7}
+/* map markers */
+.pin-origin{width:16px;height:16px;position:relative}
+.pin-origin i{position:absolute;inset:3px;border-radius:50%;background:#5b7ea3;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.3)}
+.pin-origin::after{content:'';position:absolute;inset:-7px;border-radius:50%;border:2px solid rgba(91,126,163,.55);animation:pinpulse 1.8s ease-out infinite}
+@keyframes pinpulse{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.5);opacity:0}}
+.pin-dest{font-size:22px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));transform:translateY(-4px)}
+.planewrap{width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.3))}
+.planewrap svg{width:40px;height:40px;transition:transform 1s linear}
+.planewrap.waiting svg{animation:planebob 2.2s ease-in-out infinite}
+@keyframes planebob{0%,100%{translate:0 0}50%{translate:0 -5px}}
+.progressbar{height:5px;background:var(--line);position:relative}
+.progressbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8fae7e,#5b7ea3);
+  border-radius:0 3px 3px 0;transition:width 1s linear}
+.statusline{text-align:center;padding:16px 20px 18px}
 .chip{display:inline-block;border-radius:999px;padding:7px 18px;font-size:.85rem;font-weight:500;
   background:#eef3ec;color:#5a7a52;border:1px solid #d5e3c6}
 .chip.air{background:#e9f0f6;color:#43678c;border-color:#c9d9e8}
@@ -81,9 +130,9 @@ body.night .chip{filter:brightness(.85) saturate(.9)}
 .pass .divider::before{left:-30px}
 .pass .divider::after{right:-30px}
 body.night .pass .divider::before,body.night .pass .divider::after{background:#232838;border-color:rgba(255,255,255,.14)}
-.pass .facts{display:flex;flex-wrap:wrap;gap:16px 30px;padding:18px 30px 22px}
-.pass .fact .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
-.pass .fact .v{font-size:.95rem;font-weight:500;margin-top:2px}
+.pass .facts{display:flex;flex-wrap:wrap;gap:16px 28px;padding:18px 30px 22px}
+.pass .fact .k{font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.pass .fact .v{font-size:.95rem;font-weight:600;margin-top:2px}
 .notecard{max-width:340px;margin:26px auto 0;background:#fffdf6;border:1px solid var(--line);border-radius:10px;
   padding:16px 18px;transform:rotate(-1.5deg);box-shadow:0 8px 24px rgba(90,100,80,.1);font-size:.9rem;position:relative}
 .notecard::before{content:'';position:absolute;top:-8px;left:50%;width:46px;height:14px;border-radius:2px;
@@ -117,25 +166,39 @@ body.shareview main{padding-top:56px}
   <p class="sub fade in" id="fdSub">share your flight status.</p>
 
   <div class="bpass fade in" id="bpass">
+    <div class="bband">
+      <span class="t">Boarding pass<span>economy · window, hopefully</span></span>
+      <input id="fFlight" placeholder="FLIGHT NO" maxlength="8">
+    </div>
     <div class="bmain">
-      <div class="bhead"><span>boarding pass</span><input id="fFlight" placeholder="IX 1234" maxlength="10"></div>
       <div class="broute">
-        <input id="fFrom" list="airports" placeholder="BLR" maxlength="40" autocomplete="off">
-        <span class="plane-ic">✈</span>
-        <input id="fTo" list="airports" placeholder="ISK" maxlength="40" autocomplete="off">
+        <div class="portbox">
+          <input class="codein" id="fFrom" placeholder="BLR" maxlength="30" autocomplete="off" spellcheck="false">
+          <div class="sugg" id="sgFrom"></div>
+          <div class="cityname" id="lblFrom">from</div>
+        </div>
+        <button class="swapbtn" id="swapBtn" title="swap">⇄</button>
+        <div class="portbox">
+          <input class="codein" id="fTo" placeholder="ISK" maxlength="30" autocomplete="off" spellcheck="false">
+          <div class="sugg" id="sgTo"></div>
+          <div class="cityname" id="lblTo">to</div>
+        </div>
       </div>
-      <div class="blabels"><span id="lblFrom">from</span><span id="lblTo">to</span></div>
       <input id="fNote" placeholder="a note for them (optional)" maxlength="80">
     </div>
     <div class="bstub">
       <div><label>date</label><input id="fDate" type="date"></div>
-      <div><label>departs</label><input id="fDep" type="time"></div>
-      <div><label>lands</label><input id="fArr" type="time"></div>
-      <div><label>traveller</label><input id="fName" placeholder="optional" maxlength="30"></div>
+      <div class="stubrow">
+        <div><label>departs</label><input id="fDep" type="time"></div>
+        <div><label>lands</label><input id="fArr" type="time"></div>
+      </div>
+      <div class="stubrow">
+        <div><label>traveller</label><input id="fName" placeholder="you" maxlength="30"></div>
+        <div><label>seat</label><input id="fSeat" placeholder="12A" maxlength="4"></div>
+      </div>
       <div class="barcode"></div>
     </div>
   </div>
-  <datalist id="airports"></datalist>
   <div class="sharerow fade in">
     <button class="sharebtn" id="shareBtn">✈ copy share link</button>
     <span class="shared" id="sharedMsg">link copied ✈</span>
@@ -147,7 +210,8 @@ body.shareview main{padding-top:56px}
       <div class="mid" id="pFlight"></div>
       <div class="port"><div class="code" id="pTo"></div><div class="city" id="pToCity"></div></div>
     </div>
-    <canvas id="map"></canvas>
+    <div id="lmapbox"><div id="lmap" style="height:100%"></div></div>
+    <div class="progressbar"><i id="pbar" style="width:0%"></i></div>
     <div class="statusline">
       <span class="chip" id="chip">upcoming</span>
       <div class="eta" id="eta"></div>
@@ -159,6 +223,7 @@ body.shareview main{padding-top:56px}
       <div class="fact"><div class="k">departs</div><div class="v" id="pDep">–</div></div>
       <div class="fact"><div class="k">lands</div><div class="v" id="pArr">–</div></div>
       <div class="fact"><div class="k">distance</div><div class="v" id="pDist">–</div></div>
+      <div class="fact" id="pSeatWrap" style="display:none"><div class="k">seat</div><div class="v" id="pSeat"></div></div>
       <div class="fact" id="pWxWrap" style="display:none"><div class="k">weather there</div><div class="v" id="pWx"></div></div>
       <div class="fact" id="pWhoWrap" style="display:none"><div class="k">traveller</div><div class="v" id="pWho"></div></div>
     </div>
@@ -175,71 +240,122 @@ body.shareview main{padding-top:56px}
 
 <script src="site.js"></script>
 <script>
-/* ---------------- airports: code, city, lat, lon ---------------- */
-const AIRPORTS = [
-  ['BLR','Bengaluru',13.20,77.71],['DEL','New Delhi',28.56,77.10],['BOM','Mumbai',19.09,72.87],
-  ['MAA','Chennai',12.99,80.17],['CCU','Kolkata',22.65,88.45],['HYD','Hyderabad',17.24,78.43],
+const $ = id => document.getElementById(id);
+
+/* ================= airports: a good starter set, then the whole world ================= */
+let AIRPORTS = [
+  ['BLR','Bengaluru · Kempegowda Intl',13.20,77.71],['DEL','New Delhi · IGI',28.56,77.10],
+  ['BOM','Mumbai · CSMIA',19.09,72.87],['MAA','Chennai Intl',12.99,80.17],
+  ['CCU','Kolkata · NSCBI',22.65,88.45],['HYD','Hyderabad · RGIA',17.24,78.43],
   ['ISK','Nashik',20.12,73.91],['PNQ','Pune',18.58,73.92],['GOI','Goa · Dabolim',15.38,73.83],
   ['GOX','Goa · Mopa',15.74,73.86],['AMD','Ahmedabad',23.07,72.63],['COK','Kochi',10.15,76.40],
   ['TRV','Thiruvananthapuram',8.48,76.92],['CJB','Coimbatore',11.03,77.04],['JAI','Jaipur',26.82,75.81],
   ['LKO','Lucknow',26.76,80.88],['IXC','Chandigarh',30.67,76.79],['ATQ','Amritsar',31.71,74.80],
-  ['GAU','Guwahati',26.11,91.59],['IXB','Bagdogra',26.68,88.33],['PAT','Patna',25.59,85.09],
-  ['BBI','Bhubaneswar',20.24,85.82],['RPR','Raipur',21.18,81.74],['NAG','Nagpur',21.09,79.05],
-  ['IDR','Indore',22.72,75.80],['BHO','Bhopal',23.29,77.34],['STV','Surat',21.11,72.74],
-  ['BDQ','Vadodara',22.34,73.23],['VNS','Varanasi',25.45,82.86],['IXR','Ranchi',23.31,85.32],
-  ['SXR','Srinagar',33.99,74.77],['IXJ','Jammu',32.69,74.84],['DED','Dehradun',30.19,78.18],
-  ['IXL','Leh',34.14,77.55],['VTZ','Visakhapatnam',17.72,83.22],['VGA','Vijayawada',16.53,80.80],
-  ['TIR','Tirupati',13.63,79.54],['IXM','Madurai',9.83,78.09],['TRZ','Tiruchirappalli',10.77,78.71],
-  ['IXE','Mangaluru',12.96,74.89],['HBX','Hubballi',15.36,75.08],['KNU','Kanpur',26.40,80.41],
-  ['UDR','Udaipur',24.62,73.90],['JDH','Jodhpur',26.25,73.05],['RAJ','Rajkot',22.31,70.78],
-  ['DXB','Dubai',25.25,55.36],['AUH','Abu Dhabi',24.44,54.65],['DOH','Doha',25.27,51.61],
-  ['SIN','Singapore',1.36,103.99],['KUL','Kuala Lumpur',2.75,101.71],['BKK','Bangkok',13.69,100.75],
-  ['HKG','Hong Kong',22.31,113.91],['NRT','Tokyo · Narita',35.77,140.39],['ICN','Seoul',37.46,126.44],
-  ['LHR','London · Heathrow',51.47,-0.45],['CDG','Paris',49.01,2.55],['FRA','Frankfurt',50.04,8.56],
-  ['AMS','Amsterdam',52.31,4.76],['ZRH','Zurich',47.46,8.55],['IST','Istanbul',41.26,28.74],
-  ['JFK','New York · JFK',40.64,-73.78],['EWR','Newark',40.69,-74.17],['SFO','San Francisco',37.62,-122.38],
-  ['LAX','Los Angeles',33.94,-118.41],['ORD','Chicago',41.97,-87.91],['YYZ','Toronto',43.68,-79.61],
-  ['SYD','Sydney',-33.95,151.18],['MEL','Melbourne',-37.67,144.84],['CMB','Colombo',7.17,79.88],
-  ['KTM','Kathmandu',27.70,85.36],['DAC','Dhaka',23.84,90.40],['MLE','Malé',4.19,73.53]
+  ['GAU','Guwahati',26.11,91.59],['PAT','Patna',25.59,85.09],['BBI','Bhubaneswar',20.24,85.82],
+  ['NAG','Nagpur',21.09,79.05],['IDR','Indore',22.72,75.80],['BHO','Bhopal',23.29,77.34],
+  ['VNS','Varanasi',25.45,82.86],['SXR','Srinagar',33.99,74.77],['DED','Dehradun',30.19,78.18],
+  ['IXL','Leh',34.14,77.55],['UDR','Udaipur',24.62,73.90],
+  ['DXB','Dubai Intl',25.25,55.36],['AUH','Abu Dhabi Intl',24.44,54.65],['DOH','Doha · Hamad',25.27,51.61],
+  ['SIN','Singapore · Changi',1.36,103.99],['KUL','Kuala Lumpur',2.75,101.71],['BKK','Bangkok',13.69,100.75],
+  ['HKG','Hong Kong',22.31,113.91],['LHR','London · Heathrow',51.47,-0.45],['CDG','Paris · CDG',49.01,2.55],
+  ['FRA','Frankfurt',50.04,8.56],['IST','Istanbul',41.26,28.74],['JFK','New York · JFK',40.64,-73.78],
+  ['SFO','San Francisco',37.62,-122.38],['LAX','Los Angeles',33.94,-118.41],['SYD','Sydney',-33.95,151.18],
+  ['CMB','Colombo',7.17,79.88],['KTM','Kathmandu',27.70,85.36],['DAC','Dhaka',23.84,90.40],['MLE','Malé',4.19,73.53]
 ];
-const byCode = Object.fromEntries(AIRPORTS.map(a => [a[0], a]));
-document.getElementById('airports').innerHTML =
-  AIRPORTS.map(a => `<option value="${a[0]}">${a[0]} · ${a[1]}</option>`).join('');
+let byCode = Object.fromEntries(AIRPORTS.map(a => [a[0], a]));
 
-function findAirport(s) {
-  if (!s) return null;
-  s = s.trim().toUpperCase();
-  if (byCode[s]) return byCode[s];
-  const m = AIRPORTS.find(a => a[1].toUpperCase().startsWith(s) || a[1].toUpperCase().includes(s));
-  return m || null;
+// ...then quietly pull in every airport on earth (9,000+, cached by the browser)
+fetch('https://cdn.jsdelivr.net/gh/ip2location/ip2location-iata-icao@master/iata-icao.csv')
+  .then(r => r.text())
+  .then(csv => {
+    const rows = csv.split('\n').slice(1);
+    for (const line of rows) {
+      const c = line.match(/("([^"]*)"|[^,]+)/g);
+      if (!c || c.length < 7) continue;
+      const iata = c[2].replace(/"/g, '');
+      if (!iata || iata.length !== 3 || byCode[iata]) continue;
+      const name = c[4].replace(/"/g, '').replace(/ (International|Regional)? ?Airport$/i, '');
+      const lat = +c[5].replace(/"/g, ''), lon = +c[6].replace(/"/g, '');
+      if (!isFinite(lat) || !isFinite(lon)) continue;
+      const a = [iata, name, lat, lon];
+      AIRPORTS.push(a); byCode[iata] = a;
+    }
+  }).catch(() => {});
+
+/* ================= autocomplete ================= */
+let selFrom = null, selTo = null;
+
+function hookAutocomplete(inputId, suggId, labelId, assign) {
+  const inp = $(inputId), sg = $(suggId), lbl = $(labelId);
+  function choose(a) {
+    assign(a);
+    inp.value = a[0];
+    inp.classList.add('ok');
+    lbl.textContent = a[1];
+    sg.classList.remove('open');
+    refresh();
+  }
+  inp.addEventListener('input', () => {
+    assign(null); inp.classList.remove('ok');
+    lbl.textContent = inputId === 'fFrom' ? 'from' : 'to';
+    const q = inp.value.trim().toUpperCase();
+    if (q.length < 2) { sg.classList.remove('open'); refresh(); return; }
+    // exact code typed? take it instantly
+    if (q.length === 3 && byCode[q]) { choose(byCode[q]); return; }
+    const starts = [], within = [];
+    for (const a of AIRPORTS) {
+      if (a[0].startsWith(q)) starts.push(a);
+      else if (a[1].toUpperCase().includes(q)) within.push(a);
+      if (starts.length > 7) break;
+    }
+    const top = [...starts, ...within].slice(0, 7);
+    if (!top.length) { sg.classList.remove('open'); return; }
+    sg.innerHTML = top.map((a, i) => `<div data-i="${i}"><b>${a[0]}</b><small>${a[1]}</small></div>`).join('');
+    sg.classList.add('open');
+    [...sg.children].forEach((el, i) => el.addEventListener('mousedown', e => { e.preventDefault(); choose(top[i]); }));
+  });
+  inp.addEventListener('blur', () => setTimeout(() => sg.classList.remove('open'), 150));
+  inp.addEventListener('focus', () => { if (sg.children.length && !inp.classList.contains('ok')) sg.classList.add('open'); });
 }
+hookAutocomplete('fFrom', 'sgFrom', 'lblFrom', a => selFrom = a);
+hookAutocomplete('fTo', 'sgTo', 'lblTo', a => selTo = a);
 
-/* ---------------- form: prefilled so the preview appears instantly ---------------- */
-const $ = id => document.getElementById(id);
+$('swapBtn').addEventListener('click', () => {
+  [selFrom, selTo] = [selTo, selFrom];
+  const v = $('fFrom').value; $('fFrom').value = $('fTo').value; $('fTo').value = v;
+  $('lblFrom').textContent = selFrom ? selFrom[1] : 'from';
+  $('lblTo').textContent = selTo ? selTo[1] : 'to';
+  $('fFrom').classList.toggle('ok', !!selFrom);
+  $('fTo').classList.toggle('ok', !!selTo);
+  refresh();
+});
+
+/* ================= form ================= */
 (function prefill() {
   const now = new Date();
-  $('fDate').value = now.toISOString().slice(0, 10);
+  $('fDate').value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
   const dep = new Date(now.getTime() + 2 * 3600e3);
   $('fDep').value = String(dep.getHours()).padStart(2, '0') + ':00';
   const arr = new Date(dep.getTime() + 1.75 * 3600e3);
   $('fArr').value = String(arr.getHours()).padStart(2, '0') + ':' + (arr.getMinutes() >= 30 ? '30' : '00');
 })();
 
-let F = null;   // {fl,nm,fr,to,dt,dp,ar,nt} with fr/to as IATA codes
+let F = null;   // {fl,nm,st,fr:[code,name,lat,lon],to:[...],dt,dp,ar,nt}
 
 function readForm() {
-  const A = findAirport($('fFrom').value), B = findAirport($('fTo').value);
-  $('fFrom').classList.toggle('ok', !!A);
-  $('fTo').classList.toggle('ok', !!B);
-  $('lblFrom').textContent = A ? A[1] : 'from';
-  $('lblTo').textContent = B ? B[1] : 'to';
-  if (!A || !B || A === B || !$('fDate').value || !$('fDep').value) return null;
+  if (!selFrom || !selTo || selFrom[0] === selTo[0] || !$('fDate').value || !$('fDep').value) return null;
   return {
-    fl: $('fFlight').value.trim(), nm: $('fName').value.trim(),
-    fr: A[0], to: B[0], dt: $('fDate').value, dp: $('fDep').value,
+    fl: $('fFlight').value.trim(), nm: $('fName').value.trim(), st: $('fSeat').value.trim(),
+    fr: selFrom, to: selTo, dt: $('fDate').value, dp: $('fDep').value,
     ar: $('fArr').value, nt: $('fNote').value.trim()
   };
 }
+function refresh() {
+  const f = readForm();
+  if (f) { F = f; showPass(f); pingRadar(); }
+}
+['fFlight', 'fName', 'fSeat', 'fDate', 'fDep', 'fArr', 'fNote'].forEach(id =>
+  $(id).addEventListener('input', refresh));
 
 function times(f) {
   const dep = new Date(f.dt + 'T' + f.dp);
@@ -254,7 +370,7 @@ function haversine(a, b) {
   return Math.round(2 * R * Math.asin(Math.sqrt(s)));
 }
 
-/* ---------------- status ---------------- */
+/* ================= status ================= */
 let progress = 0;
 function statusOf(f) {
   const { dep, arr } = times(f);
@@ -264,7 +380,7 @@ function statusOf(f) {
     const d = Math.floor(ms / 864e5); ms -= d * 864e5;
     const h = Math.floor(ms / 36e5); ms -= h * 36e5;
     const mi = Math.floor(ms / 6e4);
-    return { key: 'up', label: 'waiting at ' + f.fr + ' 🧳', eta: 'departs in ' + (d ? d + 'd ' : '') + (h ? h + 'h ' : '') + mi + 'm', pct: 0 };
+    return { key: 'up', label: 'waiting at ' + f.fr[0] + ' 🧳', eta: 'departs in ' + (d ? d + 'd ' : '') + (h ? h + 'h ' : '') + mi + 'm', pct: 0 };
   }
   if (now < dep) return { key: 'soon', label: 'boarding 🛄', eta: 'departs at ' + f.dp, pct: 0 };
   if (now < arr) {
@@ -280,33 +396,106 @@ function tickStatus() {
   chip.textContent = s.label;
   chip.className = 'chip ' + (s.key === 'air' ? 'air' : s.key === 'soon' ? 'soon' : s.key === 'landed' ? 'landed' : '');
   $('eta').textContent = s.eta;
+  $('pbar').style.width = (s.pct * 100) + '%';
   progress = s.pct;
+  positionPlane();
 }
 setInterval(tickStatus, 1000);
 
-/* ---------------- the card ---------------- */
+/* ================= the map (Leaflet + soft Carto tiles) ================= */
+const PLANE_SVG = `<svg viewBox="0 0 48 48"><g>
+  <path d="M24 4 C26 4 27.5 6 27.5 9 L27.5 18 L44 27 L44 31 L27.5 26.5 L27.5 37 L33 41.5 L33 44.5 L24 42 L15 44.5 L15 41.5 L20.5 37 L20.5 26.5 L4 31 L4 27 L20.5 18 L20.5 9 C20.5 6 22 4 24 4 Z"
+    fill="#5b7ea3" stroke="#fffdf9" stroke-width="1.6"/>
+  <ellipse cx="24" cy="10.5" rx="1.7" ry="3.2" fill="#dce8ef"/>
+</g></svg>`;
+
+let lmap = null, routeLine = null, planeMarker = null, routePts = [];
+
+function bezPts(A, B) {
+  // a gently bowed route between the two airports
+  const p0 = [A[2], A[3]], p1 = [B[2], B[3]];
+  const mx2 = (p0[0] + p1[0]) / 2, my2 = (p0[1] + p1[1]) / 2;
+  const dx = p1[0] - p0[0], dy = p1[1] - p0[1];
+  const dist = Math.hypot(dx, dy) || .1;
+  const c = [mx2 + (-dy / dist) * dist * .18, my2 + (dx / dist) * dist * .18];
+  const pts = [];
+  for (let i = 0; i <= 64; i++) {
+    const t = i / 64, u = 1 - t;
+    pts.push([u * u * p0[0] + 2 * u * t * c[0] + t * t * p1[0],
+              u * u * p0[1] + 2 * u * t * c[1] + t * t * p1[1]]);
+  }
+  return pts;
+}
+
+function buildMap(f) {
+  if (!lmap) {
+    lmap = L.map('lmap', { zoomControl: false, attributionControl: true, scrollWheelZoom: false, dragging: !L.Browser.mobile });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OSM &copy; CARTO', subdomains: 'abcd', maxZoom: 12
+    }).addTo(lmap);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+      subdomains: 'abcd', maxZoom: 12, opacity: .85
+    }).addTo(lmap);
+  }
+  if (routeLine) { routeLine.remove(); routeLine = null; }
+  lmap.eachLayer(l => { if (l instanceof L.Marker) l.remove(); });
+
+  routePts = bezPts(f.fr, f.to);
+  routeLine = L.polyline(routePts, { color: '#5b7ea3', weight: 3, dashArray: '7 9', opacity: .85 }).addTo(lmap);
+
+  L.marker([f.fr[2], f.fr[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-origin"><i></i></div>', iconSize: [16, 16], iconAnchor: [8, 8] }) })
+    .addTo(lmap).bindTooltip(f.fr[0], { direction: 'bottom', offset: [0, 10] });
+  L.marker([f.to[2], f.to[3]], { icon: L.divIcon({ className: '', html: '<div class="pin-dest">🚩</div>', iconSize: [24, 24], iconAnchor: [5, 22] }) })
+    .addTo(lmap).bindTooltip(f.to[0], { direction: 'bottom', offset: [0, 6] });
+
+  planeMarker = L.marker(routePts[0], {
+    icon: L.divIcon({ className: '', html: `<div class="planewrap waiting">${PLANE_SVG}</div>`, iconSize: [46, 46], iconAnchor: [23, 23] }),
+    zIndexOffset: 1000
+  }).addTo(lmap);
+
+  lmap.fitBounds(routeLine.getBounds(), { padding: [46, 46] });
+  positionPlane(true);
+}
+
+function positionPlane(force) {
+  if (!planeMarker || !routePts.length) return;
+  const t = Math.max(0, Math.min(1, progress));
+  const idx = Math.min(Math.round(t * 64), 64);
+  planeMarker.setLatLng(routePts[idx]);
+  const a = routePts[Math.max(idx - 1, 0)], b = routePts[Math.min(idx + 1, 64)];
+  const pA = lmap.latLngToLayerPoint(a), pB = lmap.latLngToLayerPoint(b);
+  const deg = Math.atan2(pB.y - pA.y, pB.x - pA.x) * 180 / Math.PI + 90;
+  const el = planeMarker.getElement();
+  if (el) {
+    const wrap = el.firstChild;
+    wrap.classList.toggle('waiting', t <= 0 || t >= 1);
+    wrap.firstElementChild.style.transform = 'rotate(' + deg + 'deg)';
+  }
+}
+
+/* ================= the card ================= */
 function showPass(f) {
   $('pass').style.display = 'block';
-  const A = byCode[f.fr], B = byCode[f.to];
-  $('pFrom').textContent = A[0]; $('pFromCity').textContent = A[1];
-  $('pTo').textContent = B[0]; $('pToCity').textContent = B[1];
+  $('pFrom').textContent = f.fr[0]; $('pFromCity').textContent = f.fr[1];
+  $('pTo').textContent = f.to[0]; $('pToCity').textContent = f.to[1];
   $('pFlight').textContent = f.fl || 'direct';
   $('pDate').textContent = new Date(f.dt + 'T00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   $('pDep').textContent = f.dp; $('pArr').textContent = f.ar || '–';
-  $('pDist').textContent = haversine(A, B).toLocaleString() + ' km';
-  $('pWhoWrap').style.display = f.nm ? 'block' : 'none';
-  $('pWho').textContent = f.nm;
+  const km = haversine(f.fr, f.to);
+  $('pDist').textContent = km.toLocaleString() + ' km';
+  $('pSeatWrap').style.display = f.st ? 'block' : 'none'; $('pSeat').textContent = f.st.toUpperCase();
+  $('pWhoWrap').style.display = f.nm ? 'block' : 'none'; $('pWho').textContent = f.nm;
   const nc = $('noteCard');
   if (f.nt) {
     nc.style.display = 'block';
     $('noteText').textContent = '“' + f.nt + '”';
     $('noteFrom').textContent = f.nm ? 'from ' + f.nm + ' ✈' : 'safe travels ✈';
   } else nc.style.display = 'none';
+  buildMap(f);
   tickStatus();
-  fetchWeather(B);
+  fetchWeather(f.to);
 }
 
-/* destination weather, so they know what to pack */
 let wxFor = '';
 async function fetchWeather(B) {
   if (wxFor === B[0]) return;
@@ -321,113 +510,7 @@ async function fetchWeather(B) {
   } catch {}
 }
 
-/* ---------------- the map ---------------- */
-const map = $('map'), mx = map.getContext('2d');
-let MW, MH;
-function fitMap() {
-  const DPR = Math.min(devicePixelRatio || 1, 2);
-  const r = map.getBoundingClientRect();
-  MW = r.width || 600; MH = r.height || 230;
-  map.width = MW * DPR; map.height = MH * DPR;
-  mx.setTransform(DPR, 0, 0, DPR, 0, 0);
-}
-addEventListener('resize', fitMap);
-fitMap();
-
-const puffsM = Array.from({ length: 5 }, () => ({ x: Math.random(), y: Math.random() * .8 + .1, s: .5 + Math.random() * .9, v: .0002 + Math.random() * .00045 }));
-
-function project(A, B) {
-  // fit both airports into the canvas with generous padding
-  const pad = 66;
-  const lons = [A[3], B[3]], lats = [A[2], B[2]];
-  const w = Math.max(Math.abs(lons[1] - lons[0]), .8), h = Math.max(Math.abs(lats[1] - lats[0]), .8);
-  const sc = Math.min((MW - pad * 2) / w, (MH - pad * 2) / h);
-  const cxg = (lons[0] + lons[1]) / 2, cyg = (lats[0] + lats[1]) / 2;
-  return pt => [MW / 2 + (pt[3] - cxg) * sc, MH / 2 - (pt[2] - cyg) * sc];
-}
-
-(function drawMap(now) {
-  if (F) {
-    mx.clearRect(0, 0, MW, MH);
-    const A = byCode[F.fr], B = byCode[F.to];
-    const P = project(A, B);
-    const [x0, y0] = P(A), [x1, y1] = P(B);
-
-    // map wash + dotted graticule
-    const wash = mx.createLinearGradient(0, 0, 0, MH);
-    wash.addColorStop(0, 'rgba(169,191,212,.14)'); wash.addColorStop(1, 'rgba(143,174,126,.12)');
-    mx.fillStyle = wash; mx.fillRect(0, 0, MW, MH);
-    mx.fillStyle = 'rgba(139,133,122,.18)';
-    for (let gx = 14; gx < MW; gx += 26) for (let gy = 12; gy < MH; gy += 26) {
-      mx.beginPath(); mx.arc(gx, gy, 1, 0, 7); mx.fill();
-    }
-    // drifting clouds
-    puffsM.forEach(p => {
-      p.x += p.v; if (p.x > 1.12) p.x = -.12;
-      const px = p.x * MW, py = p.y * MH, r = 12 * p.s;
-      mx.fillStyle = 'rgba(255,255,255,.55)';
-      mx.beginPath(); mx.arc(px, py, r, 0, 7); mx.arc(px + r * .8, py + r * .3, r * .7, 0, 7); mx.arc(px - r * .8, py + r * .3, r * .6, 0, 7); mx.fill();
-    });
-
-    // the route, bowed like a great circle
-    const bow = Math.min(60, Math.hypot(x1 - x0, y1 - y0) * .25);
-    const nxv = -(y1 - y0), nyv = (x1 - x0);
-    const nl = Math.hypot(nxv, nyv) || 1;
-    const cxq = (x0 + x1) / 2 + nxv / nl * bow, cyq = (y0 + y1) / 2 + nyv / nl * bow;
-    mx.strokeStyle = 'rgba(91,126,163,.65)'; mx.lineWidth = 2; mx.setLineDash([7, 8]);
-    mx.beginPath(); mx.moveTo(x0, y0); mx.quadraticCurveTo(cxq, cyq, x1, y1); mx.stroke();
-    mx.setLineDash([]);
-
-    // pins: pulsing ring at origin, flag at destination
-    const pulse = (Math.sin((now || 0) * .004) + 1) / 2;
-    mx.strokeStyle = `rgba(91,126,163,${.5 - pulse * .3})`; mx.lineWidth = 2;
-    mx.beginPath(); mx.arc(x0, y0, 7 + pulse * 8, 0, 7); mx.stroke();
-    mx.fillStyle = '#5b7ea3'; mx.beginPath(); mx.arc(x0, y0, 5, 0, 7); mx.fill();
-    mx.fillStyle = '#c25562'; mx.beginPath(); mx.arc(x1, y1, 5, 0, 7); mx.fill();
-    mx.strokeStyle = '#c25562'; mx.lineWidth = 2;
-    mx.beginPath(); mx.moveTo(x1, y1 - 5); mx.lineTo(x1, y1 - 20); mx.stroke();
-    mx.fillStyle = '#c25562';
-    mx.beginPath(); mx.moveTo(x1, y1 - 20); mx.lineTo(x1 + 13, y1 - 15.5); mx.lineTo(x1, y1 - 11); mx.closePath(); mx.fill();
-
-    // labels
-    mx.font = '600 11px Inter'; mx.fillStyle = 'rgba(58,54,47,.75)'; mx.textAlign = 'center';
-    mx.fillText(A[0], x0, y0 + 22);
-    mx.fillText(B[0], x1, y1 + 22);
-
-    // the plane: waits at the origin until departure, then flies the arc
-    const t = Math.max(.02, Math.min(.98, progress));
-    const u = 1 - t;
-    const px = u * u * x0 + 2 * u * t * cxq + t * t * x1;
-    const py = u * u * y0 + 2 * u * t * cyq + t * t * y1;
-    const t2 = Math.min(t + .03, 1), u2 = 1 - t2;
-    const qx = u2 * u2 * x0 + 2 * u2 * t2 * cxq + t2 * t2 * x1;
-    const qy = u2 * u2 * y0 + 2 * u2 * t2 * cyq + t2 * t2 * y1;
-    const flying = progress > 0 && progress < 1;
-    const ang = flying || progress >= 1 ? Math.atan2(qy - py, qx - px) : Math.atan2(y1 - y0, x1 - x0);
-    const bob = Math.sin((now || 0) * .0035) * (flying ? 3 : 1.5);
-    // little exhaust puffs while flying
-    if (flying) {
-      for (let i = 1; i <= 3; i++) {
-        const bt = Math.max(0, t - i * .035), bu = 1 - bt;
-        const bxp = bu * bu * x0 + 2 * bu * bt * cxq + bt * bt * x1;
-        const byp = bu * bu * y0 + 2 * bu * bt * cyq + bt * bt * y1;
-        mx.fillStyle = `rgba(169,191,212,${.4 - i * .11})`;
-        mx.beginPath(); mx.arc(bxp, byp, 4 - i, 0, 7); mx.fill();
-      }
-    }
-    mx.save();
-    mx.translate(flying || progress >= 1 ? px : x0, (flying || progress >= 1 ? py : y0) + bob - (flying ? 0 : 10));
-    mx.rotate(ang);
-    mx.fillStyle = '#3a362f';
-    mx.beginPath(); mx.moveTo(14, 0); mx.lineTo(-10, 7); mx.lineTo(-5, 0); mx.lineTo(-10, -7); mx.closePath(); mx.fill();
-    mx.fillStyle = '#8fa3b8';
-    mx.beginPath(); mx.moveTo(14, 0); mx.lineTo(-5, 0); mx.lineTo(-10, 7); mx.closePath(); mx.fill();
-    mx.restore();
-  }
-  requestAnimationFrame(drawMap);
-})(0);
-
-/* ---------------- live radar (adsb.lol, free, no key) ---------------- */
+/* ================= live radar (adsb.lol, free, no key) ================= */
 async function pingRadar() {
   if (!F || !F.fl) return;
   const { dep, arr } = times(F);
@@ -441,24 +524,20 @@ async function pingRadar() {
     if (ac && ac.alt_baro) {
       $('live').textContent = '📡 live on radar · ' + (ac.alt_baro === 'ground' ? 'on the ground' :
         Math.round(ac.alt_baro).toLocaleString() + ' ft' + (ac.gs ? ' · ' + Math.round(ac.gs) + ' kts' : ''));
+      // if the transponder tells us where it really is, believe it
+      if (typeof ac.lat === 'number' && planeMarker) planeMarker.setLatLng([ac.lat, ac.lon]);
     }
   } catch {}
 }
 setInterval(pingRadar, 60000);
 
-/* ---------------- live preview + share ---------------- */
-['fFlight', 'fName', 'fFrom', 'fTo', 'fDate', 'fDep', 'fArr', 'fNote'].forEach(id =>
-  $(id).addEventListener('input', () => {
-    const f = readForm();
-    if (f) { F = f; showPass(f); pingRadar(); }
-  }));
-
+/* ================= share ================= */
 function encodeF(f) { return btoa(unescape(encodeURIComponent(JSON.stringify(f)))).replace(/=+$/, ''); }
 function decodeF(s) { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch { return null; } }
 
 $('shareBtn').addEventListener('click', () => {
   const f = readForm();
-  if (!f) { alert('pick real airports for from and to (type a code like BLR, or a city)'); return; }
+  if (!f) { alert('pick both airports from the suggestions (type a code like BLR, or a city name)'); return; }
   F = f; showPass(f);
   const cleanPath = /^https?:$/.test(location.protocol) ? location.pathname.replace(/\.html$/, '') : location.pathname;
   const url = location.origin + cleanPath + '#f=' + encodeF(f);
@@ -468,12 +547,12 @@ $('shareBtn').addEventListener('click', () => {
   m.classList.add('show'); setTimeout(() => m.classList.remove('show'), 2600);
 });
 
-/* ---------------- recipient spotlight ---------------- */
+/* ================= recipient spotlight ================= */
 function loadShared() {
   const m = location.hash.match(/#f=([A-Za-z0-9+/]+)/);
   if (!m) return;
   const f = decodeF(m[1]);
-  if (!f || !byCode[f.fr] || !byCode[f.to] || !f.dt || !f.dp) return;
+  if (!f || !Array.isArray(f.fr) || !Array.isArray(f.to) || !f.dt || !f.dp) return;
   F = f;
   document.body.classList.add('shareview');
   $('fdTitle').textContent = f.nm ? f.nm + ' is flying' : 'someone is flying';
