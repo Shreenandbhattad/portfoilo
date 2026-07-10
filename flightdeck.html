@@ -19,13 +19,33 @@ main{max-width:780px}
   overflow:hidden;box-shadow:0 16px 44px rgba(90,100,80,.14);margin-bottom:16px;position:relative;
   border:1px solid var(--line)}
 .bband{grid-column:1/-1;background:linear-gradient(100deg,#5b7ea3,#7495b5);color:#fff;
-  display:flex;justify-content:space-between;align-items:center;padding:13px 22px;gap:14px}
-.bband .t{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;font-weight:700;opacity:.95}
-.bband .t span{opacity:.6;font-weight:400;margin-left:8px;letter-spacing:.1em}
+  display:flex;justify-content:space-between;align-items:center;padding:13px 22px;gap:14px;position:relative;overflow:hidden}
+.bband::before{content:'✈';position:absolute;right:-6px;top:50%;transform:translateY(-50%) rotate(8deg);
+  font-size:2.6rem;opacity:.13;pointer-events:none}
+.bband .t{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;font-weight:700;opacity:.95;position:relative;z-index:1}
 .bband input{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);border-radius:8px;
   color:#fff;font-family:var(--sans);font-weight:700;font-size:.9rem;text-transform:uppercase;
-  letter-spacing:.08em;padding:6px 10px;width:110px;text-align:center;outline:none}
-.bband input::placeholder{color:rgba(255,255,255,.55);font-weight:500}
+  letter-spacing:.08em;padding:6px 10px;width:118px;text-align:center;outline:none;position:relative;z-index:1;transition:border-color .3s}
+.bband input:focus{border-color:#fff}
+.bband input::placeholder{color:rgba(255,255,255,.6);font-weight:500}
+.lookupbar{display:flex;gap:10px;align-items:center;padding:16px 24px 0}
+.lookupbtn{background:#3a362f;color:#fffdf9;border:none;border-radius:10px;padding:9px 16px;
+  font-family:var(--sans);font-weight:600;font-size:.82rem;cursor:pointer;white-space:nowrap;
+  transition:transform .2s,background .3s;display:flex;align-items:center;gap:7px}
+.lookupbtn:hover{background:#55524c}
+.lookupbtn:active{transform:scale(.96)}
+.lookupbtn:disabled{opacity:.6;cursor:wait}
+.lookupbtn .spin{display:inline-block;animation:spin360 .9s linear infinite}
+@keyframes spin360{to{transform:rotate(360deg)}}
+.lookupmsg{font-size:.8rem;color:var(--soft);flex:1;min-width:0}
+.lookupmsg.err{color:#c25562}
+.lookupmsg.ok{color:#5a8a52}
+.ordivider{display:flex;align-items:center;gap:10px;padding:14px 24px 2px;font-size:.7rem;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.ordivider::before,.ordivider::after{content:'';flex:1;height:1px;background:var(--line)}
+body.night .lookupbtn{background:#e8e6e0;color:#232838}
+body.night .lookupbtn:hover{background:#c9c6bd}
+body.night .lookupmsg{color:#a8a49b}
 .bmain{padding:22px 24px 18px}
 .bstub{border-left:2px dashed var(--line);padding:16px 18px 14px;display:flex;flex-direction:column;gap:8px;background:#fbf6ea;position:relative}
 .bstub::before,.bstub::after{content:'';position:absolute;left:-13px;width:24px;height:24px;border-radius:50%;
@@ -135,6 +155,18 @@ body.night #lmapbox::after{box-shadow:inset 0 0 46px 6px rgba(0,0,0,.35)}
 body.night .chip{filter:brightness(.85) saturate(.9)}
 .eta{margin-top:10px;font-size:.85rem;color:var(--soft)}
 .live{margin-top:6px;font-size:.75rem;color:var(--blue);opacity:.9}
+
+/* big countdown clock */
+.bigclock{display:flex;gap:10px;justify-content:center;margin:14px 0 4px;flex-wrap:wrap}
+.bigclock .unit{background:#3a362f;color:#fffdf9;border-radius:14px;padding:12px 14px;min-width:66px;text-align:center;
+  box-shadow:0 6px 16px rgba(58,54,47,.2)}
+body.night .bigclock .unit{background:#181c28}
+.bigclock .unit b{display:block;font-size:clamp(1.5rem,6vw,2.1rem);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.bigclock .unit span{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:3px;display:block}
+.bigclock.landed .unit{background:linear-gradient(135deg,#8fae7e,#6d9862)}
+.bigclock.air .unit{background:linear-gradient(135deg,#5b7ea3,#43678c)}
+.clocklabel{text-align:center;font-size:.78rem;color:var(--soft);margin-bottom:10px;font-weight:500}
+.confetti-wrap{position:relative}
 .pass .divider{border-top:2px dashed var(--line);margin:0 18px;position:relative}
 .pass .divider::before,.pass .divider::after{content:'';position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;
   background:var(--paper);border:1px solid var(--line)}
@@ -151,9 +183,17 @@ body.night .pass .divider::before,body.night .pass .divider::after{background:#2
 .notecard .fromline{margin-top:8px;font-size:.74rem;color:var(--soft)}
 body.night .notecard{background:#2e3345;border-color:rgba(255,255,255,.14)}
 
+.chip{transition:background .5s,color .5s,border-color .5s,transform .3s}
+.chip.pulse{animation:chippulse .6s ease}
+@keyframes chippulse{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
+.pass{transition:box-shadow .6s}
+.pass.landed-glow{box-shadow:0 0 0 3px rgba(143,174,126,.35),0 16px 44px rgba(90,100,80,.12)}
+
 /* recipient spotlight */
-body.shareview nav,body.shareview .bpass,body.shareview .sharerow{display:none !important}
+body.shareview nav,body.shareview .bpass,body.shareview .sharerow,body.shareview .lookupbar,body.shareview .ordivider{display:none !important}
 body.shareview main{padding-top:56px}
+body.shareview .bigclock .unit{min-width:78px}
+body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
 </style>
 </head>
 <body>
@@ -173,14 +213,19 @@ body.shareview main{padding-top:56px}
 </nav>
 
 <main>
-  <h1 class="page fade in" id="fdTitle">flight deck</h1>
-  <p class="sub fade in" id="fdSub">share your flight status.</p>
+  <h1 class="page fade in" id="fdTitle">flight deck ✈</h1>
+  <p class="sub fade in" id="fdSub">type your flight number, get a boarding pass, share the countdown.</p>
 
   <div class="bpass fade in" id="bpass">
     <div class="bband">
-      <span class="t">Boarding pass<span>economy · window, hopefully</span></span>
-      <input id="fFlight" placeholder="FLIGHT NO" maxlength="8">
+      <span class="t">Boarding pass</span>
+      <input id="fFlight" placeholder="e.g. 6E123" maxlength="8">
     </div>
+    <div class="lookupbar">
+      <button class="lookupbtn" id="lookupBtn">🔍 look up my flight</button>
+      <span class="lookupmsg" id="lookupMsg">type a flight number above, we'll find the rest</span>
+    </div>
+    <div class="ordivider">or fill it in yourself</div>
     <div class="bmain">
       <div class="broute">
         <div class="portbox">
@@ -225,6 +270,13 @@ body.shareview main{padding-top:56px}
     <div class="progressbar"><i id="pbar" style="width:0%"></i></div>
     <div class="statusline">
       <span class="chip" id="chip">upcoming</span>
+      <div class="clocklabel" id="clockLabel" style="display:none"></div>
+      <div class="bigclock" id="bigClock" style="display:none">
+        <div class="unit"><b id="cD">0</b><span>days</span></div>
+        <div class="unit"><b id="cH">00</b><span>hrs</span></div>
+        <div class="unit"><b id="cM">00</b><span>min</span></div>
+        <div class="unit"><b id="cS">00</b><span>sec</span></div>
+      </div>
       <div class="eta" id="eta"></div>
       <div class="live" id="live"></div>
     </div>
@@ -351,6 +403,65 @@ $('swapBtn').addEventListener('click', () => {
   $('fArr').value = String(arr.getHours()).padStart(2, '0') + ':' + (arr.getMinutes() >= 30 ? '30' : '00');
 })();
 
+/* ================= flight-number lookup: the real thing ================= */
+// swap this for your own Supabase project ref once the edge function is deployed
+const FLIGHT_API = 'https://srqvnofktmdwsdiypxgu.functions.supabase.co/flight-status';
+
+function findByIata(iata) {
+  return byCode[iata] || [iata, iata, 0, 0];
+}
+function toLocalDate(iso) {
+  // "2026-07-18 09:05+05:30" -> {dt,tm}
+  const m = iso.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
+  return m ? { dt: m[1], tm: m[2] } : null;
+}
+
+async function lookupFlight() {
+  const raw = $('fFlight').value.trim().toUpperCase().replace(/\s+/g, '');
+  const msg = $('lookupMsg'), btn = $('lookupBtn');
+  if (raw.length < 3) { msg.textContent = 'that flight number looks a bit short 🤔'; msg.className = 'lookupmsg err'; return; }
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin">✈</span> checking the skies...';
+  msg.textContent = ''; msg.className = 'lookupmsg';
+  try {
+    const r = await fetch(`${FLIGHT_API}?fl=${encodeURIComponent(raw)}`);
+    const data = await r.json();
+    const flight = Array.isArray(data) ? data[0] : data;
+    if (!flight || flight.error || !flight.departure) {
+      msg.textContent = "couldn't find that one, try the airport fields below instead";
+      msg.className = 'lookupmsg err';
+      return;
+    }
+    const depAp = flight.departure.airport, arrAp = flight.arrival.airport;
+    const A = [depAp.iata, depAp.shortName || depAp.name, depAp.location.lat, depAp.location.lon];
+    const B = [arrAp.iata, arrAp.shortName || arrAp.name, arrAp.location.lat, arrAp.location.lon];
+    if (!byCode[A[0]]) { AIRPORTS.push(A); byCode[A[0]] = A; }
+    if (!byCode[B[0]]) { AIRPORTS.push(B); byCode[B[0]] = B; }
+    selFrom = A; selTo = B;
+    $('fFrom').value = A[0]; $('fFrom').classList.add('ok'); $('lblFrom').textContent = A[1];
+    $('fTo').value = B[0]; $('fTo').classList.add('ok'); $('lblTo').textContent = B[1];
+
+    const depT = toLocalDate(flight.departure.scheduledTime.local);
+    const arrT = toLocalDate(flight.arrival.scheduledTime.local);
+    if (depT) { $('fDate').value = depT.dt; $('fDep').value = depT.tm; }
+    if (arrT) $('fArr').value = arrT.tm;
+    if (flight.arrival.terminal) msg.dataset.terminal = flight.arrival.terminal;
+
+    const airline = flight.airline ? flight.airline.name : '';
+    msg.textContent = `found it! ${airline} ${flight.number || raw} · ${A[0]} → ${B[0]}`;
+    msg.className = 'lookupmsg ok';
+    refresh();
+  } catch (e) {
+    msg.textContent = 'the lookup hiccupped, try again in a moment';
+    msg.className = 'lookupmsg err';
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '🔍 look up my flight';
+  }
+}
+$('lookupBtn').addEventListener('click', lookupFlight);
+$('fFlight').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookupFlight(); } });
+
 let F = null;   // {fl,nm,st,fr:[code,name,lat,lon],to:[...],dt,dp,ar,nt}
 
 function readForm() {
@@ -381,37 +492,96 @@ function haversine(a, b) {
   return Math.round(2 * R * Math.asin(Math.sqrt(s)));
 }
 
-/* ================= status ================= */
-let progress = 0;
+/* ================= status, with a bit of personality ================= */
+let progress = 0, lastKey = '';
+const AIR_LINES = [
+  'up among the clouds ✈', 'cruising along nicely', 'somewhere over the map below',
+  'living its best life at 35,000ft', 'in the air ✈'
+];
+const SOON_LINES = ['boarding time 🛄', 'gate\'s open, go go go', 'last call soon-ish'];
+const LANDED_LINES = ['touched down! 🎉', 'wheels down, made it 🎉', 'landed safe and sound 🎉'];
+
 function statusOf(f) {
   const { dep, arr } = times(f);
   const now = new Date();
   if (now < new Date(dep - 45 * 60e3)) {
-    let ms = dep - now;
-    const d = Math.floor(ms / 864e5); ms -= d * 864e5;
-    const h = Math.floor(ms / 36e5); ms -= h * 36e5;
-    const mi = Math.floor(ms / 6e4);
-    return { key: 'up', label: 'waiting at ' + f.fr[0] + ' 🧳', eta: 'departs in ' + (d ? d + 'd ' : '') + (h ? h + 'h ' : '') + mi + 'm', pct: 0 };
+    return { key: 'up', label: 'waiting at ' + f.fr[0] + ' 🧳', target: dep, countTo: 'dep', eta: '', pct: 0 };
   }
-  if (now < dep) return { key: 'soon', label: 'boarding 🛄', eta: 'departs at ' + f.dp, pct: 0 };
+  if (now < dep) {
+    return { key: 'soon', label: SOON_LINES[Math.floor(now / 5000) % SOON_LINES.length], target: dep, countTo: 'dep', eta: 'departs at ' + f.dp, pct: 0 };
+  }
   if (now < arr) {
     const pct = (now - dep) / (arr - dep);
-    return { key: 'air', label: 'in the air ✈', eta: Math.round(pct * 100) + '% of the way there', pct };
+    return { key: 'air', label: AIR_LINES[Math.floor(now / 7000) % AIR_LINES.length], target: arr, countTo: 'arr',
+      eta: Math.round(pct * 100) + '% of the way there', pct };
   }
-  return { key: 'landed', label: 'landed 🎉', eta: 'arrived ' + (f.ar ? 'at ' + f.ar : 'safely'), pct: 1 };
+  return { key: 'landed', label: LANDED_LINES[0], target: null, countTo: null, eta: 'arrived ' + (f.ar ? 'at ' + f.ar : 'safely'), pct: 1 };
 }
+
 function tickStatus() {
   if (!F) return;
   const s = statusOf(F);
   const chip = $('chip');
+  if (s.key !== lastKey) {
+    chip.classList.remove('pulse'); void chip.offsetWidth; chip.classList.add('pulse');
+    $('pass').classList.toggle('landed-glow', s.key === 'landed');
+    if (s.key === 'landed' && lastKey && lastKey !== 'landed') launchConfetti();
+    lastKey = s.key;
+  }
   chip.textContent = s.label;
-  chip.className = 'chip ' + (s.key === 'air' ? 'air' : s.key === 'soon' ? 'soon' : s.key === 'landed' ? 'landed' : '');
+  chip.className = 'chip pulse ' + (s.key === 'air' ? 'air' : s.key === 'soon' ? 'soon' : s.key === 'landed' ? 'landed' : '');
   $('eta').textContent = s.eta;
   $('pbar').style.width = (s.pct * 100) + '%';
   progress = s.pct;
   positionPlane();
+
+  // the big countdown: to departure while waiting, to landing while flying
+  const clock = $('bigClock'), label = $('clockLabel');
+  if (s.target) {
+    let ms = s.target - new Date();
+    if (ms < 0) ms = 0;
+    const d = Math.floor(ms / 864e5); ms -= d * 864e5;
+    const h = Math.floor(ms / 36e5); ms -= h * 36e5;
+    const mi = Math.floor(ms / 6e4); ms -= mi * 6e4;
+    const se = Math.floor(ms / 1000);
+    $('cD').textContent = d; $('cH').textContent = String(h).padStart(2, '0');
+    $('cM').textContent = String(mi).padStart(2, '0'); $('cS').textContent = String(se).padStart(2, '0');
+    clock.style.display = 'flex';
+    clock.className = 'bigclock' + (s.key === 'air' ? ' air' : '');
+    label.style.display = 'block';
+    label.textContent = s.countTo === 'dep' ? 'time to takeoff ⏳' : 'time to landing ⏳';
+    $('cD').closest('.unit').style.display = d > 0 ? 'block' : 'none';
+  } else {
+    clock.style.display = 'none';
+    label.style.display = 'none';
+  }
 }
 setInterval(tickStatus, 1000);
+
+/* a little celebration when the plane lands */
+function launchConfetti() {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden';
+  document.body.appendChild(wrap);
+  const cols = ['#5b7ea3', '#8fae7e', '#e8b4c0', '#f0c04a', '#c86bb8'];
+  for (let i = 0; i < 60; i++) {
+    const b = document.createElement('div');
+    const c = cols[i % cols.length];
+    const left = Math.random() * 100, dur = 2.2 + Math.random() * 1.6, delay = Math.random() * .5;
+    const rot = Math.random() * 360, size = 6 + Math.random() * 6;
+    b.style.cssText = `position:absolute;top:-20px;left:${left}vw;width:${size}px;height:${size * .6}px;
+      background:${c};opacity:.9;border-radius:2px;transform:rotate(${rot}deg);
+      animation:confettifall ${dur}s ease-in ${delay}s forwards`;
+    wrap.appendChild(b);
+  }
+  if (!document.getElementById('confettikeys')) {
+    const style = document.createElement('style');
+    style.id = 'confettikeys';
+    style.textContent = '@keyframes confettifall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}';
+    document.head.appendChild(style);
+  }
+  setTimeout(() => wrap.remove(), 4200);
+}
 
 /* ================= the map (Leaflet + soft Carto tiles) ================= */
 const PLANE_SVG = `<svg viewBox="0 0 48 48"><g>
@@ -599,8 +769,8 @@ function loadShared() {
   if (!f || !Array.isArray(f.fr) || !Array.isArray(f.to) || !f.dt || !f.dp) return;
   F = f;
   document.body.classList.add('shareview');
-  $('fdTitle').textContent = f.nm ? f.nm + ' is flying' : 'someone is flying';
-  $('fdSub').textContent = 'follow along ✈';
+  $('fdTitle').textContent = (f.nm ? f.nm + ' is flying ✈' : 'someone is flying ✈');
+  $('fdSub').textContent = 'watch the countdown tick down with them';
   $('backNext').style.display = 'none';
   $('shareOwn').style.display = 'block';
   showPass(f);
