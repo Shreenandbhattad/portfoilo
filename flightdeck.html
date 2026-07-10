@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>flight deck · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛫</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:720px}
+.book{border:1px solid var(--line);border-radius:16px;background:#fffdf9;padding:22px;margin-bottom:34px}
+body.night .book{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+.frm{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frm .full{grid-column:1/-1}
+.frm label{font-size:.7rem;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:4px}
+.frm input{width:100%;font-family:var(--sans);font-weight:300;font-size:.92rem;color:var(--ink);
+  border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;outline:none;transition:border-color .3s}
+.frm input:focus{border-color:var(--blue-light)}
+body.night .frm input{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.14);color:#e8e6e0}
+.sharebtn{margin-top:14px;background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
+  font-family:var(--sans);font-size:.9rem;font-weight:500;cursor:pointer;transition:background .3s,transform .2s}
+.sharebtn:hover{background:#4d6d8f}
+.sharebtn:active{transform:scale(.97)}
+.shared{font-size:.85rem;color:var(--blue);margin-left:12px;opacity:0;transition:opacity .4s}
+.shared.show{opacity:1}
+
+/* ---- the boarding pass ---- */
+.pass{border:1px solid var(--line);border-radius:18px;background:#fffdf9;overflow:hidden;position:relative;
+  box-shadow:0 14px 40px rgba(90,100,80,.1)}
+body.night .pass{background:#2e3345;border-color:rgba(255,255,255,.14)}
+.pass .route{display:flex;justify-content:space-between;align-items:center;padding:26px 30px 6px}
+.pass .port{text-align:center;min-width:90px}
+.pass .code{font-size:clamp(1.8rem,5vw,2.6rem);font-weight:700;letter-spacing:.02em}
+.pass .city{font-size:.78rem;color:var(--soft);margin-top:2px}
+.pass .mid{flex:1;text-align:center;color:var(--faint);font-size:.75rem;letter-spacing:.12em;text-transform:uppercase}
+#arc{width:100%;height:130px;display:block}
+.pass .divider{border-top:2px dashed var(--line);margin:0 18px;position:relative}
+.pass .divider::before,.pass .divider::after{content:'';position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;
+  background:var(--paper);border:1px solid var(--line)}
+.pass .divider::before{left:-30px}
+.pass .divider::after{right:-30px}
+body.night .pass .divider::before,body.night .pass .divider::after{background:#232838;border-color:rgba(255,255,255,.14)}
+.pass .facts{display:flex;flex-wrap:wrap;gap:18px 34px;padding:18px 30px 22px}
+.pass .fact .k{font-size:.66rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.pass .fact .v{font-size:.95rem;font-weight:500;margin-top:2px}
+.statusline{text-align:center;padding:0 20px 20px}
+.chip{display:inline-block;border-radius:999px;padding:7px 18px;font-size:.85rem;font-weight:500;
+  background:#eef3ec;color:#5a7a52;border:1px solid #d5e3c6}
+.chip.air{background:#e9f0f6;color:#43678c;border-color:#c9d9e8}
+.chip.soon{background:#faf1e2;color:#9a7434;border-color:#ecdcbb}
+.chip.landed{background:#f2ecf6;color:#7a5a94;border-color:#e0d2ea}
+body.night .chip{filter:brightness(.85) saturate(.9)}
+.eta{margin-top:10px;font-size:.85rem;color:var(--soft)}
+.live{margin-top:6px;font-size:.75rem;color:var(--blue);opacity:.9}
+.notecard{max-width:340px;margin:26px auto 0;background:#fffdf6;border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;transform:rotate(-1.5deg);box-shadow:0 8px 24px rgba(90,100,80,.1);font-size:.9rem;position:relative}
+.notecard::before{content:'';position:absolute;top:-8px;left:50%;width:46px;height:14px;border-radius:2px;
+  background:rgba(214,199,164,.6);transform:translateX(-50%) rotate(2deg)}
+.notecard .fromline{margin-top:8px;font-size:.74rem;color:var(--soft)}
+body.night .notecard{background:#2e3345;border-color:rgba(255,255,255,.14)}
+.hintline{font-size:.78rem;color:var(--faint);text-align:center;margin-top:14px}
+
+/* recipient spotlight, exactly like receiving a bouquet */
+body.shareview nav,body.shareview .book{display:none !important}
+body.shareview main{padding-top:56px}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play" class="here">play</a>
+    <a href="guestbook">guestbook</a>
+    <a href="contact">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade in" id="fdTitle">flight deck</h1>
+  <p class="sub fade in" id="fdSub">flying somewhere? share your flight with the people waiting for you.</p>
+
+  <div class="book fade in">
+    <div class="frm">
+      <div><label>flight no.</label><input id="fFlight" placeholder="IX 1234" maxlength="10"></div>
+      <div><label>your name (optional)</label><input id="fName" placeholder="who's flying?" maxlength="30"></div>
+      <div><label>from</label><input id="fFrom" placeholder="BLR · Bengaluru" maxlength="30"></div>
+      <div><label>to</label><input id="fTo" placeholder="ISK · Nashik" maxlength="30"></div>
+      <div><label>date</label><input id="fDate" type="date"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div><label>departs</label><input id="fDep" type="time"></div>
+        <div><label>lands</label><input id="fArr" type="time"></div>
+      </div>
+      <div class="full"><label>a little note (optional)</label><input id="fNote" placeholder="see you on the other side ✈" maxlength="80"></div>
+    </div>
+    <button class="sharebtn" id="shareBtn">✈ copy share link</button>
+    <span class="shared" id="sharedMsg">link copied, send it along ✈</span>
+  </div>
+
+  <div class="pass" id="pass" style="display:none">
+    <div class="route">
+      <div class="port"><div class="code" id="pFrom">BLR</div><div class="city" id="pFromCity"></div></div>
+      <div class="mid" id="pFlight"></div>
+      <div class="port"><div class="code" id="pTo">ISK</div><div class="city" id="pToCity"></div></div>
+    </div>
+    <canvas id="arc"></canvas>
+    <div class="statusline">
+      <span class="chip" id="chip">upcoming</span>
+      <div class="eta" id="eta"></div>
+      <div class="live" id="live"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="facts">
+      <div class="fact"><div class="k">date</div><div class="v" id="pDate">–</div></div>
+      <div class="fact"><div class="k">departs</div><div class="v" id="pDep">–</div></div>
+      <div class="fact"><div class="k">lands</div><div class="v" id="pArr">–</div></div>
+      <div class="fact" id="pWhoWrap" style="display:none"><div class="k">traveller</div><div class="v" id="pWho"></div></div>
+    </div>
+  </div>
+
+  <div class="notecard" id="noteCard" style="display:none">
+    <div id="noteText"></div>
+    <div class="fromline" id="noteFrom">safe travels ✈</div>
+  </div>
+
+  <div class="hintline" id="fdHint" style="display:none">status updates itself from the times, and checks live radar while in the air</div>
+
+  <div class="next fade in" id="backNext"><a href="play">← back to play</a></div>
+  <div class="next" id="shareOwn" style="display:none"><a href="flightdeck">✈ share your own flight →</a></div>
+</main>
+
+<script src="site.js"></script>
+<script>
+/* ---------------- flight data ---------------- */
+let F = null;   // {fl, nm, fr, to, dt, dp, ar, nt}
+
+function readForm() {
+  return {
+    fl: document.getElementById('fFlight').value.trim(),
+    nm: document.getElementById('fName').value.trim(),
+    fr: document.getElementById('fFrom').value.trim(),
+    to: document.getElementById('fTo').value.trim(),
+    dt: document.getElementById('fDate').value,
+    dp: document.getElementById('fDep').value,
+    ar: document.getElementById('fArr').value,
+    nt: document.getElementById('fNote').value.trim()
+  };
+}
+function valid(f) { return f.fr && f.to && f.dt && f.dp; }
+
+function times(f) {
+  const dep = new Date(f.dt + 'T' + f.dp);
+  let arr = f.ar ? new Date(f.dt + 'T' + f.ar) : new Date(dep.getTime() + 2 * 3600e3);
+  if (arr <= dep) arr = new Date(arr.getTime() + 24 * 3600e3);   // lands past midnight
+  return { dep, arr };
+}
+
+function splitPort(s) {
+  // "BLR · Bengaluru" or "BLR Bengaluru" or just "Nashik"
+  const m = s.match(/^([A-Za-z]{3})\s*[·,-]?\s*(.*)$/);
+  if (m && m[1].length === 3 && (m[2] || s.length === 3)) return [m[1].toUpperCase(), m[2] || ''];
+  return [s.slice(0, 3).toUpperCase(), s];
+}
+
+/* ---------------- status from the clock ---------------- */
+function statusOf(f) {
+  const { dep, arr } = times(f);
+  const now = new Date();
+  if (now < new Date(dep - 45 * 60e3)) {
+    let ms = dep - now;
+    const d = Math.floor(ms / 864e5); ms -= d * 864e5;
+    const h = Math.floor(ms / 36e5); ms -= h * 36e5;
+    const mi = Math.floor(ms / 6e4);
+    return { key: 'up', label: 'upcoming', eta: 'departs in ' + (d ? d + 'd ' : '') + (h ? h + 'h ' : '') + mi + 'm', pct: 0 };
+  }
+  if (now < dep) return { key: 'soon', label: 'boarding soon 🛄', eta: 'departs at ' + f.dp, pct: 0 };
+  if (now < arr) {
+    const pct = (now - dep) / (arr - dep);
+    return { key: 'air', label: 'in the air ✈', eta: Math.round(pct * 100) + '% of the way there', pct };
+  }
+  return { key: 'landed', label: 'landed 🎉', eta: 'arrived ' + (f.ar ? 'at ' + f.ar : 'safely'), pct: 1 };
+}
+
+/* ---------------- the pass ---------------- */
+function showPass(f) {
+  document.getElementById('pass').style.display = 'block';
+  const [fc, fcity] = splitPort(f.fr), [tc, tcity] = splitPort(f.to);
+  document.getElementById('pFrom').textContent = fc;
+  document.getElementById('pFromCity').textContent = fcity;
+  document.getElementById('pTo').textContent = tc;
+  document.getElementById('pToCity').textContent = tcity;
+  document.getElementById('pFlight').textContent = f.fl || 'direct';
+  document.getElementById('pDate').textContent = new Date(f.dt + 'T00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  document.getElementById('pDep').textContent = f.dp || '–';
+  document.getElementById('pArr').textContent = f.ar || '–';
+  const who = document.getElementById('pWhoWrap');
+  who.style.display = f.nm ? 'block' : 'none';
+  document.getElementById('pWho').textContent = f.nm;
+  const nc = document.getElementById('noteCard');
+  if (f.nt) {
+    nc.style.display = 'block';
+    document.getElementById('noteText').textContent = '“' + f.nt + '”';
+    document.getElementById('noteFrom').textContent = f.nm ? 'from ' + f.nm + ' ✈' : 'safe travels ✈';
+  } else nc.style.display = 'none';
+  document.getElementById('fdHint').style.display = 'block';
+  tickStatus();
+}
+
+function tickStatus() {
+  if (!F) return;
+  const s = statusOf(F);
+  const chip = document.getElementById('chip');
+  chip.textContent = s.label;
+  chip.className = 'chip ' + (s.key === 'air' ? 'air' : s.key === 'soon' ? 'soon' : s.key === 'landed' ? 'landed' : '');
+  document.getElementById('eta').textContent = s.eta;
+  progress = s.pct;
+}
+setInterval(tickStatus, 1000);
+
+/* ---------------- the arc: a little plane on its way ---------------- */
+const arcCv = document.getElementById('arc');
+const ax = arcCv.getContext('2d');
+let AW, AH, progress = 0;
+function fitArc() {
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const r = arcCv.getBoundingClientRect();
+  AW = r.width; AH = r.height;
+  arcCv.width = AW * DPR; arcCv.height = AH * DPR;
+  ax.setTransform(DPR, 0, 0, DPR, 0, 0);
+}
+addEventListener('resize', fitArc);
+fitArc();
+
+const puffs = Array.from({ length: 4 }, () => ({ x: Math.random(), y: .15 + Math.random() * .4, s: .6 + Math.random() * .7, v: .00025 + Math.random() * .0004 }));
+function bez(t, x0, y0, cxp, cyp, x1, y1) {
+  const u = 1 - t;
+  return [u * u * x0 + 2 * u * t * cxp + t * t * x1, u * u * y0 + 2 * u * t * cyp + t * t * y1];
+}
+(function drawArc(now) {
+  ax.clearRect(0, 0, AW, AH);
+  const x0 = 44, x1 = AW - 44, y = AH - 26, cy = -18;
+  // drifting puffs
+  puffs.forEach(p => {
+    p.x += p.v; if (p.x > 1.1) p.x = -.1;
+    ax.fillStyle = 'rgba(255,255,255,.7)';
+    const px = p.x * AW, py = p.y * AH, r = 11 * p.s;
+    ax.beginPath(); ax.arc(px, py, r, 0, 7); ax.arc(px + r * .8, py + r * .25, r * .7, 0, 7); ax.arc(px - r * .8, py + r * .25, r * .6, 0, 7); ax.fill();
+  });
+  // dashed route
+  ax.strokeStyle = 'rgba(139,133,122,.5)'; ax.lineWidth = 1.6; ax.setLineDash([6, 7]);
+  ax.beginPath(); ax.moveTo(x0, y); ax.quadraticCurveTo(AW / 2, cy, x1, y); ax.stroke();
+  ax.setLineDash([]);
+  // endpoints
+  ax.fillStyle = '#8b857a';
+  ax.beginPath(); ax.arc(x0, y, 3.4, 0, 7); ax.fill();
+  ax.beginPath(); ax.arc(x1, y, 3.4, 0, 7); ax.fill();
+  // the plane: waits at the start, flies with progress, rests at the end
+  const t = Math.max(.015, Math.min(.985, progress));
+  const [px, py] = bez(t, x0, y, AW / 2, cy, x1, y);
+  const [qx, qy] = bez(Math.min(t + .02, 1), x0, y, AW / 2, cy, x1, y);
+  const ang = Math.atan2(qy - py, qx - px);
+  const bob = Math.sin((now || 0) * .003) * (progress > 0 && progress < 1 ? 3 : 1.2);
+  ax.save();
+  ax.translate(px, py + bob - 4);
+  ax.rotate(progress <= 0 ? -.28 : ang);
+  ax.fillStyle = '#5b7ea3';
+  ax.beginPath(); ax.moveTo(15, 0); ax.lineTo(-11, 7.5); ax.lineTo(-5.5, 0); ax.lineTo(-11, -7.5); ax.closePath(); ax.fill();
+  ax.fillStyle = '#a9bfd4';
+  ax.beginPath(); ax.moveTo(15, 0); ax.lineTo(-5.5, 0); ax.lineTo(-11, 7.5); ax.closePath(); ax.fill();
+  ax.restore();
+  requestAnimationFrame(drawArc);
+})(0);
+
+/* ---------------- live radar (adsb.lol, free, no key) ---------------- */
+async function pingRadar() {
+  if (!F || !F.fl) return;
+  const { dep, arr } = times(F);
+  const now = new Date();
+  if (now < new Date(dep - 30 * 60e3) || now > new Date(+arr + 60 * 60e3)) return;
+  try {
+    const cs = F.fl.replace(/\s+/g, '').toUpperCase();
+    const r = await fetch('https://api.adsb.lol/v2/callsign/' + cs);
+    const d = await r.json();
+    const ac = d.ac && d.ac[0];
+    if (ac && ac.alt_baro) {
+      document.getElementById('live').textContent =
+        '📡 live on radar · ' + (ac.alt_baro === 'ground' ? 'on the ground' :
+          Math.round(ac.alt_baro).toLocaleString() + ' ft' + (ac.gs ? ' · ' + Math.round(ac.gs) + ' kts' : ''));
+    }
+  } catch {}
+}
+setInterval(pingRadar, 60000);
+
+/* ---------------- share it ---------------- */
+function encodeF(f) { return btoa(unescape(encodeURIComponent(JSON.stringify(f)))).replace(/=+$/, ''); }
+function decodeF(s) { try { return JSON.parse(decodeURIComponent(escape(atob(s)))); } catch { return null; } }
+
+['fFlight', 'fName', 'fFrom', 'fTo', 'fDate', 'fDep', 'fArr', 'fNote'].forEach(id =>
+  document.getElementById(id).addEventListener('input', () => {
+    const f = readForm();
+    if (valid(f)) { F = f; showPass(f); pingRadar(); }
+  }));
+
+document.getElementById('shareBtn').addEventListener('click', () => {
+  const f = readForm();
+  if (!valid(f)) { alert('at least: from, to, date and departure time'); return; }
+  F = f; showPass(f);
+  const cleanPath = /^https?:$/.test(location.protocol) ? location.pathname.replace(/\.html$/, '') : location.pathname;
+  const url = location.origin + cleanPath + '#f=' + encodeF(f);
+  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject())
+    .catch(() => prompt('copy this link:', url));
+  const m = document.getElementById('sharedMsg');
+  m.classList.add('show'); setTimeout(() => m.classList.remove('show'), 2600);
+});
+
+/* ---------------- recipient spotlight, like receiving a bouquet ---------------- */
+function loadShared() {
+  const m = location.hash.match(/#f=([A-Za-z0-9+/]+)/);
+  if (!m) return;
+  const f = decodeF(m[1]);
+  if (!f || !valid(f)) return;
+  F = f;
+  document.body.classList.add('shareview');
+  document.getElementById('fdTitle').textContent = f.nm ? f.nm + ' is flying' : 'someone is flying';
+  document.getElementById('fdSub').textContent = 'follow along, this page keeps itself up to date ✈';
+  document.getElementById('backNext').style.display = 'none';
+  document.getElementById('shareOwn').style.display = 'block';
+  showPass(f);
+  pingRadar();
+}
+loadShared();
+</script>
+</body>
+</html>
