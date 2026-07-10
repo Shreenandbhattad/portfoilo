@@ -533,11 +533,19 @@ async function lookupFlight() {
   try {
     const dateParam = day ? `&date=${encodeURIComponent(day)}` : '';
     const r = await fetch(`${FLIGHT_API}?fl=${encodeURIComponent(raw)}${dateParam}`);
-    const data = await r.json();
+    if (r.status === 429) {
+      msg.textContent = "the flight lookup's a bit busy right now, try again in a minute (or fill it in below)";
+      msg.className = 'lookupmsg err';
+      return;
+    }
+    // AeroDataBox returns an empty body (204) when a flight number isn't
+    // scheduled on the date asked for — that's not an error, just "no flight"
+    const raw204 = await r.text();
+    const data = raw204 ? JSON.parse(raw204) : null;
     const list = Array.isArray(data) ? data : (data && !data.error ? [data] : []);
     if (!list.length) {
       msg.textContent = day
-        ? "couldn't find that flight on that date, try the airport fields below instead"
+        ? "that flight doesn't fly on that date, try another day or fill it in below"
         : "couldn't find that one, try the airport fields below instead";
       msg.className = 'lookupmsg err';
       return;
