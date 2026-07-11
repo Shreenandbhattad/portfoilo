@@ -10,11 +10,19 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
 <link rel="stylesheet" href="style.css">
 <style>
-main{max-width:900px}
+main{max-width:960px}
 #stagebox{position:relative;width:100%;aspect-ratio:4/3;border-radius:18px;overflow:hidden;background:#0c0e14;
-  box-shadow:0 16px 44px rgba(90,100,80,.16);border:1px solid var(--line)}
-#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+  box-shadow:0 16px 44px rgba(90,100,80,.16);border:1px solid var(--line);transition:box-shadow .15s ease}
+#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);filter:brightness(.82) saturate(1.08) contrast(1.04)}
 #trail{position:absolute;inset:0;width:100%;height:100%}
+#vignette{position:absolute;inset:0;pointer-events:none;z-index:2;
+  box-shadow:inset 0 0 90px 20px rgba(0,0,0,.55);mix-blend-mode:multiply}
+#scanlines{position:absolute;inset:0;pointer-events:none;z-index:2;opacity:.05;
+  background:repeating-linear-gradient(0deg,#fff 0 1px,transparent 1px 3px)}
+.laghand{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:4;
+  font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#e5967a;
+  background:rgba(10,12,18,.6);padding:4px 12px;border-radius:999px;opacity:0;transition:opacity .3s}
+.laghand.show{opacity:1}
 .startgate{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
   background:linear-gradient(160deg,#1a1e2b,#0c0e14);color:#e8e6e0;text-align:center;padding:24px;z-index:5}
 .startgate .ic{font-size:2.4rem}
@@ -39,6 +47,18 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
 .hint{font-size:.8rem;color:var(--faint);margin-top:12px;text-align:center;line-height:1.7}
 .legendrow{display:flex;gap:22px;justify-content:center;margin-top:6px;font-size:.78rem;color:var(--soft);flex-wrap:wrap}
 .legendrow span i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.toggle2{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:999px;padding:7px 15px;
+  font-family:var(--sans);font-size:.82rem;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
+.toggle2:hover{color:var(--ink);border-color:var(--faint)}
+.toggle2.on{background:#c25562;color:#fff;border-color:#c25562}
+.toggle2 .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.5}
+.toggle2.on .dot{opacity:1;animation:recdot 1s ease-in-out infinite}
+@keyframes recdot{0%,100%{opacity:1}50%{opacity:.3}}
+.staffwrap{position:absolute;right:0;top:0;bottom:0;width:46px;z-index:2;pointer-events:none}
+.notepill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:5px}
+.notepill span{background:rgba(10,12,18,.55);color:#fff;font-size:.62rem;padding:3px 7px;border-radius:6px;
+  font-family:var(--sans);opacity:.4;transition:opacity .2s,background .2s,transform .2s}
+.notepill span.active{opacity:1;background:#f0c987;color:#1a1e2b;font-weight:700;transform:translateY(-2px)}
 </style>
 </head>
 <body>
@@ -64,6 +84,10 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
   <div id="stagebox">
     <video id="vid" autoplay playsinline muted></video>
     <canvas id="trail"></canvas>
+    <div id="scanlines"></div>
+    <div id="vignette"></div>
+    <div class="laghand" id="lagFlag">hand lost, holding last note</div>
+    <div class="notepill" id="notePill"></div>
     <div class="readout">
       <div class="side">
         <div class="k">right hand · pitch</div>
@@ -91,13 +115,23 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
     <span class="hint" style="margin:0">scale:</span>
     <button class="chipbtn on" data-scale="pentatonic">pentatonic</button>
     <button class="chipbtn" data-scale="major">major</button>
+    <button class="chipbtn" data-scale="minor">minor</button>
     <button class="chipbtn" data-scale="chromatic">chromatic</button>
-    <span class="hint" style="margin:0 0 0 10px">waveform:</span>
+  </div>
+  <div class="controls">
+    <span class="hint" style="margin:0">voice:</span>
     <button class="chipbtn on" data-wave="sine">sine</button>
     <button class="chipbtn" data-wave="triangle">triangle</button>
     <button class="chipbtn" data-wave="sawtooth">sawtooth</button>
+    <button class="chipbtn" data-wave="square">square</button>
   </div>
-  <div class="hint">move both hands into frame to play · pinch your right thumb and index finger together for vibrato</div>
+  <div class="controls">
+    <button class="toggle2" id="chordBtn"><span>🎹 chord mode</span></button>
+    <button class="toggle2" id="echoBtn"><span>〰 echo</span></button>
+    <button class="toggle2" id="loopBtn"><span class="dot"></span> record loop</button>
+    <button class="chipbtn" id="clearLoopBtn" style="display:none">clear loop</button>
+  </div>
+  <div class="hint">move both hands into frame to play · pinch your right thumb and index finger together for vibrato · chord mode plays a full triad under your right hand</div>
 
   <div class="next fade in"><a href="play">← back to play</a></div>
 </main>
@@ -128,12 +162,15 @@ addEventListener('resize', fitTrail);
 const SCALES = {
   pentatonic: [0, 2, 4, 7, 9],
   major: [0, 2, 4, 5, 7, 9, 11],
+  minor: [0, 2, 3, 5, 7, 8, 10],
   chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 const NOTE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
-let scaleName = 'pentatonic', waveType = 'sine';
+let scaleName = 'pentatonic', waveType = 'sine', chordMode = false, echoOn = false;
 
-function freqForY(t) {
+function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+
+function noteForY(t) {
   // t: 0 (top of frame) .. 1 (bottom). Map to ~3 octaves, snapped to scale.
   const semis = Math.round((1 - t) * 36); // 0..36 semitones range
   const scale = SCALES[scaleName];
@@ -141,58 +178,145 @@ function freqForY(t) {
   const idx = ((semis % 12) + 12) % 12;
   const snapped = scale.reduce((best, s) => Math.abs(s - idx) < Math.abs(best - idx) ? s : best, scale[0]);
   const midi = 48 + octave * 12 + snapped; // A3-ish base
-  const freq = 440 * Math.pow(2, (midi - 69) / 12);
-  return { freq, name: NOTE_NAMES[snapped] + (3 + octave) };
+  return { midi, name: NOTE_NAMES[snapped] + (3 + octave), degree: scale.indexOf(snapped) };
+}
+// build a triad on a scale degree, staying inside the current scale (diatonic-ish stacking of thirds)
+function chordFor(midi, degree) {
+  const scale = SCALES[scaleName];
+  const stepUp = n => {
+    const i = scale.indexOf(((n % 12) + 12) % 12);
+    const next = i === -1 ? 0 : (i + 2) % scale.length;
+    const carry = i === -1 ? 0 : Math.floor((i + 2) / scale.length);
+    return { note: scale[next], carry };
+  };
+  const root = ((midi % 12) + 12) % 12, oct = Math.floor(midi / 12);
+  const b = stepUp(root), c = stepUp(b.note);
+  return [
+    midi,
+    (oct + b.carry) * 12 + b.note,
+    (oct + b.carry + c.carry) * 12 + c.note
+  ];
 }
 
-/* ---------------- audio engine ---------------- */
-let actx = null, osc = null, gain = null, filt = null, vibrato = null, vibratoGain = null;
+/* ---------------- audio engine: two-voice synth + shared FX bus ---------------- */
+let actx = null, master = null, delayNode = null, delayFeedback = null, delayWet = null;
+let lead = null;          // single lead voice (non-chord mode)
+let chordVoices = [];      // up to 3 oscillators for chord mode
+let vibrato = null, vibratoGain = null;
+let filt = null;
+
+function makeVoice(dest) {
+  const o = actx.createOscillator();
+  o.type = waveType;
+  const g = actx.createGain();
+  g.gain.value = 0;
+  o.connect(g).connect(dest);
+  o.start();
+  return { osc: o, gain: g };
+}
 function startAudio() {
   actx = new (window.AudioContext || window.webkitAudioContext)();
-  osc = actx.createOscillator();
-  osc.type = waveType;
-  osc.frequency.value = 220;
   filt = actx.createBiquadFilter();
-  filt.type = 'lowpass';
-  filt.frequency.value = 800;
-  filt.Q.value = 1.2;
-  gain = actx.createGain();
-  gain.gain.value = 0;
-  vibrato = actx.createOscillator();
-  vibrato.frequency.value = 5.5;
-  vibratoGain = actx.createGain();
-  vibratoGain.gain.value = 0;
-  vibrato.connect(vibratoGain).connect(osc.frequency);
-  osc.connect(filt).connect(gain).connect(actx.destination);
-  osc.start(); vibrato.start();
+  filt.type = 'lowpass'; filt.frequency.value = 800; filt.Q.value = 1.2;
+  master = actx.createGain(); master.gain.value = 0;
+
+  delayNode = actx.createDelay(1.2); delayNode.delayTime.value = 0.28;
+  delayFeedback = actx.createGain(); delayFeedback.gain.value = 0.32;
+  delayWet = actx.createGain(); delayWet.gain.value = 0;
+  filt.connect(delayNode); delayNode.connect(delayFeedback); delayFeedback.connect(delayNode);
+  delayNode.connect(delayWet); delayWet.connect(actx.destination);
+
+  master.connect(filt); filt.connect(actx.destination);
+
+  vibrato = actx.createOscillator(); vibrato.frequency.value = 5.5;
+  vibratoGain = actx.createGain(); vibratoGain.gain.value = 0;
+
+  lead = makeVoice(master);
+  vibrato.connect(vibratoGain).connect(lead.osc.frequency);
+  vibrato.start();
+
+  chordVoices = [makeVoice(master), makeVoice(master), makeVoice(master)];
+  chordVoices.forEach(v => v.gain.gain.value = 0);
 }
-function setPitch(freq) {
-  if (!osc) return;
-  osc.frequency.setTargetAtTime(freq, actx.currentTime, 0.05);
+function setLeadPitch(freq) { if (lead) lead.osc.frequency.setTargetAtTime(freq, actx.currentTime, 0.045); }
+function setChordPitches(freqs) {
+  chordVoices.forEach((v, i) => { if (freqs[i]) v.osc.frequency.setTargetAtTime(freqs[i], actx.currentTime, 0.045); });
 }
-function setVolume(v) { if (gain) gain.gain.setTargetAtTime(v, actx.currentTime, 0.06); }
+function setVolume(v) {
+  if (!master) return;
+  master.gain.setTargetAtTime(v, actx.currentTime, 0.06);
+  if (chordMode) {
+    lead.gain.gain.setTargetAtTime(0, actx.currentTime, 0.05);
+    chordVoices.forEach((cv, i) => cv.gain.gain.setTargetAtTime(i === 0 ? 0.55 : 0.32, actx.currentTime, 0.05));
+  } else {
+    lead.gain.gain.setTargetAtTime(1, actx.currentTime, 0.05);
+    chordVoices.forEach(cv => cv.gain.gain.setTargetAtTime(0, actx.currentTime, 0.05));
+  }
+}
 function setBrightness(v) { if (filt) filt.frequency.setTargetAtTime(300 + v * 4200, actx.currentTime, 0.08); }
 function setVibrato(v) { if (vibratoGain) vibratoGain.gain.setTargetAtTime(v * 22, actx.currentTime, 0.05); }
+function setEcho(on) { if (delayWet) delayWet.gain.setTargetAtTime(on ? 0.35 : 0, actx.currentTime, 0.1); }
+function setWave(type) {
+  waveType = type;
+  if (lead) lead.osc.type = type;
+  chordVoices.forEach(v => v.osc.type = type);
+}
 
 document.querySelectorAll('[data-scale]').forEach(b => b.addEventListener('click', () => {
   scaleName = b.dataset.scale;
   document.querySelectorAll('[data-scale]').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
+  buildNotePills();
 }));
 document.querySelectorAll('[data-wave]').forEach(b => b.addEventListener('click', () => {
-  waveType = b.dataset.wave;
-  if (osc) osc.type = waveType;
+  setWave(b.dataset.wave);
   document.querySelectorAll('[data-wave]').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
 }));
+document.getElementById('chordBtn').addEventListener('click', e => {
+  chordMode = !chordMode;
+  e.currentTarget.classList.toggle('on', chordMode);
+});
+document.getElementById('echoBtn').addEventListener('click', e => {
+  echoOn = !echoOn;
+  e.currentTarget.classList.toggle('on', echoOn);
+  setEcho(echoOn);
+});
 
-/* ---------------- hand tracking ---------------- */
-let rightHand = null, leftHand = null; // normalized {x,y} of index fingertip, plus pinch dist
+/* ---------------- note staff: little pills showing where each note sits ---------------- */
+function buildNotePills() {
+  const box = document.getElementById('notePill');
+  const scale = SCALES[scaleName];
+  box.innerHTML = scale.map((s, i) => `<span data-deg="${i}">${NOTE_NAMES[s]}</span>`).join('');
+}
+buildNotePills();
+function highlightPill(degree) {
+  document.querySelectorAll('#notePill span').forEach(el =>
+    el.classList.toggle('active', +el.dataset.deg === degree));
+}
+
+/* ---------------- hand tracking, smoothed against camera jitter ---------------- */
+let rightHand = null, leftHand = null; // smoothed {x,y,pinch}
+let rightRaw = null, leftRaw = null;
+let rightLastSeen = 0, leftLastSeen = 0;
+const LAG_GRACE = 700; // ms to hold the last note before actually going silent
+const SMOOTH = 0.35;   // exponential smoothing factor, higher = snappier, lower = smoother
 const particles = [];
+let volSmoothed = 0, curDegree = -1;
+
+function smooth(prev, next) {
+  if (!prev) return next;
+  return {
+    x: prev.x + (next.x - prev.x) * SMOOTH,
+    y: prev.y + (next.y - prev.y) * SMOOTH,
+    pinch: prev.pinch + (next.pinch - prev.pinch) * SMOOTH
+  };
+}
 
 function onResults(results) {
   fitTrail();
-  rightHand = null; leftHand = null;
+  rightRaw = null; leftRaw = null;
+  const now = performance.now();
 
   if (results.multiHandLandmarks && results.multiHandLandmarks.length) {
     results.multiHandLandmarks.forEach((lm, i) => {
@@ -202,47 +326,80 @@ function onResults(results) {
       const tip = lm[8], thumb = lm[4];
       const pinch = Math.hypot(tip.x - thumb.x, tip.y - thumb.y);
       const info = { x: 1 - tip.x, y: tip.y, pinch };
-      if (label === 'Right') rightHand = info; else leftHand = info;
+      if (label === 'Right') { rightRaw = info; rightLastSeen = now; }
+      else { leftRaw = info; leftLastSeen = now; }
     });
   }
 
-  // drive audio from tracked hands
+  if (rightRaw) rightHand = smooth(rightHand, rightRaw);
+  else if (now - rightLastSeen > LAG_GRACE) rightHand = null;
+  if (leftRaw) leftHand = smooth(leftHand, leftRaw);
+  else if (now - leftLastSeen > LAG_GRACE) leftHand = null;
+
+  const lagging = (!rightRaw && rightHand) || (!leftRaw && leftHand);
+  document.getElementById('lagFlag').classList.toggle('show', lagging);
+
+  // drive audio from tracked (smoothed) hands
   if (rightHand) {
-    const { freq, name } = freqForY(rightHand.y);
-    setPitch(freq);
-    setVibrato(Math.max(0, 1 - rightHand.pinch * 22));
+    const { midi, name, degree } = noteForY(rightHand.y);
+    curDegree = degree;
+    highlightPill(degree);
+    if (chordMode) setChordPitches(chordFor(midi, degree).map(midiToFreq));
+    else setLeadPitch(midiToFreq(midi));
+    setVibrato(Math.max(0, 1 - rightHand.pinch * 14));
     document.getElementById('noteOut').textContent = name;
-    particles.push({ x: rightHand.x * TW, y: rightHand.y * TH, c: '#f0c987', life: 30 });
+    spawnTrail(rightHand, '#f0c987', rightRaw);
   } else {
     document.getElementById('noteOut').textContent = '–';
+    highlightPill(-1);
   }
   if (leftHand) {
-    const vol = Math.max(0, Math.min(1, 1 - leftHand.y));
-    setVolume(vol * .22);
-    setBrightness(vol);
-    document.getElementById('volOut').textContent = Math.round(vol * 100) + '%';
-    particles.push({ x: leftHand.x * TW, y: leftHand.y * TH, c: '#7ec4e8', life: 30 });
+    const target = Math.max(0, Math.min(1, 1 - leftHand.y));
+    volSmoothed += (target - volSmoothed) * .2;
+    setVolume(volSmoothed * .22);
+    setBrightness(volSmoothed);
+    document.getElementById('volOut').textContent = Math.round(volSmoothed * 100) + '%';
+    spawnTrail(leftHand, '#7ec4e8', leftRaw);
   } else {
-    setVolume(0);
-    document.getElementById('volOut').textContent = '–';
+    volSmoothed += (0 - volSmoothed) * .15;
+    setVolume(volSmoothed * .22);
+    document.getElementById('volOut').textContent = volSmoothed < .02 ? '–' : Math.round(volSmoothed * 100) + '%';
   }
 
   drawTrail();
+  recordFrame();
+}
+
+function spawnTrail(hand, color, raw) {
+  const x = hand.x * TW, y = hand.y * TH;
+  const speed = raw ? Math.hypot((raw.x - hand.x) * TW, (raw.y - hand.y) * TH) : 0;
+  particles.push({ x, y, c: color, life: 34, maxLife: 34, r: 5 + Math.min(speed * .8, 16) });
+}
+
+/* audio-reactive glow: the whole stage pulses faintly with current volume */
+function updateGlow() {
+  const glow = Math.min(volSmoothed * 60, 40);
+  document.getElementById('stagebox').style.boxShadow =
+    `0 16px 44px rgba(90,100,80,.16), 0 0 ${glow}px ${glow * .4}px rgba(240,201,135,${volSmoothed * .35})`;
 }
 
 function drawTrail() {
   tctx.clearRect(0, 0, TW, TH);
+  updateGlow();
   for (let i = particles.length - 1; i >= 0; i--) {
     const p = particles[i];
     p.life--;
     if (p.life <= 0) { particles.splice(i, 1); continue; }
-    const a = p.life / 30;
+    const a = p.life / p.maxLife;
+    const grd = tctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * a + 4);
+    grd.addColorStop(0, p.c + 'ee');
+    grd.addColorStop(1, p.c + '00');
     tctx.beginPath();
-    tctx.arc(p.x, p.y, 14 * a + 4, 0, Math.PI * 2);
-    tctx.fillStyle = p.c + Math.round(a * 200).toString(16).padStart(2, '0');
+    tctx.arc(p.x, p.y, p.r * a + 4, 0, Math.PI * 2);
+    tctx.fillStyle = grd;
     tctx.fill();
   }
-  // crosshair on current hand positions
+  // crosshair + note-height indicator line on current hand positions
   [[rightHand, '#f0c987'], [leftHand, '#7ec4e8']].forEach(([h, col]) => {
     if (!h) return;
     const x = h.x * TW, y = h.y * TH;
@@ -250,7 +407,69 @@ function drawTrail() {
     tctx.beginPath(); tctx.arc(x, y, 16, 0, Math.PI * 2); tctx.stroke();
     tctx.beginPath(); tctx.moveTo(x - 22, y); tctx.lineTo(x - 10, y);
     tctx.moveTo(x + 10, y); tctx.lineTo(x + 22, y); tctx.stroke();
+    tctx.globalAlpha = .35;
+    tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(TW, y); tctx.setLineDash([3, 6]); tctx.stroke();
+    tctx.setLineDash([]); tctx.globalAlpha = 1;
   });
+}
+
+/* ---------------- loop recorder: capture note/volume frames, play them back ----------------
+   a tiny state machine: idle -> recording -> idle-with-loop -> playing -> idle-with-loop */
+let loopState = 'idle'; // 'idle' | 'recording' | 'ready' | 'playing'
+let loopFrames = [], playingToken = 0;
+const loopBtn = document.getElementById('loopBtn');
+const clearLoopBtn = document.getElementById('clearLoopBtn');
+
+function recordFrame() {
+  if (loopState !== 'recording') return;
+  loopFrames.push({
+    t: performance.now(),
+    rh: rightHand ? { ...rightHand } : null,
+    lh: leftHand ? { ...leftHand } : null
+  });
+  if (loopFrames.length > 1800) setLoopState('ready'); // ~30s safety cap
+}
+function setLoopState(next) {
+  loopState = next;
+  loopBtn.classList.toggle('on', next === 'recording' || next === 'playing');
+  clearLoopBtn.style.display = (next === 'ready' || next === 'playing') ? 'inline-block' : 'none';
+  loopBtn.innerHTML = {
+    idle: '<span class="dot"></span> record loop',
+    recording: '<span class="dot"></span> recording…',
+    ready: '<span class="dot"></span> play loop',
+    playing: '<span class="dot"></span> stop loop'
+  }[next];
+}
+loopBtn.addEventListener('click', () => {
+  if (loopState === 'idle') { loopFrames = []; setLoopState('recording'); }
+  else if (loopState === 'recording') { setLoopState(loopFrames.length > 10 ? 'ready' : 'idle'); }
+  else if (loopState === 'ready') { playLoop(); }
+  else if (loopState === 'playing') { playingToken++; setVolume(0); setLoopState('ready'); }
+});
+clearLoopBtn.addEventListener('click', () => {
+  playingToken++; loopFrames = []; setVolume(0); setLoopState('idle');
+});
+function playLoop() {
+  const myToken = ++playingToken;
+  setLoopState('playing');
+  const t0 = loopFrames[0].t;
+  const dur = loopFrames[loopFrames.length - 1].t - t0;
+  const start = performance.now();
+  (function tick() {
+    if (myToken !== playingToken) return; // superseded by a newer stop/restart
+    const elapsed = performance.now() - start;
+    if (elapsed > dur) { playingToken++; setVolume(0); setLoopState('ready'); return; }
+    const frame = loopFrames.find(f => f.t - t0 >= elapsed) || loopFrames[loopFrames.length - 1];
+    if (frame.rh) {
+      const { midi, degree } = noteForY(frame.rh.y);
+      if (chordMode) setChordPitches(chordFor(midi, degree).map(midiToFreq));
+      else setLeadPitch(midiToFreq(midi));
+      highlightPill(degree);
+    }
+    if (frame.lh) { const v = Math.max(0, 1 - frame.lh.y); setVolume(v * .22); setBrightness(v); }
+    else setVolume(0);
+    requestAnimationFrame(tick);
+  })();
 }
 
 /* ---------------- boot: only after the user opts in ---------------- */
