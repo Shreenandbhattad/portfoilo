@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>evolve · Shreenand Bhattad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+<link rel="stylesheet" href="style.css">
+<style>
+main{max-width:960px}
+.lab{display:grid;grid-template-columns:1fr 240px;gap:16px}
+@media(max-width:820px){.lab{grid-template-columns:1fr}}
+#stage{width:100%;height:min(52vh,460px);border:1px solid var(--line);border-radius:16px;background:#fff;display:block;touch-action:none}
+body.night #stage{border-color:rgba(255,255,255,.14)}
+.panel{display:flex;flex-direction:column;gap:14px;font-size:.82rem;color:var(--soft)}
+.panel .grp{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fffdf9}
+body.night .panel .grp{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12)}
+.panel .lbl{font-weight:600;font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:8px}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.chipbtn{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:999px;padding:5px 12px;
+  font-family:var(--sans);font-size:.78rem;cursor:pointer;transition:all .25s}
+.chipbtn:hover{color:var(--ink);border-color:var(--faint)}
+.chipbtn.on{background:var(--ink);color:#faf8f3;border-color:var(--ink)}
+body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
+.stat{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums;padding:2px 0}
+.stat b{color:var(--ink);font-weight:600}
+body.night .stat b{color:#e8e6e0}
+#fitcv{width:100%;height:50px;display:block;margin-top:6px}
+.legend{display:flex;flex-direction:column;gap:6px;margin-top:4px;max-height:150px;overflow:auto}
+.legend .sp{display:flex;gap:8px;align-items:center;font-size:.78rem}
+.legend .sp i{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.legend .sp span{color:var(--faint);font-variant-numeric:tabular-nums;margin-left:auto}
+.hint{font-size:.78rem;color:var(--faint);margin-top:10px;text-align:center}
+.crownwrap{position:relative}
+#crown{position:absolute;pointer-events:none;font-size:18px;transform:translate(-50%,-140%);transition:left .1s linear,top .1s linear;opacity:0}
+</style>
+</head>
+<body>
+
+<div class="sky" id="sky"></div>
+
+<nav>
+  <a class="home" href="index">Shreenand</a>
+  <div class="pages">
+    <a href="about">about</a>
+    <a href="work">work</a>
+    <a href="projects">projects</a>
+    <a href="play" class="here">play</a>
+    <a href="guestbook">guestbook</a>
+    <a href="contact">say hi</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="page fade in">evolve</h1>
+  <p class="sub fade in">a colony of soft little creatures, learning to walk from nothing. no training data, just physics and time.</p>
+
+  <div class="lab">
+    <div class="crownwrap"><canvas id="stage"></canvas><div id="crown">👑</div></div>
+    <div class="panel">
+      <div class="grp">
+        <div class="lbl">generation</div>
+        <div class="stat"><span>gen</span><b id="genNum">1</b></div>
+        <div class="stat"><span>time left</span><b id="genTime">–</b></div>
+        <div class="stat"><span>best distance</span><b id="bestDist">0.0 m</b></div>
+        <div class="stat"><span>all-time best</span><b id="allBest">0.0 m</b></div>
+        <canvas id="fitcv"></canvas>
+      </div>
+      <div class="grp">
+        <div class="lbl">speed</div>
+        <div class="row">
+          <button class="chipbtn" data-sp="1">1×</button>
+          <button class="chipbtn on" data-sp="3">3×</button>
+          <button class="chipbtn" data-sp="8">8×</button>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="lbl">species by brain</div>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="grp">
+        <div class="lbl">controls</div>
+        <div class="row">
+          <button class="chipbtn" id="pauseBtn">pause</button>
+          <button class="chipbtn" id="restartBtn">start over</button>
+          <button class="chipbtn" id="chaosBtn">shove them 🌪</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hint">click a creature to follow it · each has its own tiny neural network deciding every joint, every frame</div>
+
+  <div class="next fade in"><a href="play">← back to play</a></div>
+</main>
+
+<script src="site.js"></script>
+<script>
+/* ================================================================
+   EVOLVE: soft-bodied creatures with tiny neural-net brains, learning
+   to walk through generations of mutation and selection. No training
+   data, no backprop here — pure neuroevolution, built from scratch.
+   ================================================================ */
+const cv = document.getElementById('stage');
+const cx = cv.getContext('2d');
+let W, H, GROUND;
+function fit() {
+  const DPR = Math.min(devicePixelRatio || 1, 2);
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height;
+  cv.width = W * DPR; cv.height = H * DPR;
+  cx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  GROUND = H - 34;
+}
+addEventListener('resize', fit);
+fit();
+
+/* ---------------- tiny neural net: the creature's brain ---------------- */
+const NIN = 8, NHID = 6, NOUT = 4; // sees joint angles + ground contact, drives 4 muscles
+function randBrain() {
+  return {
+    w1: Array.from({ length: NHID }, () => Array.from({ length: NIN }, () => (Math.random() * 2 - 1) * 1.2)),
+    b1: Array.from({ length: NHID }, () => (Math.random() * 2 - 1) * .5),
+    w2: Array.from({ length: NOUT }, () => Array.from({ length: NHID }, () => (Math.random() * 2 - 1) * 1.2)),
+    b2: Array.from({ length: NOUT }, () => (Math.random() * 2 - 1) * .5)
+  };
+}
+function think(brain, input) {
+  const h = brain.b1.map((b, i) => Math.tanh(b + brain.w1[i].reduce((s, w, j) => s + w * input[j], 0)));
+  return brain.b2.map((b, i) => Math.tanh(b + brain.w2[i].reduce((s, w, j) => s + w * h[j], 0)));
+}
+function mutate(brain, rate) {
+  const m = w => w + (Math.random() < rate ? (Math.random() * 2 - 1) * .25 : 0);
+  return {
+    w1: brain.w1.map(row => row.map(m)), b1: brain.b1.map(m),
+    w2: brain.w2.map(row => row.map(m)), b2: brain.b2.map(m)
+  };
+}
+function crossover(a, b) {
+  const mix = (x, y) => Math.random() < .5 ? x : y;
+  return {
+    w1: a.w1.map((row, i) => row.map((w, j) => mix(w, b.w1[i][j]))),
+    b1: a.b1.map((w, i) => mix(w, b.b1[i])),
+    w2: a.w2.map((row, i) => row.map((w, j) => mix(w, b.w2[i][j]))),
+    b2: a.b2.map((w, i) => mix(w, b.b2[i]))
+  };
+}
+// a rough "genetic distance" between two brains, for species clustering
+function brainDist(a, b) {
+  let s = 0, n = 0;
+  a.w1.flat().concat(a.b1, a.w2.flat(), a.b2).forEach((v, i) => {
+    const bv = b.w1.flat().concat(b.b1, b.w2.flat(), b.b2)[i];
+    s += (v - bv) ** 2; n++;
+  });
+  return Math.sqrt(s / n);
+}
+
+/* ---------------- soft body: a little walker made of springy legs ----------------
+   two "legs" (each a 2-segment jointed limb) hung off a body mass, simulated with
+   Verlet integration so it wobbles and settles like real soft matter, not rigid CSS */
+const GRAV = 0.55, FRICTION = 0.82, GROUND_FRICTION = 0.7;
+
+function makeCreature(brain, x, species) {
+  // points: 0 body, 1 hip-front, 2 knee-front, 3 foot-front, 4 hip-back, 5 knee-back, 6 foot-back
+  const y0 = GROUND - 40;
+  const pts = [
+    { x, y: y0, px: x, py: y0 },              // body
+    { x: x + 8, y: y0 + 10, px: x + 8, py: y0 + 10 },   // hip F
+    { x: x + 10, y: y0 + 26, px: x + 10, py: y0 + 26 }, // knee F
+    { x: x + 10, y: y0 + 40, px: x + 10, py: y0 + 40 }, // foot F
+    { x: x - 8, y: y0 + 10, px: x - 8, py: y0 + 10 },   // hip B
+    { x: x - 10, y: y0 + 26, px: x - 10, py: y0 + 26 }, // knee B
+    { x: x - 10, y: y0 + 40, px: x - 10, py: y0 + 40 }  // foot B
+  ];
+  const sticks = [
+    [0, 1, 14], [1, 2, 17], [2, 3, 15],   // front leg
+    [0, 4, 14], [4, 5, 17], [5, 6, 15],   // back leg
+    [0, 2, 26], [0, 5, 26]                // stabilizers, body to knees
+  ];
+  return {
+    pts, sticks, brain, species,
+    muscleF: [0, 0], muscleB: [0, 0],   // current actuation, smoothed
+    born: performance.now(), dist: 0, startX: x, alive: true, ticks: 0,
+    hue: species.hue
+  };
+}
+
+function stepCreature(c, dt) {
+  // gather senses: hip/knee angles (front+back), body height, ground contact x2, forward vel, bias
+  const [body, hipF, kneeF, footF, hipB, kneeB, footB] = c.pts;
+  const angle = (a, b, p) => Math.atan2(b.y - a.y, b.x - a.x) - Math.atan2(p.y - a.y, p.x - a.x);
+  const inputs = [
+    Math.sin(angle(hipF, kneeF, body) || 0),
+    Math.sin(angle(kneeF, footF, hipF) || 0),
+    Math.sin(angle(hipB, kneeB, body) || 0),
+    Math.sin(angle(kneeB, footB, hipB) || 0),
+    (footF.y > GROUND - 4) ? 1 : -1,
+    (footB.y > GROUND - 4) ? 1 : -1,
+    Math.max(-1, Math.min(1, (body.x - body.px) * 3)),
+    1
+  ];
+  const out = think(c.brain, inputs); // 4 muscle targets: hipF, kneeF, hipB, kneeB
+  c.muscleF[0] += (out[0] - c.muscleF[0]) * .25;
+  c.muscleF[1] += (out[1] - c.muscleF[1]) * .25;
+  c.muscleB[0] += (out[2] - c.muscleB[0]) * .25;
+  c.muscleB[1] += (out[3] - c.muscleB[1]) * .25;
+
+  // apply muscle forces as torque-ish nudges on the leg joints
+  const nudge = (a, b, amt) => { b.x += (b.y - a.y) * amt * .06; b.y -= (b.x - a.x) * amt * .0001; };
+  nudge(body, hipF, c.muscleF[0]); nudge(hipF, kneeF, c.muscleF[1]);
+  nudge(body, hipB, c.muscleB[0]); nudge(hipB, kneeB, c.muscleB[1]);
+
+  // verlet integrate all points
+  for (const p of c.pts) {
+    const vx = (p.x - p.px) * FRICTION, vy = (p.y - p.py) * FRICTION;
+    p.px = p.x; p.py = p.y;
+    p.x += vx; p.y += vy + GRAV * dt;
+    if (p.y > GROUND) { p.y = GROUND; p.px = p.x - vx * GROUND_FRICTION; p.py = p.y - 1; }
+  }
+  // satisfy stick constraints a few times for stability
+  for (let k = 0; k < 3; k++) {
+    for (const [ia, ib, len] of c.sticks) {
+      const a = c.pts[ia], b = c.pts[ib];
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.hypot(dx, dy) || 0.001;
+      const diff = (d - len) / d * .5;
+      a.x += dx * diff; a.y += dy * diff;
+      b.x -= dx * diff; b.y -= dy * diff;
+    }
+  }
+  c.dist = (body.x - c.startX) / 34; // pixels -> "meters"
+  c.ticks++;
+}
+
+function drawCreature(c, followed) {
+  const [body, hipF, kneeF, footF, hipB, kneeB, footB] = c.pts;
+  cx.strokeStyle = `hsl(${c.hue} 55% 42%)`;
+  cx.lineWidth = 3.4; cx.lineCap = 'round';
+  cx.globalAlpha = c === followed ? 1 : .82;
+  [[body, hipB, kneeB, footB], [body, hipF, kneeF, footF]].forEach(chain => {
+    cx.beginPath(); cx.moveTo(chain[0].x, chain[0].y);
+    for (let i = 1; i < chain.length; i++) cx.lineTo(chain[i].x, chain[i].y);
+    cx.stroke();
+  });
+  cx.fillStyle = `hsl(${c.hue} 60% 55%)`;
+  cx.beginPath(); cx.arc(body.x, body.y, 7, 0, 7); cx.fill();
+  cx.fillStyle = `hsl(${c.hue} 50% 38%)`;
+  [footF, footB].forEach(f => { cx.beginPath(); cx.arc(f.x, f.y, 3.6, 0, 7); cx.fill(); });
+  cx.globalAlpha = 1;
+  if (c === followed) {
+    cx.strokeStyle = `hsl(${c.hue} 70% 45%)`; cx.lineWidth = 1; cx.setLineDash([2, 3]);
+    cx.beginPath(); cx.arc(body.x, body.y, 16, 0, 7); cx.stroke(); cx.setLineDash([]);
+  }
+}
+
+/* ---------------- species: colour clusters of similar brains ---------------- */
+const HUES = [355, 25, 95, 145, 195, 255, 305, 15, 65];
+let speciesList = [];
+function assignSpecies(brains) {
+  speciesList = [];
+  const reps = []; // representative brain per species
+  return brains.map(brain => {
+    let found = reps.findIndex(r => brainDist(r, brain) < 0.25);
+    if (found === -1) {
+      found = reps.length;
+      reps.push(brain);
+      speciesList.push({ id: found, hue: HUES[found % HUES.length], count: 0, best: 0 });
+    }
+    speciesList[found].count++;
+    return speciesList[found];
+  });
+}
+
+/* ---------------- population + generational loop ---------------- */
+const POP = 24, GEN_MS = 9000;
+let creatures = [], gen = 1, genStart = 0, camX = 0, followed = null;
+let speedMul = 3, paused = false, allTimeBest = 0, fitHistory = [];
+
+function newGeneration(brains) {
+  const specFor = assignSpecies(brains);
+  creatures = brains.map((brain, i) => makeCreature(brain, 60 + (i % 6) * 4, specFor[i]));
+  genStart = performance.now();
+  camX = 0;
+  followed = null;
+  renderLegend();
+}
+function firstGeneration() {
+  const brains = Array.from({ length: POP }, randBrain);
+  gen = 1; fitHistory = [];
+  newGeneration(brains);
+}
+firstGeneration();
+
+function nextGeneration() {
+  const ranked = [...creatures].sort((a, b) => b.dist - a.dist);
+  const bestDist = ranked[0].dist;
+  allTimeBest = Math.max(allTimeBest, bestDist);
+  fitHistory.push(bestDist);
+  if (fitHistory.length > 60) fitHistory.shift();
+
+  const survivors = ranked.slice(0, Math.ceil(POP * .3)).map(c => c.brain);
+  const children = [];
+  // elitism: the very best passes through untouched
+  children.push(survivors[0]);
+  while (children.length < POP) {
+    const pa = survivors[Math.floor(Math.random() * survivors.length)];
+    const pb = survivors[Math.floor(Math.random() * survivors.length)];
+    const rate = .12 + Math.random() * .1;
+    children.push(mutate(crossover(pa, pb), rate));
+  }
+  gen++;
+  newGeneration(children);
+}
+
+/* ---------------- rendering ---------------- */
+function ground() {
+  cx.fillStyle = '#eef3ec';
+  cx.fillRect(0, GROUND, W, H - GROUND);
+  cx.strokeStyle = 'rgba(139,133,122,.25)'; cx.lineWidth = 1;
+  for (let x = -((camX) % 24); x < W; x += 24) {
+    cx.beginPath(); cx.moveTo(x, GROUND); cx.lineTo(x - 8, GROUND + 8); cx.stroke();
+  }
+  // distance markers
+  cx.fillStyle = 'rgba(139,133,122,.5)'; cx.font = '11px Inter'; cx.textAlign = 'center';
+  const startM = Math.floor(camX / 34 / 5) * 5;
+  for (let m = startM; m < startM + 40; m += 5) {
+    const sx = m * 34 - camX;
+    if (sx > 0 && sx < W) {
+      cx.beginPath(); cx.moveTo(sx, GROUND); cx.lineTo(sx, GROUND - 6); cx.strokeStyle = 'rgba(139,133,122,.3)'; cx.stroke();
+      cx.fillText(m + 'm', sx, GROUND + 16);
+    }
+  }
+}
+function render() {
+  cx.clearRect(0, 0, W, H);
+  ground();
+  cx.save(); cx.translate(-camX, 0);
+  creatures.forEach(c => drawCreature(c, followed));
+  cx.restore();
+  // little crown over the current leader
+  const leader = [...creatures].sort((a, b) => b.dist - a.dist)[0];
+  const crown = document.getElementById('crown');
+  if (leader) {
+    const [body] = leader.pts;
+    crown.style.left = (body.x - camX) + 'px';
+    crown.style.top = body.y + 'px';
+    crown.style.opacity = 1;
+  }
+}
+
+/* ---------------- main loop ---------------- */
+let lastFrameT = 0;
+function loop(now) {
+  const dtReal = Math.min((now - lastFrameT) / 16.7, 3) || 1;
+  lastFrameT = now;
+  if (!paused) {
+    for (let s = 0; s < speedMul; s++) creatures.forEach(c => stepCreature(c, 1));
+    const alive = creatures.filter(c => c.pts[0].y < GROUND + 30);
+    const leadX = Math.max(...creatures.map(c => c.pts[0].x));
+    camX += (leadX - 120 - camX) * .06;
+    if (camX < 0) camX = 0;
+
+    const elapsed = now - genStart;
+    const left = Math.max(0, GEN_MS - elapsed);
+    document.getElementById('genTime').textContent = (left / 1000).toFixed(1) + 's';
+    document.getElementById('genNum').textContent = gen;
+    const best = Math.max(...creatures.map(c => c.dist), 0);
+    document.getElementById('bestDist').textContent = best.toFixed(1) + ' m';
+    document.getElementById('allBest').textContent = allTimeBest.toFixed(1) + ' m';
+    drawFitness();
+
+    if (elapsed > GEN_MS) nextGeneration();
+  }
+  render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+/* ---------------- fitness sparkline ---------------- */
+const fcv = document.getElementById('fitcv'), fx = fcv.getContext('2d');
+function drawFitness() {
+  const r = fcv.getBoundingClientRect();
+  fcv.width = r.width * 2; fcv.height = r.height * 2;
+  fx.setTransform(2, 0, 0, 2, 0, 0);
+  fx.clearRect(0, 0, r.width, r.height);
+  if (fitHistory.length < 2) return;
+  const max = Math.max(...fitHistory, 1);
+  fx.strokeStyle = '#5b7ea3'; fx.lineWidth = 1.5;
+  fx.beginPath();
+  fitHistory.forEach((v, i) => {
+    const x = i / (fitHistory.length - 1) * r.width;
+    const y = r.height - (v / max) * (r.height - 4) - 2;
+    i ? fx.lineTo(x, y) : fx.moveTo(x, y);
+  });
+  fx.stroke();
+}
+
+/* ---------------- legend of species ---------------- */
+function renderLegend() {
+  const box = document.getElementById('legend');
+  const counts = {};
+  creatures.forEach(c => { counts[c.species.id] = (counts[c.species.id] || 0) + 1; });
+  box.innerHTML = speciesList
+    .filter(s => counts[s.id])
+    .map(s => `<div class="sp"><i style="background:hsl(${s.hue} 55% 48%)"></i>species ${s.id + 1}<span>${counts[s.id]}</span></div>`)
+    .join('') || '<div class="sp">–</div>';
+}
+
+/* ---------------- controls ---------------- */
+document.querySelectorAll('[data-sp]').forEach(b => b.addEventListener('click', () => {
+  speedMul = +b.dataset.sp;
+  document.querySelectorAll('[data-sp]').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+}));
+document.getElementById('pauseBtn').addEventListener('click', e => {
+  paused = !paused;
+  e.target.textContent = paused ? 'resume' : 'pause';
+  e.target.classList.toggle('on', paused);
+});
+document.getElementById('restartBtn').addEventListener('click', () => { allTimeBest = 0; firstGeneration(); });
+document.getElementById('chaosBtn').addEventListener('click', () => {
+  creatures.forEach(c => c.pts.forEach(p => { p.x += (Math.random() - .5) * 30; p.y -= Math.random() * 20; }));
+});
+cv.addEventListener('pointerdown', e => {
+  const r = cv.getBoundingClientRect();
+  const mx = e.clientX - r.left + camX, my = e.clientY - r.top;
+  let closest = null, bd = 40;
+  creatures.forEach(c => {
+    const d = Math.hypot(c.pts[0].x - mx, c.pts[0].y - my);
+    if (d < bd) { bd = d; closest = c; }
+  });
+  followed = closest === followed ? null : closest;
+});
+</script>
+</body>
+</html>
