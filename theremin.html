@@ -36,7 +36,8 @@ main{max-width:960px}
 .readout .side{background:rgba(10,12,18,.55);backdrop-filter:blur(6px);border-radius:12px;padding:8px 14px;min-width:110px}
 .readout .k{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
 .readout .v{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
-.readout .note{color:#f0c987}
+.readout .note{color:#ff7a7a}
+.readout .vol{color:#3fe0c9}
 .staffline{position:absolute;left:0;right:0;bottom:0;height:64px;pointer-events:none;z-index:2}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
 .chipbtn{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:999px;padding:7px 15px;
@@ -58,7 +59,7 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
 .notepill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:5px}
 .notepill span{background:rgba(10,12,18,.55);color:#fff;font-size:.62rem;padding:3px 7px;border-radius:6px;
   font-family:var(--sans);opacity:.4;transition:opacity .2s,background .2s,transform .2s}
-.notepill span.active{opacity:1;background:#f0c987;color:#1a1e2b;font-weight:700;transform:translateY(-2px)}
+.notepill span.active{opacity:1;background:#ff7a7a;color:#1a1e2b;font-weight:700;transform:translateY(-2px)}
 </style>
 </head>
 <body>
@@ -95,7 +96,7 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
       </div>
       <div class="side" style="text-align:right">
         <div class="k">left hand · tone</div>
-        <div class="v" id="volOut">–</div>
+        <div class="v vol" id="volOut">–</div>
       </div>
     </div>
     <div class="startgate" id="startgate">
@@ -107,8 +108,8 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
   </div>
 
   <div class="legendrow">
-    <span><i style="background:#f0c987"></i>right hand → pitch (height = note)</span>
-    <span><i style="background:#7ec4e8"></i>left hand → volume & brightness</span>
+    <span><i style="background:#ff7a7a"></i>right hand → pitch (height = note)</span>
+    <span><i style="background:#3fe0c9"></i>left hand → volume & brightness</span>
   </div>
 
   <div class="controls">
@@ -119,19 +120,20 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
     <button class="chipbtn" data-scale="chromatic">chromatic</button>
   </div>
   <div class="controls">
-    <span class="hint" style="margin:0">voice:</span>
-    <button class="chipbtn on" data-wave="sine">sine</button>
-    <button class="chipbtn" data-wave="triangle">triangle</button>
-    <button class="chipbtn" data-wave="sawtooth">sawtooth</button>
-    <button class="chipbtn" data-wave="square">square</button>
+    <span class="hint" style="margin:0">instrument:</span>
+    <button class="chipbtn on" data-inst="piano">🎹 piano</button>
+    <button class="chipbtn" data-inst="strings">🎻 strings</button>
+    <button class="chipbtn" data-inst="organ">🎺 organ</button>
+    <button class="chipbtn" data-inst="bell">🔔 bell</button>
   </div>
   <div class="controls">
-    <button class="toggle2" id="chordBtn"><span>🎹 chord mode</span></button>
+    <button class="toggle2" id="chordBtn"><span>🎶 chord mode</span></button>
     <button class="toggle2" id="echoBtn"><span>〰 echo</span></button>
+    <button class="toggle2" id="drumBtn"><span>🥁 drum mode</span></button>
     <button class="toggle2" id="loopBtn"><span class="dot"></span> record loop</button>
     <button class="chipbtn" id="clearLoopBtn" style="display:none">clear loop</button>
   </div>
-  <div class="hint">move both hands into frame to play · pinch your right thumb and index finger together for vibrato · chord mode plays a full triad under your right hand</div>
+  <div class="hint">move both hands into frame to play · pinch your right thumb and index finger together for vibrato · drum mode turns pinches into kick/snare/hi-hat hits instead</div>
 
   <div class="next fade in"><a href="play">← back to play</a></div>
 </main>
@@ -166,7 +168,8 @@ const SCALES = {
   chromatic: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 const NOTE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
-let scaleName = 'pentatonic', waveType = 'sine', chordMode = false, echoOn = false;
+let scaleName = 'pentatonic', chordMode = false, echoOn = false;
+const RIGHT_COLOR = '#ff7a7a', LEFT_COLOR = '#3fe0c9';
 
 function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
 
@@ -198,26 +201,93 @@ function chordFor(midi, degree) {
   ];
 }
 
-/* ---------------- audio engine: two-voice synth + shared FX bus ---------------- */
+/* ---------------- instrument voices ----------------
+   each "instrument" is a small harmonic recipe: a stack of oscillators at
+   different ratios/detunes/gains, which is what actually makes something
+   sound like a piano or a pad instead of a bare sine/saw/square wave. */
+const INSTRUMENTS = {
+  piano: {
+    label: 'piano', filterBase: 1200, filterSpan: 3200,
+    partials: [
+      { ratio: 1, type: 'triangle', gain: 1 },
+      { ratio: 2, type: 'sine', gain: .35 },
+      { ratio: 3, type: 'sine', gain: .12 },
+      { ratio: 4.2, type: 'sine', gain: .05 } // slightly inharmonic, gives it a "struck" character
+    ]
+  },
+  strings: {
+    label: 'strings', filterBase: 500, filterSpan: 3800,
+    partials: [
+      { ratio: 1, type: 'sawtooth', gain: .55, detune: -7 },
+      { ratio: 1, type: 'sawtooth', gain: .55, detune: 7 },
+      { ratio: 2, type: 'sine', gain: .18 }
+    ]
+  },
+  organ: {
+    label: 'organ', filterBase: 900, filterSpan: 3000,
+    partials: [
+      { ratio: 1, type: 'sine', gain: .9 },
+      { ratio: 2, type: 'sine', gain: .5 },
+      { ratio: 3, type: 'sine', gain: .3 },
+      { ratio: 4, type: 'sine', gain: .2 }
+    ]
+  },
+  bell: {
+    label: 'bell', filterBase: 2200, filterSpan: 4000,
+    partials: [
+      { ratio: 1, type: 'sine', gain: .8 },
+      { ratio: 2.76, type: 'sine', gain: .4 }, // classic inharmonic bell ratio
+      { ratio: 5.4, type: 'sine', gain: .18 }
+    ]
+  }
+};
+let instName = 'piano';
+
+/* ---------------- audio engine: harmonic-stack voices + shared FX bus ---------------- */
 let actx = null, master = null, delayNode = null, delayFeedback = null, delayWet = null;
 let lead = null;          // single lead voice (non-chord mode)
-let chordVoices = [];      // up to 3 oscillators for chord mode
+let chordVoices = [];      // up to 3 harmonic voices for chord mode
 let vibrato = null, vibratoGain = null;
 let filt = null;
 
-function makeVoice(dest) {
-  const o = actx.createOscillator();
-  o.type = waveType;
+// a "voice" is now a small bank of detuned/ratio'd oscillators feeding one gain,
+// so its own internal balance defines the instrument's timbre
+function makeVoice(dest, recipe) {
   const g = actx.createGain();
   g.gain.value = 0;
-  o.connect(g).connect(dest);
-  o.start();
-  return { osc: o, gain: g };
+  const oscs = recipe.partials.map(p => {
+    const o = actx.createOscillator();
+    o.type = p.type;
+    if (p.detune) o.detune.value = p.detune;
+    const pg = actx.createGain();
+    pg.gain.value = p.gain;
+    o.connect(pg).connect(g);
+    o.start();
+    return { osc: o, ratio: p.ratio };
+  });
+  g.connect(dest);
+  return { oscs, gain: g };
+}
+function setVoiceFreq(voice, freq) {
+  voice.oscs.forEach(o => o.osc.frequency.setTargetAtTime(freq * o.ratio, actx.currentTime, 0.045));
+}
+function rebuildVoices() {
+  const recipe = INSTRUMENTS[instName];
+  [lead, ...chordVoices].forEach(v => {
+    if (!v) return;
+    v.oscs.forEach(o => { try { o.osc.stop(); o.osc.disconnect(); } catch (e) {} });
+    v.gain.disconnect();
+  });
+  lead = makeVoice(master, recipe);
+  vibrato.connect(vibratoGain).connect(lead.oscs[0].osc.frequency);
+  chordVoices = [makeVoice(master, recipe), makeVoice(master, recipe), makeVoice(master, recipe)];
+  filt.frequency.value = recipe.filterBase;
+  applyMixLevels();
 }
 function startAudio() {
   actx = new (window.AudioContext || window.webkitAudioContext)();
   filt = actx.createBiquadFilter();
-  filt.type = 'lowpass'; filt.frequency.value = 800; filt.Q.value = 1.2;
+  filt.type = 'lowpass'; filt.frequency.value = 800; filt.Q.value = 1.1;
   master = actx.createGain(); master.gain.value = 0;
 
   delayNode = actx.createDelay(1.2); delayNode.delayTime.value = 0.28;
@@ -230,36 +300,42 @@ function startAudio() {
 
   vibrato = actx.createOscillator(); vibrato.frequency.value = 5.5;
   vibratoGain = actx.createGain(); vibratoGain.gain.value = 0;
-
-  lead = makeVoice(master);
-  vibrato.connect(vibratoGain).connect(lead.osc.frequency);
   vibrato.start();
 
-  chordVoices = [makeVoice(master), makeVoice(master), makeVoice(master)];
-  chordVoices.forEach(v => v.gain.gain.value = 0);
+  rebuildVoices();
+  initDrums();
 }
-function setLeadPitch(freq) { if (lead) lead.osc.frequency.setTargetAtTime(freq, actx.currentTime, 0.045); }
+function setLeadPitch(freq) { if (lead) setVoiceFreq(lead, freq); }
 function setChordPitches(freqs) {
-  chordVoices.forEach((v, i) => { if (freqs[i]) v.osc.frequency.setTargetAtTime(freqs[i], actx.currentTime, 0.045); });
+  chordVoices.forEach((v, i) => { if (freqs[i]) setVoiceFreq(v, freqs[i]); });
 }
-function setVolume(v) {
-  if (!master) return;
-  master.gain.setTargetAtTime(v, actx.currentTime, 0.06);
+function applyMixLevels() {
+  if (!lead) return;
   if (chordMode) {
     lead.gain.gain.setTargetAtTime(0, actx.currentTime, 0.05);
-    chordVoices.forEach((cv, i) => cv.gain.gain.setTargetAtTime(i === 0 ? 0.55 : 0.32, actx.currentTime, 0.05));
+    chordVoices.forEach((cv, i) => cv.gain.gain.setTargetAtTime((i === 0 ? 0.55 : 0.32) * lastVol, actx.currentTime, 0.05));
   } else {
-    lead.gain.gain.setTargetAtTime(1, actx.currentTime, 0.05);
+    lead.gain.gain.setTargetAtTime(lastVol, actx.currentTime, 0.05);
     chordVoices.forEach(cv => cv.gain.gain.setTargetAtTime(0, actx.currentTime, 0.05));
   }
 }
-function setBrightness(v) { if (filt) filt.frequency.setTargetAtTime(300 + v * 4200, actx.currentTime, 0.08); }
+let lastVol = 0;
+function setVolume(v) {
+  if (!master) return;
+  lastVol = v > 0 ? 1 : 0; // per-voice mix ratio stays fixed; master carries the actual level
+  master.gain.setTargetAtTime(v, actx.currentTime, 0.06);
+  applyMixLevels();
+}
+function setBrightness(v) {
+  if (!filt) return;
+  const recipe = INSTRUMENTS[instName];
+  filt.frequency.setTargetAtTime(recipe.filterBase + v * recipe.filterSpan, actx.currentTime, 0.08);
+}
 function setVibrato(v) { if (vibratoGain) vibratoGain.gain.setTargetAtTime(v * 22, actx.currentTime, 0.05); }
 function setEcho(on) { if (delayWet) delayWet.gain.setTargetAtTime(on ? 0.35 : 0, actx.currentTime, 0.1); }
-function setWave(type) {
-  waveType = type;
-  if (lead) lead.osc.type = type;
-  chordVoices.forEach(v => v.osc.type = type);
+function setInstrument(name) {
+  instName = name;
+  if (actx) rebuildVoices();
 }
 
 document.querySelectorAll('[data-scale]').forEach(b => b.addEventListener('click', () => {
@@ -268,20 +344,82 @@ document.querySelectorAll('[data-scale]').forEach(b => b.addEventListener('click
   b.classList.add('on');
   buildNotePills();
 }));
-document.querySelectorAll('[data-wave]').forEach(b => b.addEventListener('click', () => {
-  setWave(b.dataset.wave);
-  document.querySelectorAll('[data-wave]').forEach(x => x.classList.remove('on'));
+document.querySelectorAll('[data-inst]').forEach(b => b.addEventListener('click', () => {
+  setInstrument(b.dataset.inst);
+  document.querySelectorAll('[data-inst]').forEach(x => x.classList.remove('on'));
   b.classList.add('on');
 }));
 document.getElementById('chordBtn').addEventListener('click', e => {
   chordMode = !chordMode;
   e.currentTarget.classList.toggle('on', chordMode);
+  applyMixLevels();
 });
 document.getElementById('echoBtn').addEventListener('click', e => {
   echoOn = !echoOn;
   e.currentTarget.classList.toggle('on', echoOn);
   setEcho(echoOn);
 });
+document.getElementById('drumBtn').addEventListener('click', e => {
+  drumMode = !drumMode;
+  e.currentTarget.classList.toggle('on', drumMode);
+  if (drumMode) setVolume(0);
+});
+
+/* ---------------- drum mode: pinch either hand to strike a percussion hit ----------------
+   a real theremin can't "play drums" continuously, so instead a pinch gesture
+   becomes a triggered one-shot, like tapping a drum pad */
+let drumMode = false;
+let drumBus = null;
+function initDrums() {
+  drumBus = actx.createGain(); drumBus.gain.value = .7;
+  drumBus.connect(actx.destination);
+}
+function hitKick() {
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = 'sine'; o.frequency.setValueAtTime(150, actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(45, actx.currentTime + .18);
+  g.gain.setValueAtTime(1, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + .32);
+  o.connect(g).connect(drumBus); o.start(); o.stop(actx.currentTime + .35);
+}
+function hitSnare() {
+  const bufSize = actx.sampleRate * .2;
+  const buf = actx.createBuffer(1, bufSize, actx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+  const noise = actx.createBufferSource(); noise.buffer = buf;
+  const hp = actx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+  const g = actx.createGain(); g.gain.setValueAtTime(.9, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + .18);
+  noise.connect(hp).connect(g).connect(drumBus); noise.start();
+}
+function hitHat() {
+  const bufSize = actx.sampleRate * .08;
+  const buf = actx.createBuffer(1, bufSize, actx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < bufSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufSize);
+  const noise = actx.createBufferSource(); noise.buffer = buf;
+  const hp = actx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 6000;
+  const g = actx.createGain(); g.gain.setValueAtTime(.5, actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001, actx.currentTime + .06);
+  noise.connect(hp).connect(g).connect(drumBus); noise.start();
+}
+// right pinch -> kick+snare depending on height, left pinch -> hi-hat
+let rightPinchWas = false, leftPinchWas = false;
+const PINCH_ON = 0.055;
+function updateDrumTriggers() {
+  if (!drumMode || !actx) return;
+  if (rightHand) {
+    const pinching = rightHand.pinch < PINCH_ON;
+    if (pinching && !rightPinchWas) { rightHand.y < .5 ? hitSnare() : hitKick(); }
+    rightPinchWas = pinching;
+  }
+  if (leftHand) {
+    const pinching = leftHand.pinch < PINCH_ON;
+    if (pinching && !leftPinchWas) hitHat();
+    leftPinchWas = pinching;
+  }
+}
 
 /* ---------------- note staff: little pills showing where each note sits ---------------- */
 function buildNotePills() {
@@ -299,8 +437,8 @@ function highlightPill(degree) {
 let rightHand = null, leftHand = null; // smoothed {x,y,pinch}
 let rightRaw = null, leftRaw = null;
 let rightLastSeen = 0, leftLastSeen = 0;
-const LAG_GRACE = 700; // ms to hold the last note before actually going silent
-const SMOOTH = 0.35;   // exponential smoothing factor, higher = snappier, lower = smoother
+const LAG_GRACE = 550; // ms to hold the last note before actually going silent
+const SMOOTH = 0.55;   // exponential smoothing factor, higher = snappier, lower = smoother
 const particles = [];
 let volSmoothed = 0, curDegree = -1;
 
@@ -340,7 +478,12 @@ function onResults(results) {
   document.getElementById('lagFlag').classList.toggle('show', lagging);
 
   // drive audio from tracked (smoothed) hands
-  if (rightHand) {
+  if (drumMode) {
+    // in drum mode, hand height just previews which drum a pinch will strike
+    document.getElementById('noteOut').textContent = rightHand ? (rightHand.y < .5 ? 'snare' : 'kick') : '–';
+    document.getElementById('volOut').textContent = leftHand ? 'hi-hat ready' : '–';
+    updateDrumTriggers();
+  } else if (rightHand) {
     const { midi, name, degree } = noteForY(rightHand.y);
     curDegree = degree;
     highlightPill(degree);
@@ -348,23 +491,25 @@ function onResults(results) {
     else setLeadPitch(midiToFreq(midi));
     setVibrato(Math.max(0, 1 - rightHand.pinch * 14));
     document.getElementById('noteOut').textContent = name;
-    spawnTrail(rightHand, '#f0c987', rightRaw);
   } else {
     document.getElementById('noteOut').textContent = '–';
     highlightPill(-1);
   }
-  if (leftHand) {
-    const target = Math.max(0, Math.min(1, 1 - leftHand.y));
-    volSmoothed += (target - volSmoothed) * .2;
-    setVolume(volSmoothed * .22);
-    setBrightness(volSmoothed);
-    document.getElementById('volOut').textContent = Math.round(volSmoothed * 100) + '%';
-    spawnTrail(leftHand, '#7ec4e8', leftRaw);
-  } else {
-    volSmoothed += (0 - volSmoothed) * .15;
-    setVolume(volSmoothed * .22);
-    document.getElementById('volOut').textContent = volSmoothed < .02 ? '–' : Math.round(volSmoothed * 100) + '%';
+  if (rightHand) spawnTrail(rightHand, RIGHT_COLOR, rightRaw);
+  if (!drumMode) {
+    if (leftHand) {
+      const target = Math.max(0, Math.min(1, 1 - leftHand.y));
+      volSmoothed += (target - volSmoothed) * .2;
+      setVolume(volSmoothed * .22);
+      setBrightness(volSmoothed);
+      document.getElementById('volOut').textContent = Math.round(volSmoothed * 100) + '%';
+    } else {
+      volSmoothed += (0 - volSmoothed) * .15;
+      setVolume(volSmoothed * .22);
+      document.getElementById('volOut').textContent = volSmoothed < .02 ? '–' : Math.round(volSmoothed * 100) + '%';
+    }
   }
+  if (leftHand) spawnTrail(leftHand, LEFT_COLOR, leftRaw);
 
   drawTrail();
   recordFrame();
@@ -380,7 +525,7 @@ function spawnTrail(hand, color, raw) {
 function updateGlow() {
   const glow = Math.min(volSmoothed * 60, 40);
   document.getElementById('stagebox').style.boxShadow =
-    `0 16px 44px rgba(90,100,80,.16), 0 0 ${glow}px ${glow * .4}px rgba(240,201,135,${volSmoothed * .35})`;
+    `0 16px 44px rgba(90,100,80,.16), 0 0 ${glow}px ${glow * .4}px rgba(63,224,201,${volSmoothed * .35})`;
 }
 
 function drawTrail() {
@@ -400,7 +545,7 @@ function drawTrail() {
     tctx.fill();
   }
   // crosshair + note-height indicator line on current hand positions
-  [[rightHand, '#f0c987'], [leftHand, '#7ec4e8']].forEach(([h, col]) => {
+  [[rightHand, RIGHT_COLOR], [leftHand, LEFT_COLOR]].forEach(([h, col]) => {
     if (!h) return;
     const x = h.x * TW, y = h.y * TH;
     tctx.strokeStyle = col; tctx.lineWidth = 2;
@@ -479,11 +624,13 @@ document.getElementById('startBtn').addEventListener('click', async () => {
   try {
     startAudio();
     const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
-    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
+    // modelComplexity 0 = the "lite" model: noticeably faster per-frame inference,
+    // which matters far more for responsiveness here than the small accuracy gain of "full"
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
     hands.onResults(onResults);
     const camera = new Camera(vid, {
       onFrame: async () => { await hands.send({ image: vid }); },
-      width: 640, height: 480
+      width: 480, height: 360
     });
     await camera.start();
     document.getElementById('startgate').style.display = 'none';
