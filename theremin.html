@@ -36,8 +36,8 @@ main{max-width:960px}
 .readout .side{background:rgba(10,12,18,.55);backdrop-filter:blur(6px);border-radius:12px;padding:8px 14px;min-width:110px}
 .readout .k{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;opacity:.6}
 .readout .v{font-size:1.05rem;font-weight:700;font-variant-numeric:tabular-nums;margin-top:2px}
-.readout .note{color:#ff7a7a}
-.readout .vol{color:#3fe0c9}
+.readout .note{color:#fff;font-weight:800}
+.readout .vol{color:#fff;opacity:.65;font-weight:600}
 .staffline{position:absolute;left:0;right:0;bottom:0;height:64px;pointer-events:none;z-index:2}
 .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:16px}
 .chipbtn{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:999px;padding:7px 15px;
@@ -47,7 +47,9 @@ main{max-width:960px}
 body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
 .hint{font-size:.8rem;color:var(--faint);margin-top:12px;text-align:center;line-height:1.7}
 .legendrow{display:flex;gap:22px;justify-content:center;margin-top:6px;font-size:.78rem;color:var(--soft);flex-wrap:wrap}
-.legendrow span i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.legendrow span i{display:inline-block;width:11px;height:11px;margin-right:7px;vertical-align:middle;border:1.6px solid var(--ink);border-radius:50%;box-sizing:border-box}
+.legendrow span.dash i{border-style:dashed}
+body.night .legendrow span i{border-color:#e8e6e0}
 .toggle2{border:1px solid var(--line);background:transparent;color:var(--soft);border-radius:999px;padding:7px 15px;
   font-family:var(--sans);font-size:.82rem;cursor:pointer;transition:all .25s;display:inline-flex;align-items:center;gap:6px}
 .toggle2:hover{color:var(--ink);border-color:var(--faint)}
@@ -59,7 +61,7 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
 .notepill{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:3;display:flex;gap:5px}
 .notepill span{background:rgba(10,12,18,.55);color:#fff;font-size:.62rem;padding:3px 7px;border-radius:6px;
   font-family:var(--sans);opacity:.4;transition:opacity .2s,background .2s,transform .2s}
-.notepill span.active{opacity:1;background:#ff7a7a;color:#1a1e2b;font-weight:700;transform:translateY(-2px)}
+.notepill span.active{opacity:1;background:#fff;color:#0c0e14;font-weight:700;transform:translateY(-2px)}
 </style>
 </head>
 <body>
@@ -108,8 +110,8 @@ body.night .chipbtn.on{background:#e8e6e0;color:#232838;border-color:#e8e6e0}
   </div>
 
   <div class="legendrow">
-    <span><i style="background:#ff7a7a"></i>right hand → pitch (height = note)</span>
-    <span><i style="background:#3fe0c9"></i>left hand → volume & brightness</span>
+    <span><i></i>right hand → pitch (height = note)</span>
+    <span class="dash"><i></i>left hand → volume & brightness</span>
   </div>
 
   <div class="controls">
@@ -169,7 +171,6 @@ const SCALES = {
 };
 const NOTE_NAMES = ['C', 'C♯', 'D', 'D♯', 'E', 'F', 'F♯', 'G', 'G♯', 'A', 'A♯', 'B'];
 let scaleName = 'pentatonic', chordMode = false, echoOn = false;
-const RIGHT_COLOR = '#ff7a7a', LEFT_COLOR = '#3fe0c9';
 
 function midiToFreq(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
 
@@ -438,7 +439,7 @@ let rightHand = null, leftHand = null; // smoothed {x,y,pinch}
 let rightRaw = null, leftRaw = null;
 let rightLastSeen = 0, leftLastSeen = 0;
 const LAG_GRACE = 550; // ms to hold the last note before actually going silent
-const SMOOTH = 0.55;   // exponential smoothing factor, higher = snappier, lower = smoother
+const SMOOTH = 0.68;   // exponential smoothing factor, higher = snappier, lower = smoother
 const particles = [];
 let volSmoothed = 0, curDegree = -1;
 
@@ -495,7 +496,7 @@ function onResults(results) {
     document.getElementById('noteOut').textContent = '–';
     highlightPill(-1);
   }
-  if (rightHand) spawnTrail(rightHand, RIGHT_COLOR, rightRaw);
+  if (rightHand) spawnTrail(rightHand, 'right');
   if (!drumMode) {
     if (leftHand) {
       const target = Math.max(0, Math.min(1, 1 - leftHand.y));
@@ -509,23 +510,23 @@ function onResults(results) {
       document.getElementById('volOut').textContent = volSmoothed < .02 ? '–' : Math.round(volSmoothed * 100) + '%';
     }
   }
-  if (leftHand) spawnTrail(leftHand, LEFT_COLOR, leftRaw);
+  if (leftHand) spawnTrail(leftHand, 'left');
 
   drawTrail();
   recordFrame();
 }
 
-function spawnTrail(hand, color, raw) {
+/* a clean, restrained trail: small fading dots along the path, no blobs */
+function spawnTrail(hand, side) {
   const x = hand.x * TW, y = hand.y * TH;
-  const speed = raw ? Math.hypot((raw.x - hand.x) * TW, (raw.y - hand.y) * TH) : 0;
-  particles.push({ x, y, c: color, life: 34, maxLife: 34, r: 5 + Math.min(speed * .8, 16) });
+  particles.push({ x, y, side, life: 22, maxLife: 22 });
 }
 
-/* audio-reactive glow: the whole stage pulses faintly with current volume */
+/* audio-reactive glow: a faint, tasteful lift with volume, monochrome */
 function updateGlow() {
-  const glow = Math.min(volSmoothed * 60, 40);
+  const glow = Math.min(volSmoothed * 34, 22);
   document.getElementById('stagebox').style.boxShadow =
-    `0 16px 44px rgba(90,100,80,.16), 0 0 ${glow}px ${glow * .4}px rgba(63,224,201,${volSmoothed * .35})`;
+    `0 16px 44px rgba(90,100,80,.16), 0 0 ${glow}px ${glow * .3}px rgba(255,255,255,${volSmoothed * .22})`;
 }
 
 function drawTrail() {
@@ -535,26 +536,25 @@ function drawTrail() {
     const p = particles[i];
     p.life--;
     if (p.life <= 0) { particles.splice(i, 1); continue; }
-    const a = p.life / p.maxLife;
-    const grd = tctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * a + 4);
-    grd.addColorStop(0, p.c + 'ee');
-    grd.addColorStop(1, p.c + '00');
+    const a = (p.life / p.maxLife) * .5;
     tctx.beginPath();
-    tctx.arc(p.x, p.y, p.r * a + 4, 0, Math.PI * 2);
-    tctx.fillStyle = grd;
+    tctx.arc(p.x, p.y, 2.2, 0, Math.PI * 2);
+    tctx.fillStyle = `rgba(255,255,255,${a})`;
     tctx.fill();
   }
-  // crosshair + note-height indicator line on current hand positions
-  [[rightHand, RIGHT_COLOR], [leftHand, LEFT_COLOR]].forEach(([h, col]) => {
+  // clean rings on current hand positions: solid for the right (pitch) hand,
+  // dashed for the left (tone) hand — shape tells them apart, not colour
+  [[rightHand, false], [leftHand, true]].forEach(([h, dashed]) => {
     if (!h) return;
     const x = h.x * TW, y = h.y * TH;
-    tctx.strokeStyle = col; tctx.lineWidth = 2;
-    tctx.beginPath(); tctx.arc(x, y, 16, 0, Math.PI * 2); tctx.stroke();
-    tctx.beginPath(); tctx.moveTo(x - 22, y); tctx.lineTo(x - 10, y);
-    tctx.moveTo(x + 10, y); tctx.lineTo(x + 22, y); tctx.stroke();
-    tctx.globalAlpha = .35;
-    tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(TW, y); tctx.setLineDash([3, 6]); tctx.stroke();
-    tctx.setLineDash([]); tctx.globalAlpha = 1;
+    tctx.strokeStyle = '#fff'; tctx.lineWidth = 1.5;
+    tctx.setLineDash(dashed ? [3, 4] : []);
+    tctx.beginPath(); tctx.arc(x, y, 15, 0, Math.PI * 2); tctx.stroke();
+    tctx.setLineDash([]);
+    tctx.beginPath(); tctx.arc(x, y, 1.8, 0, Math.PI * 2); tctx.fillStyle = '#fff'; tctx.fill();
+    tctx.globalAlpha = .22;
+    tctx.beginPath(); tctx.moveTo(0, y); tctx.lineTo(TW, y);
+    tctx.setLineDash([2, 5]); tctx.stroke(); tctx.setLineDash([]); tctx.globalAlpha = 1;
   });
 }
 
@@ -625,12 +625,14 @@ document.getElementById('startBtn').addEventListener('click', async () => {
     startAudio();
     const hands = new Hands({ locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}` });
     // modelComplexity 0 = the "lite" model: noticeably faster per-frame inference,
-    // which matters far more for responsiveness here than the small accuracy gain of "full"
-    hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.6, minTrackingConfidence: 0.5 });
+    // which matters far more for responsiveness here than the small accuracy gain of "full".
+    // Slightly lower confidence thresholds let MediaPipe commit to a track faster
+    // instead of spending extra internal passes chasing higher certainty.
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 0, minDetectionConfidence: 0.5, minTrackingConfidence: 0.4 });
     hands.onResults(onResults);
     const camera = new Camera(vid, {
       onFrame: async () => { await hands.send({ image: vid }); },
-      width: 480, height: 360
+      width: 400, height: 300
     });
     await camera.start();
     document.getElementById('startgate').style.display = 'none';
