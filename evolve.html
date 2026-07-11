@@ -105,10 +105,14 @@ body.night .stat b{color:#e8e6e0}
    ================================================================ */
 const cv = document.getElementById('stage');
 const cx = cv.getContext('2d');
-let W, H, GROUND;
+// sane fallback size in case the very first measurement lands before layout
+// has actually settled (rare, but a 0×0 canvas silently breaks everything
+// downstream with no error — better to never let W/H be zero)
+let W = 800, H = 420, GROUND = H - 34;
 function fit() {
   const DPR = Math.min(devicePixelRatio || 1, 2);
   const r = cv.getBoundingClientRect();
+  if (r.width < 10 || r.height < 10) return; // layout not ready yet, keep the fallback
   W = r.width; H = r.height;
   cv.width = W * DPR; cv.height = H * DPR;
   cx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -116,6 +120,9 @@ function fit() {
 }
 addEventListener('resize', fit);
 fit();
+// re-measure a beat later too, in case the first call above was too early
+setTimeout(fit, 0);
+setTimeout(fit, 250);
 
 /* ---------------- tiny neural net: the creature's brain ---------------- */
 const NIN = 8, NHID = 6, NOUT = 4; // sees joint angles + ground contact, drives 4 muscles
@@ -245,13 +252,13 @@ function drawCreature(c, followed) {
     cx.stroke();
   });
   cx.fillStyle = `hsl(${c.hue} 60% 55%)`;
-  cx.beginPath(); cx.arc(body.x, body.y, 7, 0, 7); cx.fill();
+  cx.beginPath(); cx.arc(body.x, body.y, 7, 0, Math.PI * 2); cx.fill();
   cx.fillStyle = `hsl(${c.hue} 50% 38%)`;
-  [footF, footB].forEach(f => { cx.beginPath(); cx.arc(f.x, f.y, 3.6, 0, 7); cx.fill(); });
+  [footF, footB].forEach(f => { cx.beginPath(); cx.arc(f.x, f.y, 3.6, 0, Math.PI * 2); cx.fill(); });
   cx.globalAlpha = 1;
   if (c === followed) {
     cx.strokeStyle = `hsl(${c.hue} 70% 45%)`; cx.lineWidth = 1; cx.setLineDash([2, 3]);
-    cx.beginPath(); cx.arc(body.x, body.y, 16, 0, 7); cx.stroke(); cx.setLineDash([]);
+    cx.beginPath(); cx.arc(body.x, body.y, 16, 0, Math.PI * 2); cx.stroke(); cx.setLineDash([]);
   }
 }
 
