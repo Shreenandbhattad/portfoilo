@@ -50,9 +50,6 @@ body.night .lookupdate{background:#262c3d;border-color:rgba(255,255,255,.18);col
 .lookupmsg{font-size:.8rem;color:var(--soft);flex:1;min-width:120px}
 .lookupmsg.err{color:#c25562}
 .lookupmsg.ok{color:#5a8a52}
-.ordivider{display:flex;align-items:center;gap:10px;padding:16px 24px 0;font-size:.66rem;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--faint);font-weight:600}
-.ordivider::before,.ordivider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent)}
 body.night .lookupbtn{background:#e8e6e0;color:#232838}
 body.night .lookupbtn:hover{background:#c9c6bd}
 body.night .lookupmsg{color:#a8a49b}
@@ -65,39 +62,8 @@ body.night .lookupmsg{color:#a8a49b}
 .bstub::after{bottom:-13px}
 .bstub .seatbadge{position:absolute;top:14px;right:14px;font-size:1.3rem;opacity:.22;pointer-events:none}
 .timesFound{background:rgba(143,174,126,.14);border:1px solid rgba(143,174,126,.35);border-radius:10px;padding:9px 11px;margin-bottom:2px}
-.timesFound label{margin-bottom:3px}
 .foundwhen{font-size:.84rem;font-weight:700;color:#4d7048}
 body.night .foundwhen{color:#9fc48f}
-.edittimes{margin-top:5px;background:none;border:none;color:var(--blue);font-size:.68rem;font-weight:600;
-  letter-spacing:.04em;text-decoration:underline;cursor:pointer;padding:0;font-family:var(--sans)}
-.timesManual{display:flex;flex-direction:column;gap:9px}
-.broute{display:flex;align-items:flex-start;gap:6px;position:relative}
-.portbox{flex:1;min-width:0;position:relative;text-align:center}
-.portbox .codein{width:100%;font-family:var(--sans);font-weight:800;font-size:clamp(1.5rem,5vw,2.1rem);
-  letter-spacing:.05em;text-transform:uppercase;text-align:center;color:var(--ink);
-  background:#faf7f0;border:2px solid var(--line);border-radius:14px;padding:10px 6px;outline:none;transition:border-color .3s,background .3s,box-shadow .3s}
-.portbox .codein:focus{border-color:var(--blue);background:#fff;box-shadow:0 0 0 4px rgba(91,126,163,.12)}
-.portbox .codein.ok{border-color:#8fae7e;box-shadow:0 0 0 4px rgba(143,174,126,.12)}
-.portbox .cityname{font-size:.74rem;color:var(--soft);margin-top:7px;min-height:1.1em;
-  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
-.routeflourish{position:absolute;left:50%;top:24px;transform:translateX(-50%);width:calc(100% - 130px);
-  display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0;opacity:.5}
-.routeflourish svg{width:100%;height:20px}
-.swapbtn{margin-top:14px;width:38px;height:38px;flex-shrink:0;border-radius:50%;border:2px solid var(--line);
-  background:#fffdf9;color:var(--blue);font-size:15px;cursor:pointer;transition:transform .4s ease,border-color .3s,box-shadow .3s;
-  position:relative;z-index:1;box-shadow:0 3px 8px rgba(90,100,80,.1)}
-.swapbtn:hover{transform:rotate(180deg);border-color:var(--blue-light);box-shadow:0 4px 12px rgba(91,126,163,.2)}
-.sugg{position:absolute;top:calc(100% - 26px);left:0;right:0;background:#fff;border:1px solid var(--line);
-  border-radius:12px;box-shadow:0 14px 34px rgba(60,60,50,.16);z-index:30;overflow:hidden;text-align:left;display:none}
-.sugg.open{display:block}
-.sugg div{padding:9px 13px;font-size:.82rem;cursor:pointer;display:flex;gap:9px;align-items:baseline}
-.sugg div:hover,.sugg div.hi{background:#f2f6f9}
-.sugg b{font-weight:700;letter-spacing:.04em;min-width:38px}
-.sugg small{color:var(--soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#fNote{width:100%;margin-top:16px;font-family:var(--sans);font-weight:300;font-size:.9rem;color:var(--ink);
-  background:none;border:none;border-bottom:2px dashed var(--line);outline:none;padding:6px 2px;transition:border-color .3s}
-#fNote:focus{border-color:var(--blue)}
-
 /* the instant sketch-preview: appears the moment both airports are chosen */
 .previewbox{max-height:0;overflow:hidden;opacity:0;transition:max-height .5s ease,opacity .4s ease,margin .5s ease}
 .previewbox.show{max-height:120px;opacity:1;margin-top:16px}
@@ -129,16 +95,9 @@ body.night .previewstats .row2{color:#a8a49b}
   .bstub::after{top:-13px;left:auto;right:-13px;bottom:auto}
 }
 body.night .bpass{background:#2e3345;border-color:rgba(255,255,255,.16)}
-body.night .bmain .codein{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0}
-body.night .portbox .codein:focus{background:#232838}
 body.night .bstub{background:#293043;border-color:rgba(255,255,255,.16)}
 body.night .bstub::before,body.night .bstub::after{background:#232838;border-color:rgba(255,255,255,.16)}
 body.night .bstub input{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0;color-scheme:dark}
-body.night #fNote{color:#e8e6e0;border-color:rgba(255,255,255,.2)}
-body.night .sugg{background:#2e3345;border-color:rgba(255,255,255,.16)}
-body.night .sugg div:hover,body.night .sugg div.hi{background:#38405a}
-body.night .sugg small{color:#a8a49b}
-body.night .swapbtn{background:#2e3345;border-color:rgba(255,255,255,.18)}
 body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,transparent 2px 5px,#e8e6e0 5px 6px,transparent 6px 11px,#e8e6e0 11px 14px,transparent 14px 17px)}
 .sharerow{margin-bottom:34px;display:flex;align-items:center;gap:12px}
 .sharebtn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
@@ -226,13 +185,6 @@ body.night .pass .divider::before,body.night .pass .divider::after{background:#2
 .pass .facts{display:flex;flex-wrap:wrap;gap:16px 28px;padding:18px 30px 22px}
 .pass .fact .k{font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
 .pass .fact .v{font-size:.95rem;font-weight:600;margin-top:2px}
-.notecard{max-width:340px;margin:26px auto 0;background:#fffdf6;border:1px solid var(--line);border-radius:10px;
-  padding:16px 18px;transform:rotate(-1.5deg);box-shadow:0 8px 24px rgba(90,100,80,.1);font-size:.9rem;position:relative}
-.notecard::before{content:'';position:absolute;top:-8px;left:50%;width:46px;height:14px;border-radius:2px;
-  background:rgba(214,199,164,.6);transform:translateX(-50%) rotate(2deg)}
-.notecard .fromline{margin-top:8px;font-size:.74rem;color:var(--soft)}
-body.night .notecard{background:#2e3345;border-color:rgba(255,255,255,.14)}
-
 .chip{transition:background .5s,color .5s,border-color .5s,transform .3s}
 .chip.pulse{animation:chippulse .6s ease}
 @keyframes chippulse{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
@@ -240,7 +192,7 @@ body.night .notecard{background:#2e3345;border-color:rgba(255,255,255,.14)}
 .pass.landed-glow{box-shadow:0 0 0 3px rgba(143,174,126,.35),0 16px 44px rgba(90,100,80,.12)}
 
 /* recipient spotlight */
-body.shareview nav,body.shareview .bpass,body.shareview .sharerow,body.shareview .lookupbar,body.shareview .ordivider{display:none !important}
+body.shareview nav,body.shareview .bpass,body.shareview .sharerow,body.shareview .lookupbar{display:none !important}
 body.shareview main{padding-top:56px}
 body.shareview .bigclock .unit{min-width:78px}
 body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
@@ -277,25 +229,9 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
     <div class="lookupbar">
       <input class="lookupdate" id="lookupDate" type="date" title="which day is this flight number flying?">
       <button class="lookupbtn" id="lookupBtn">🔍 look up my flight</button>
-      <span class="lookupmsg" id="lookupMsg">same flight number, different day? pick the date first</span>
+      <span class="lookupmsg" id="lookupMsg">type a flight number above, we'll find the rest</span>
     </div>
-    <div class="ordivider">or fill it in yourself</div>
     <div class="bmain">
-      <div class="broute">
-        <div class="routeflourish"><svg viewBox="0 0 200 20" preserveAspectRatio="none"><path d="M0 10 Q100 -6 200 10" fill="none" stroke="#5b7ea3" stroke-width="1.6" stroke-dasharray="2 6" stroke-linecap="round"/></svg></div>
-        <div class="portbox">
-          <input class="codein" id="fFrom" placeholder="BLR" maxlength="30" autocomplete="off" spellcheck="false">
-          <div class="sugg" id="sgFrom"></div>
-          <div class="cityname" id="lblFrom">from</div>
-        </div>
-        <button class="swapbtn" id="swapBtn" title="swap">⇄</button>
-        <div class="portbox">
-          <input class="codein" id="fTo" placeholder="ISK" maxlength="30" autocomplete="off" spellcheck="false">
-          <div class="sugg" id="sgTo"></div>
-          <div class="cityname" id="lblTo">to</div>
-        </div>
-      </div>
-      <input id="fNote" placeholder="a note for them (optional)" maxlength="80">
       <div class="previewbox" id="previewBox">
         <div class="previewinner">
           <svg id="previewSvg" viewBox="0 0 110 56"><path id="prevArc" d="" fill="none" stroke="#5b7ea3" stroke-width="1.6" stroke-dasharray="3 4"/>
@@ -308,19 +244,14 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
           </div>
         </div>
       </div>
+      <!-- filled only by the flight-number lookup -->
+      <input id="fFrom" type="hidden"><input id="fTo" type="hidden">
+      <input id="fDate" type="hidden"><input id="fDep" type="hidden"><input id="fArr" type="hidden">
     </div>
     <div class="bstub">
       <div class="timesFound" id="timesFound" style="display:none">
         <label>when</label>
         <div class="foundwhen" id="foundWhen">–</div>
-        <button class="edittimes" id="editTimesBtn" type="button">edit times</button>
-      </div>
-      <div class="timesManual" id="timesManual">
-        <div><label>date</label><input id="fDate" type="date"></div>
-        <div class="stubrow">
-          <div><label>departs</label><input id="fDep" type="time"></div>
-          <div><label>lands</label><input id="fArr" type="time"></div>
-        </div>
       </div>
       <div class="stubrow">
         <div><label>traveller</label><input id="fName" placeholder="you" maxlength="30"></div>
@@ -366,11 +297,6 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
       <div class="fact" id="pWxWrap" style="display:none"><div class="k">weather there</div><div class="v" id="pWx"></div></div>
       <div class="fact" id="pWhoWrap" style="display:none"><div class="k">traveller</div><div class="v" id="pWho"></div></div>
     </div>
-  </div>
-
-  <div class="notecard" id="noteCard" style="display:none">
-    <div id="noteText"></div>
-    <div class="fromline" id="noteFrom">safe travels ✈</div>
   </div>
 
   <div class="next fade in" id="backNext"><a href="play">← back to play</a></div>
@@ -421,56 +347,8 @@ fetch('https://cdn.jsdelivr.net/gh/ip2location/ip2location-iata-icao@master/iata
     }
   }).catch(() => {});
 
-/* ================= autocomplete ================= */
+/* the flight number lookup is the only way selFrom/selTo ever get set */
 let selFrom = null, selTo = null;
-
-function hookAutocomplete(inputId, suggId, labelId, assign) {
-  const inp = $(inputId), sg = $(suggId), lbl = $(labelId);
-  function choose(a) {
-    assign(a);
-    inp.value = a[0];
-    inp.classList.add('ok');
-    lbl.textContent = a[1];
-    sg.classList.remove('open');
-    updatePreview();
-    refresh();
-  }
-  inp.addEventListener('input', () => {
-    assign(null); inp.classList.remove('ok');
-    lbl.textContent = inputId === 'fFrom' ? 'from' : 'to';
-    updatePreview();
-    const q = inp.value.trim().toUpperCase();
-    if (q.length < 2) { sg.classList.remove('open'); refresh(); return; }
-    // exact code typed? take it instantly
-    if (q.length === 3 && byCode[q]) { choose(byCode[q]); return; }
-    const starts = [], within = [];
-    for (const a of AIRPORTS) {
-      if (a[0].startsWith(q)) starts.push(a);
-      else if (a[1].toUpperCase().includes(q)) within.push(a);
-      if (starts.length > 7) break;
-    }
-    const top = [...starts, ...within].slice(0, 7);
-    if (!top.length) { sg.classList.remove('open'); return; }
-    sg.innerHTML = top.map((a, i) => `<div data-i="${i}"><b>${a[0]}</b><small>${a[1]}</small></div>`).join('');
-    sg.classList.add('open');
-    [...sg.children].forEach((el, i) => el.addEventListener('mousedown', e => { e.preventDefault(); choose(top[i]); }));
-  });
-  inp.addEventListener('blur', () => setTimeout(() => sg.classList.remove('open'), 150));
-  inp.addEventListener('focus', () => { if (sg.children.length && !inp.classList.contains('ok')) sg.classList.add('open'); });
-}
-hookAutocomplete('fFrom', 'sgFrom', 'lblFrom', a => selFrom = a);
-hookAutocomplete('fTo', 'sgTo', 'lblTo', a => selTo = a);
-
-$('swapBtn').addEventListener('click', () => {
-  [selFrom, selTo] = [selTo, selFrom];
-  const v = $('fFrom').value; $('fFrom').value = $('fTo').value; $('fTo').value = v;
-  $('lblFrom').textContent = selFrom ? selFrom[1] : 'from';
-  $('lblTo').textContent = selTo ? selTo[1] : 'to';
-  $('fFrom').classList.toggle('ok', !!selFrom);
-  $('fTo').classList.toggle('ok', !!selTo);
-  updatePreview();
-  refresh();
-});
 
 /* the instant sketch preview: shows the moment both airports are chosen,
    well before there's enough info to build the full tracking card */
@@ -503,13 +381,8 @@ function updatePreview() {
 (function prefill() {
   const now = new Date();
   const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-  $('fDate').value = todayStr;
   $('lookupDate').value = todayStr;
   $('lookupDate').min = todayStr;
-  const dep = new Date(now.getTime() + 2 * 3600e3);
-  $('fDep').value = String(dep.getHours()).padStart(2, '0') + ':00';
-  const arr = new Date(dep.getTime() + 1.75 * 3600e3);
-  $('fArr').value = String(arr.getHours()).padStart(2, '0') + ':' + (arr.getMinutes() >= 30 ? '30' : '00');
 })();
 
 /* ================= flight-number lookup: the real thing ================= */
@@ -533,7 +406,7 @@ async function lookupFlight() {
     const dateParam = day ? `&date=${encodeURIComponent(day)}` : '';
     const r = await fetch(`${FLIGHT_API}?fl=${encodeURIComponent(raw)}${dateParam}`);
     if (r.status === 429) {
-      msg.textContent = "the flight lookup's a bit busy right now, try again in a minute (or fill it in below)";
+      msg.textContent = "the flight lookup's a bit busy right now, try again in a minute";
       msg.className = 'lookupmsg err';
       return;
     }
@@ -544,8 +417,8 @@ async function lookupFlight() {
     const list = Array.isArray(data) ? data : (data && !data.error ? [data] : []);
     if (!list.length) {
       msg.textContent = day
-        ? "that flight doesn't fly on that date, try another day or fill it in below"
-        : "couldn't find that one, try the airport fields below instead";
+        ? "that flight doesn't fly on that date, try another day"
+        : "couldn't find that flight number, double-check it and try again";
       msg.className = 'lookupmsg err';
       return;
     }
@@ -560,8 +433,7 @@ async function lookupFlight() {
     if (!byCode[A[0]]) { AIRPORTS.push(A); byCode[A[0]] = A; }
     if (!byCode[B[0]]) { AIRPORTS.push(B); byCode[B[0]] = B; }
     selFrom = A; selTo = B;
-    $('fFrom').value = A[0]; $('fFrom').classList.add('ok'); $('lblFrom').textContent = A[1];
-    $('fTo').value = B[0]; $('fTo').classList.add('ok'); $('lblTo').textContent = B[1];
+    $('fFrom').value = A[0]; $('fTo').value = B[0];
     updatePreview();
 
     const depT = toLocalDate(flight.departure.scheduledTime.local);
@@ -586,37 +458,29 @@ async function lookupFlight() {
 $('lookupBtn').addEventListener('click', lookupFlight);
 $('fFlight').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookupFlight(); } });
 
-/* once a flight number lookup fills in real times, tuck the manual fields away
-   behind a tidy summary, since re-typing them defeats the point of the lookup */
+/* once a flight number lookup fills in real times, show a tidy summary */
 function showFoundTimes(depT, arrT) {
   if (!depT) return;
   const d = new Date(depT.dt + 'T00:00');
   const dayStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   $('foundWhen').textContent = `${dayStr} · ${depT.tm}${arrT ? ' → ' + arrT.tm : ''}`;
   $('timesFound').style.display = 'block';
-  $('timesManual').style.display = 'none';
 }
-$('editTimesBtn').addEventListener('click', () => {
-  $('timesFound').style.display = 'none';
-  $('timesManual').style.display = 'flex';
-});
 
-let F = null;   // {fl,nm,st,fr:[code,name,lat,lon],to:[...],dt,dp,ar,nt}
+let F = null;   // {fl,nm,st,fr:[code,name,lat,lon],to:[...],dt,dp,ar}
 
 function readForm() {
   if (!selFrom || !selTo || selFrom[0] === selTo[0] || !$('fDate').value || !$('fDep').value) return null;
   return {
     fl: $('fFlight').value.trim(), nm: $('fName').value.trim(), st: $('fSeat').value.trim(),
-    fr: selFrom, to: selTo, dt: $('fDate').value, dp: $('fDep').value,
-    ar: $('fArr').value, nt: $('fNote').value.trim()
+    fr: selFrom, to: selTo, dt: $('fDate').value, dp: $('fDep').value, ar: $('fArr').value
   };
 }
 function refresh() {
   const f = readForm();
   if (f) { F = f; showPass(f); pingRadar(); }
 }
-['fFlight', 'fName', 'fSeat', 'fDate', 'fDep', 'fArr', 'fNote'].forEach(id =>
-  $(id).addEventListener('input', refresh));
+['fName', 'fSeat'].forEach(id => $(id).addEventListener('input', refresh));
 
 function times(f) {
   const dep = new Date(f.dt + 'T' + f.dp);
@@ -852,12 +716,6 @@ function showPass(f) {
   $('pDist').textContent = km.toLocaleString() + ' km';
   $('pSeatWrap').style.display = f.st ? 'block' : 'none'; $('pSeat').textContent = f.st.toUpperCase();
   $('pWhoWrap').style.display = f.nm ? 'block' : 'none'; $('pWho').textContent = f.nm;
-  const nc = $('noteCard');
-  if (f.nt) {
-    nc.style.display = 'block';
-    $('noteText').textContent = '“' + f.nt + '”';
-    $('noteFrom').textContent = f.nm ? 'from ' + f.nm + ' ✈' : 'safe travels ✈';
-  } else nc.style.display = 'none';
   buildMap(f);
   tickStatus();
   fetchWeather(f.to);
