@@ -1,86 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>fifa</title>
+const matches = [
+{
+    name: "France vs Spain",
+    start: new Date("2026-07-15T00:30:00+05:30"),
+    url: "https://embed.st/embed/admin/ppv-france-vs-spain/1"
+},
+{
+    name: "England vs Argentina",
+    start: new Date("2026-07-16T00:30:00+05:30"),
+    url: "https://embed.st/embed/golf/23744/1"
+}
+];
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #000;
-            font-family: Arial, sans-serif;
-        }
-
-        #player {
-            position: fixed;
-            inset: 0;
-            width: 100vw;
-            height: 100vh;
-            border: none;
-        }
-
-        #controls {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            z-index: 9999;
-        }
-
-        select {
-            padding: 10px 14px;
-            font-size: 15px;
-            border-radius: 8px;
-            border: none;
-            background: rgba(0,0,0,0.75);
-            color: white;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-
-<div id="controls">
-    <select id="matchSelect">
-        <option value="https://embed.st/embed/admin/ppv-spain-vs-belgium/1">
-            Spain vs Belgium
-        </option>
-
-        <option value="https://embed.st/embed/admin/ppv-norway-vs-england/1">
-            Norway vs England
-        </option>
-
-        <option value="https://embed.st/embed/admin/ppv-argentina-vs-switzerland/1">
-            Argentina vs Switzerland
-        </option>
-    </select>
-</div>
-
-<iframe
-    id="player"
-    title="Live Match"
-    src="https://embed.st/embed/admin/ppv-spain-vs-belgium/1"
-    allow="encrypted-media; picture-in-picture;"
-    allowfullscreen
-    scrolling="no">
-</iframe>
-
-<script>
 const player = document.getElementById("player");
 const selector = document.getElementById("matchSelect");
 
 selector.addEventListener("change", () => {
     player.src = selector.value;
 });
-</script>
 
-</body>
-</html>
+function updatePlayer() {
+    const now = new Date();
+
+    for (let i = matches.length - 1; i >= 0; i--) {
+        if (now >= matches[i].start) {
+            player.src = matches[i].url;
+            selector.value = matches[i].url;
+            break;
+        }
+    }
+}
+
+updatePlayer();
+setInterval(updatePlayer, 60000);
