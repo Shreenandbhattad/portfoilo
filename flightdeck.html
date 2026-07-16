@@ -98,12 +98,7 @@ body.night .pextra b{color:#e8e6e0}
   background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px)}
 body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,transparent 2px 5px,#e8e6e0 5px 6px,transparent 6px 11px,#e8e6e0 11px 14px,transparent 14px 17px)}
 
-.mapfold{margin-bottom:14px}
-.mapfold summary{font-size:.8rem;color:var(--blue);cursor:pointer;text-align:center;list-style:none;font-weight:500}
-.mapfold summary::-webkit-details-marker{display:none}
-.mapfold summary:hover{text-decoration:underline}
-.mapfold[open] summary{margin-bottom:12px}
-#lmapbox{height:260px;position:relative;z-index:1;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+#lmapbox{height:260px;margin-bottom:14px;position:relative;z-index:1;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
 body.night #lmapbox{border-color:rgba(255,255,255,.14)}
 #lmapbox .leaflet-container{height:100%;width:100%;background:#c8dceb;font-family:var(--sans);outline:none}
 body.night #lmapbox .leaflet-container{background:#1a2030}
@@ -180,7 +175,7 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
 
     <!-- search bar: sits above the pass, not part of the document itself -->
     <div class="searchbar" id="searchbar">
-      <input id="fFlight" placeholder="flight no. — e.g. 6E123" maxlength="8">
+      <input id="fFlight" placeholder="flight no. e.g. 6E123" maxlength="8">
       <input class="lookupdate" id="lookupDate" type="date" title="which day is this flight number flying?">
       <button class="lookupbtn" id="lookupBtn">🔍 find flight</button>
     </div>
@@ -233,10 +228,7 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
           <div class="live" id="live"></div>
         </div>
         <div class="progressbar"><i id="pbar" style="width:0%"></i></div>
-        <details class="mapfold">
-          <summary>show live route on map</summary>
-          <div id="lmapbox"><div id="lmap" style="height:100%"></div></div>
-        </details>
+        <div id="lmapbox"><div id="lmap" style="height:100%"></div></div>
         <div class="pextra" id="pWxWrap" style="display:none">weather at arrival: <b id="pWx"></b></div>
         <div class="barcode"></div>
       </div>
@@ -374,10 +366,12 @@ async function lookupFlight() {
     if (arrT) $('fArr').value = arrT.tm;
 
     const airline = flight.airline ? flight.airline.name : '';
+    // the flight itself was found successfully — lock that in before touching
+    // the map/render, so a hiccup drawing the pass can never flip this back to an error
     msg.textContent = `${airline} ${flight.number || raw} — found it`;
     msg.className = 'lookupmsg ok';
     $('pFlightNo').textContent = (flight.number || raw).toUpperCase();
-    refresh();
+    try { refresh(); } catch (renderErr) { console.error('flight render error:', renderErr); }
   } catch (e) {
     msg.textContent = 'the lookup hiccupped, try again in a moment';
     msg.className = 'lookupmsg err';
@@ -588,15 +582,15 @@ function buildMap(f) {
   // zoom to fit the whole route with breathing room, but never so close it
   // clips the pins on very short hops, and never so far it looks like a dot
   const bounds = L.latLngBounds(routePts);
-  requestAnimationFrame(() => {
+  requestAnimationFrame(() => requestAnimationFrame(() => {
     lmap.invalidateSize();
-    lmap.fitBounds(bounds.pad(0.3));
+    lmap.fitBounds(bounds.pad(0.18));
     const maxSensible = bounds.getEast() - bounds.getWest() > 40 || bounds.getNorth() - bounds.getSouth() > 40 ? 4 : 9;
     if (lmap.getZoom() > maxSensible) lmap.setZoom(maxSensible);
     if (lmap.getZoom() < 2) lmap.setZoom(2);
     animateRouteDrawIn();
     positionPlane();
-  });
+  }));
 }
 
 /* the dashed route draws itself in like a route being plotted */
