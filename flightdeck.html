@@ -14,109 +14,97 @@
 <style>
 main{max-width:780px}
 
-/* ================= boarding pass form ================= */
-.bpass{border-radius:22px;background:#fffdf9;display:grid;grid-template-columns:1fr 220px;
-  overflow:hidden;box-shadow:0 20px 54px rgba(90,100,80,.16),0 2px 8px rgba(90,100,80,.08);margin-bottom:16px;position:relative;
-  border:1px solid var(--line)}
-.bband{grid-column:1/-1;background:linear-gradient(115deg,#4d6f92 0%,#5b7ea3 45%,#82a2c2 100%);color:#fff;
-  display:flex;justify-content:space-between;align-items:center;padding:16px 22px;gap:14px;position:relative;overflow:hidden}
-.bband::before{content:'';position:absolute;inset:0;opacity:.5;pointer-events:none;
-  background-image:radial-gradient(circle at 15% 30%,rgba(255,255,255,.16) 0,transparent 45%),
-    radial-gradient(circle at 85% 75%,rgba(255,255,255,.12) 0,transparent 40%)}
-.bband::after{content:'✈';position:absolute;right:-8px;top:50%;transform:translateY(-50%) rotate(8deg);
-  font-size:3.2rem;opacity:.14;pointer-events:none}
-.bband .brandwrap{position:relative;z-index:1;display:flex;flex-direction:column;gap:2px}
-.bband .t{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;font-weight:700;opacity:.9}
-.bband .sub{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;opacity:.65;font-weight:500}
-.bband input{background:rgba(255,255,255,.18);border:1.5px solid rgba(255,255,255,.4);border-radius:9px;
-  color:#fff;font-family:var(--sans);font-weight:800;font-size:.95rem;text-transform:uppercase;
-  letter-spacing:.1em;padding:7px 10px;width:124px;text-align:center;outline:none;position:relative;z-index:1;transition:border-color .3s,background .3s}
-.bband input:focus{border-color:#fff;background:rgba(255,255,255,.28)}
-.bband input::placeholder{color:rgba(255,255,255,.62);font-weight:500;letter-spacing:.04em}
-.lookupbar{display:flex;gap:10px;align-items:center;padding:16px 24px 0;flex-wrap:wrap}
-.lookupdate{font-family:var(--sans);font-weight:600;font-size:.8rem;color:var(--ink);
-  background:#faf7f0;border:1.5px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;
-  color-scheme:light;transition:border-color .3s;flex-shrink:0}
+/* ================= search bar (sits above the pass) ================= */
+.searchbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.searchbar input#fFlight{font-family:var(--sans);font-weight:700;font-size:.9rem;color:var(--ink);
+  text-transform:uppercase;letter-spacing:.06em;background:#fff;border:1.5px solid var(--line);border-radius:10px;
+  padding:10px 14px;outline:none;transition:border-color .3s;flex:1;min-width:140px}
+.searchbar input#fFlight:focus{border-color:var(--blue)}
+.lookupdate{font-family:var(--sans);font-weight:600;font-size:.85rem;color:var(--ink);
+  background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;outline:none;
+  color-scheme:light;transition:border-color .3s}
 .lookupdate:focus{border-color:var(--blue)}
-body.night .lookupdate{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0;color-scheme:dark}
-.lookupbtn{background:#3a362f;color:#fffdf9;border:none;border-radius:10px;padding:9px 16px;
-  font-family:var(--sans);font-weight:600;font-size:.82rem;cursor:pointer;white-space:nowrap;
+body.night .searchbar input#fFlight,body.night .lookupdate{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0;color-scheme:dark}
+.lookupbtn{background:var(--ink);color:var(--paper);border:none;border-radius:10px;padding:10px 18px;
+  font-family:var(--sans);font-weight:600;font-size:.85rem;cursor:pointer;white-space:nowrap;
   transition:transform .2s,background .3s;display:flex;align-items:center;gap:7px}
 .lookupbtn:hover{background:#55524c}
 .lookupbtn:active{transform:scale(.96)}
 .lookupbtn:disabled{opacity:.6;cursor:wait}
 .lookupbtn .spin{display:inline-block;animation:spin360 .9s linear infinite}
 @keyframes spin360{to{transform:rotate(360deg)}}
-.lookupmsg{font-size:.8rem;color:var(--soft);flex:1;min-width:120px}
-.lookupmsg.err{color:#c25562}
-.lookupmsg.ok{color:#5a8a52}
 body.night .lookupbtn{background:#e8e6e0;color:#232838}
 body.night .lookupbtn:hover{background:#c9c6bd}
+.lookupmsg{font-size:.82rem;color:var(--soft);margin-bottom:20px}
+.lookupmsg.err{color:#c25562}
+.lookupmsg.ok{color:#5a8a52}
 body.night .lookupmsg{color:#a8a49b}
-.bmain{padding:22px 24px 18px}
-.bstub{border-left:2px dashed var(--line);padding:18px 18px 16px;display:flex;flex-direction:column;gap:9px;
-  background:linear-gradient(175deg,#fbf6ea,#f6efdd);position:relative}
-.bstub::before,.bstub::after{content:'';position:absolute;left:-13px;width:24px;height:24px;border-radius:50%;
-  background:var(--paper);border:1px solid var(--line)}
-.bstub::before{top:-13px}
-.bstub::after{bottom:-13px}
-.bstub .seatbadge{position:absolute;top:14px;right:14px;font-size:1.3rem;opacity:.22;pointer-events:none}
-.timesFound{background:rgba(143,174,126,.14);border:1px solid rgba(143,174,126,.35);border-radius:10px;padding:9px 11px;margin-bottom:2px}
-.foundwhen{font-size:.84rem;font-weight:700;color:#4d7048}
-body.night .foundwhen{color:#9fc48f}
-/* the instant sketch-preview: appears the moment both airports are chosen */
-.previewbox{max-height:0;overflow:hidden;opacity:0;transition:max-height .5s ease,opacity .4s ease,margin .5s ease}
-.previewbox.show{max-height:120px;opacity:1;margin-top:16px}
-.previewinner{background:linear-gradient(135deg,#f4f8fb,#eef3ec);border:1px solid var(--line);border-radius:14px;
-  padding:14px 16px;display:flex;align-items:center;gap:14px}
-body.night .previewinner{background:linear-gradient(135deg,#232838,#262c3d);border-color:rgba(255,255,255,.14)}
-#previewSvg{flex-shrink:0;width:110px;height:56px}
-.previewstats{flex:1;min-width:0}
-.previewstats .row1{font-size:.86rem;font-weight:600;color:var(--ink)}
-.previewstats .row2{font-size:.72rem;color:var(--soft);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap}
-body.night .previewstats .row1{color:#e8e6e0}
-body.night .previewstats .row2{color:#a8a49b}
-.previewstats .row2 b{color:var(--blue);font-weight:600}
-.prev-dot{animation:prevpulse 1.6s ease-in-out infinite}
-@keyframes prevpulse{0%,100%{opacity:1}50%{opacity:.4}}
-.bstub label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);display:block;margin-bottom:2px}
-.bstub input{width:100%;font-family:var(--sans);font-weight:600;font-size:.88rem;color:var(--ink);
-  background:#fff;border:1px solid var(--line);border-radius:8px;padding:5px 8px;outline:none;color-scheme:light;transition:border-color .3s}
-.bstub input:focus{border-color:var(--blue-light)}
-.stubrow{display:flex;gap:8px}
-.stubrow>div{flex:1;min-width:0}
-.barcode{margin-top:auto;height:34px;border-radius:3px;opacity:.78;
-  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px)}
-.barcode-label{font-size:.56rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:center;margin-top:3px}
-@media(max-width:600px){
-  .bpass{grid-template-columns:1fr}
-  .bstub{border-left:none;border-top:2px dashed var(--line)}
-  .bstub::before{top:-13px;left:-13px}
-  .bstub::after{top:-13px;left:auto;right:-13px;bottom:auto}
-}
-body.night .bpass{background:#2e3345;border-color:rgba(255,255,255,.16)}
-body.night .bstub{background:#293043;border-color:rgba(255,255,255,.16)}
-body.night .bstub::before,body.night .bstub::after{background:#232838;border-color:rgba(255,255,255,.16)}
-body.night .bstub input{background:#262c3d;border-color:rgba(255,255,255,.18);color:#e8e6e0;color-scheme:dark}
-body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,transparent 2px 5px,#e8e6e0 5px 6px,transparent 6px 11px,#e8e6e0 11px 14px,transparent 14px 17px)}
-.sharerow{margin-bottom:34px;display:flex;align-items:center;gap:12px}
-.sharebtn{background:var(--blue);color:#fff;border:none;border-radius:999px;padding:11px 26px;
-  font-family:var(--sans);font-size:.9rem;font-weight:500;cursor:pointer;transition:background .3s,transform .2s}
-.sharebtn:hover{background:#4d6d8f}
-.sharebtn:active{transform:scale(.97)}
-.shared{font-size:.85rem;color:var(--blue);opacity:0;transition:opacity .4s}
-.shared.show{opacity:1}
 
-/* ================= live tracking card ================= */
-.pass{border:1px solid var(--line);border-radius:20px;background:#fffdf9;overflow:hidden;position:relative;
-  box-shadow:0 16px 44px rgba(90,100,80,.12)}
-body.night .pass{background:#2e3345;border-color:rgba(255,255,255,.14)}
-.pass .route{display:flex;justify-content:space-between;align-items:center;padding:22px 30px 14px}
-.pass .port{text-align:center;min-width:88px}
-.pass .code{font-size:clamp(1.7rem,5vw,2.4rem);font-weight:800;letter-spacing:.02em}
-.pass .city{font-size:.76rem;color:var(--soft);margin-top:2px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.pass .mid{flex:1;text-align:center;color:var(--faint);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase}
-#lmapbox{height:380px;position:relative;z-index:1;border-bottom:1px solid var(--line)}
+/* ================= the boarding pass: one continuous document ================= */
+.passdoc{border-radius:16px;background:#fffdf9;overflow:hidden;position:relative;
+  box-shadow:0 16px 44px rgba(90,100,80,.14);border:1px solid var(--line)}
+body.night .passdoc{background:#2e3345;border-color:rgba(255,255,255,.16)}
+
+.pband{background:var(--ink);color:var(--paper);padding:13px 22px;display:flex;justify-content:space-between;align-items:center}
+body.night .pband{background:#181c28}
+.pbrand{font-size:.72rem;letter-spacing:.22em;font-weight:700}
+.pflightno{font-size:.82rem;font-weight:700;letter-spacing:.06em;opacity:.85}
+
+.proute{display:flex;align-items:center;justify-content:space-between;padding:26px 26px 20px;gap:16px}
+.pport{min-width:0}
+.pcode{font-size:clamp(1.9rem,6vw,2.6rem);font-weight:800;letter-spacing:.01em;line-height:1}
+.pcity{font-size:.78rem;color:var(--soft);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+.pplane{color:var(--blue);font-size:1.3rem;flex-shrink:0}
+
+.pfields{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 12px;padding:0 26px 22px;border-bottom:1px solid var(--line)}
+body.night .pfields{border-color:rgba(255,255,255,.14)}
+.pfield{display:flex;flex-direction:column;gap:4px;min-width:0}
+.pk{font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+.pv{font-size:.92rem;font-weight:600;color:var(--ink)}
+body.night .pv{color:#e8e6e0}
+.pfield input{font-family:var(--sans);font-weight:600;font-size:.92rem;color:var(--ink);background:none;
+  border:none;border-bottom:1px solid var(--line);padding:0 0 2px;outline:none;width:100%;transition:border-color .3s}
+.pfield input:focus{border-color:var(--blue)}
+body.night .pfield input{color:#e8e6e0;border-color:rgba(255,255,255,.2)}
+
+.perf{height:0;border-top:2px dashed var(--line);position:relative;margin:0 26px}
+.perf::before,.perf::after{content:'';position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;
+  background:var(--paper);border:1px solid var(--line)}
+.perf::before{left:-37px}
+.perf::after{right:-37px}
+body.night .perf{border-color:rgba(255,255,255,.18)}
+body.night .perf::before,body.night .perf::after{background:#232838;border-color:rgba(255,255,255,.18)}
+
+.pstub{padding:22px 26px 24px}
+.statusline{text-align:center;margin-bottom:14px}
+.chip{display:inline-block;border-radius:999px;padding:7px 18px;font-size:.85rem;font-weight:500;
+  background:#eef3ec;color:#5a7a52;border:1px solid #d5e3c6}
+.chip.air{background:#e9f0f6;color:#43678c;border-color:#c9d9e8}
+.chip.soon{background:#faf1e2;color:#9a7434;border-color:#ecdcbb}
+.chip.landed{background:#f2ecf6;color:#7a5a94;border-color:#e0d2ea}
+body.night .chip{filter:brightness(.85) saturate(.9)}
+.chip{transition:background .5s,color .5s,border-color .5s,transform .3s}
+.chip.pulse{animation:chippulse .6s ease}
+@keyframes chippulse{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
+.eta{margin-top:10px;font-size:.85rem;color:var(--soft)}
+.live{margin-top:6px;font-size:.75rem;color:var(--blue);opacity:.9}
+.progressbar{height:5px;background:var(--line);border-radius:3px;position:relative;overflow:hidden;margin-bottom:16px}
+.progressbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8fae7e,#5b7ea3);
+  border-radius:3px;transition:width 1s linear}
+.pextra{font-size:.8rem;color:var(--soft);text-align:center;margin-bottom:14px}
+.pextra b{color:var(--ink)}
+body.night .pextra b{color:#e8e6e0}
+.barcode{margin-top:14px;height:32px;border-radius:3px;opacity:.7;
+  background:repeating-linear-gradient(90deg,var(--ink) 0 2px,transparent 2px 5px,var(--ink) 5px 6px,transparent 6px 11px,var(--ink) 11px 14px,transparent 14px 17px)}
+body.night .barcode{background:repeating-linear-gradient(90deg,#e8e6e0 0 2px,transparent 2px 5px,#e8e6e0 5px 6px,transparent 6px 11px,#e8e6e0 11px 14px,transparent 14px 17px)}
+
+.mapfold{margin-bottom:14px}
+.mapfold summary{font-size:.8rem;color:var(--blue);cursor:pointer;text-align:center;list-style:none;font-weight:500}
+.mapfold summary::-webkit-details-marker{display:none}
+.mapfold summary:hover{text-decoration:underline}
+.mapfold[open] summary{margin-bottom:12px}
+#lmapbox{height:260px;position:relative;z-index:1;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+body.night #lmapbox{border-color:rgba(255,255,255,.14)}
 #lmapbox .leaflet-container{height:100%;width:100%;background:#c8dceb;font-family:var(--sans);outline:none}
 body.night #lmapbox .leaflet-container{background:#1a2030}
 #lmapbox .leaflet-tile-pane{filter:saturate(1.18) contrast(1.03)}
@@ -124,12 +112,8 @@ body.night #lmapbox .leaflet-tile-pane{filter:brightness(.6) contrast(1) saturat
 .leaflet-control-attribution{font-size:8.5px !important;opacity:.5;background:rgba(255,253,249,.7) !important}
 body.night .leaflet-control-attribution{background:rgba(35,40,56,.7) !important;color:#a8a49b}
 .leaflet-control-attribution a{color:inherit !important}
-/* soft vignette + top gradient so the map reads as part of the pass, not a widget dropped in */
-#lmapbox::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:2;
-  box-shadow:inset 0 0 60px 10px rgba(40,45,40,.14),inset 0 30px 40px -30px rgba(40,45,40,.35)}
-body.night #lmapbox::after{box-shadow:inset 0 0 60px 10px rgba(0,0,0,.4),inset 0 30px 40px -30px rgba(0,0,0,.55)}
-.maplabel-corner{position:absolute;top:12px;left:14px;z-index:5;background:rgba(255,253,249,.85);backdrop-filter:blur(4px);
-  border-radius:8px;padding:5px 11px;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+.maplabel-corner{position:absolute;top:10px;left:10px;z-index:5;background:rgba(255,253,249,.85);backdrop-filter:blur(4px);
+  border-radius:8px;padding:4px 10px;font-size:.64rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
   color:var(--soft);box-shadow:0 3px 10px rgba(0,0,0,.1);pointer-events:none}
 body.night .maplabel-corner{background:rgba(46,51,69,.85);color:#a8a49b}
 
@@ -146,55 +130,29 @@ body.night .maplabel-corner{background:rgba(46,51,69,.85);color:#a8a49b}
   font-weight:700;font-size:.74rem;letter-spacing:.06em;padding:4px 10px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
 .leaflet-tooltip.flabel::before{border-top-color:rgba(30,34,26,.9) !important;border-bottom-color:rgba(30,34,26,.9) !important}
 .leaflet-tooltip.flabel small{opacity:.65;font-weight:400;text-transform:none;letter-spacing:0;display:block;font-size:.68rem;margin-top:1px}
-.planewrap{width:52px;height:52px;display:flex;align-items:center;justify-content:center;
+.planewrap{width:44px;height:44px;display:flex;align-items:center;justify-content:center;
   filter:drop-shadow(0 4px 7px rgba(0,0,0,.35))}
-.planewrap svg{width:42px;height:42px;transition:transform 1s linear}
+.planewrap svg{width:36px;height:36px;transition:transform 1s linear}
 .planewrap.waiting svg{animation:planebob 2.2s ease-in-out infinite}
 @keyframes planebob{0%,100%{translate:0 0}50%{translate:0 -6px}}
-.progressbar{height:6px;background:var(--line);position:relative;overflow:hidden}
-.progressbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#8fae7e,#5b7ea3,#7495b5);
-  background-size:200% 100%;border-radius:0 3px 3px 0;transition:width 1s linear;animation:pgshimmer 3s linear infinite}
-@keyframes pgshimmer{to{background-position:-200% 0}}
-.statusline{text-align:center;padding:16px 20px 18px}
-.chip{display:inline-block;border-radius:999px;padding:7px 18px;font-size:.85rem;font-weight:500;
-  background:#eef3ec;color:#5a7a52;border:1px solid #d5e3c6}
-.chip.air{background:#e9f0f6;color:#43678c;border-color:#c9d9e8}
-.chip.soon{background:#faf1e2;color:#9a7434;border-color:#ecdcbb}
-.chip.landed{background:#f2ecf6;color:#7a5a94;border-color:#e0d2ea}
-body.night .chip{filter:brightness(.85) saturate(.9)}
-.eta{margin-top:10px;font-size:.85rem;color:var(--soft)}
-.live{margin-top:6px;font-size:.75rem;color:var(--blue);opacity:.9}
 
 /* big countdown clock */
 .bigclock{display:flex;gap:10px;justify-content:center;margin:14px 0 4px;flex-wrap:wrap}
-.bigclock .unit{background:#3a362f;color:#fffdf9;border-radius:14px;padding:12px 14px;min-width:66px;text-align:center;
+.bigclock .unit{background:var(--ink);color:var(--paper);border-radius:12px;padding:11px 13px;min-width:60px;text-align:center;
   box-shadow:0 6px 16px rgba(58,54,47,.2)}
 body.night .bigclock .unit{background:#181c28}
-.bigclock .unit b{display:block;font-size:clamp(1.5rem,6vw,2.1rem);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
-.bigclock .unit span{font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:3px;display:block}
+.bigclock .unit b{display:block;font-size:clamp(1.4rem,5.5vw,1.9rem);font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.bigclock .unit span{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:3px;display:block}
 .bigclock.landed .unit{background:linear-gradient(135deg,#8fae7e,#6d9862)}
 .bigclock.air .unit{background:linear-gradient(135deg,#5b7ea3,#43678c)}
 .clocklabel{text-align:center;font-size:.78rem;color:var(--soft);margin-bottom:10px;font-weight:500}
-.confetti-wrap{position:relative}
-.pass .divider{border-top:2px dashed var(--line);margin:0 18px;position:relative}
-.pass .divider::before,.pass .divider::after{content:'';position:absolute;top:-11px;width:22px;height:22px;border-radius:50%;
-  background:var(--paper);border:1px solid var(--line)}
-.pass .divider::before{left:-30px}
-.pass .divider::after{right:-30px}
-body.night .pass .divider::before,body.night .pass .divider::after{background:#232838;border-color:rgba(255,255,255,.14)}
-.pass .facts{display:flex;flex-wrap:wrap;gap:16px 28px;padding:18px 30px 22px}
-.pass .fact .k{font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
-.pass .fact .v{font-size:.95rem;font-weight:600;margin-top:2px}
-.chip{transition:background .5s,color .5s,border-color .5s,transform .3s}
-.chip.pulse{animation:chippulse .6s ease}
-@keyframes chippulse{0%{transform:scale(1)}35%{transform:scale(1.14)}100%{transform:scale(1)}}
-.pass{transition:box-shadow .6s}
-.pass.landed-glow{box-shadow:0 0 0 3px rgba(143,174,126,.35),0 16px 44px rgba(90,100,80,.12)}
+.passdoc{transition:box-shadow .6s}
+.passdoc.landed-glow{box-shadow:0 0 0 3px rgba(143,174,126,.35),0 16px 44px rgba(90,100,80,.14)}
 
 /* recipient spotlight */
-body.shareview nav,body.shareview .bpass,body.shareview .sharerow,body.shareview .lookupbar{display:none !important}
+body.shareview nav,body.shareview .searchbar,body.shareview .lookupmsg,body.shareview .sharerow{display:none !important}
 body.shareview main{padding-top:56px}
-body.shareview .bigclock .unit{min-width:78px}
+body.shareview .bigclock .unit{min-width:70px}
 body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
 </style>
 </head>
@@ -218,84 +176,75 @@ body.shareview #fdTitle{font-size:clamp(1.7rem,5vw,2.4rem)}
   <h1 class="page fade in" id="fdTitle">flight deck ✈</h1>
   <p class="sub fade in" id="fdSub">type your flight number, get a boarding pass, share the countdown.</p>
 
-  <div class="bpass fade in" id="bpass">
-    <div class="bband">
-      <div class="brandwrap">
-        <span class="t">Boarding pass</span>
-        <span class="sub">handle with excitement</span>
-      </div>
-      <input id="fFlight" placeholder="e.g. 6E123" maxlength="8">
-    </div>
-    <div class="lookupbar">
+  <div class="ticket fade in" id="ticket">
+
+    <!-- search bar: sits above the pass, not part of the document itself -->
+    <div class="searchbar" id="searchbar">
+      <input id="fFlight" placeholder="flight no. — e.g. 6E123" maxlength="8">
       <input class="lookupdate" id="lookupDate" type="date" title="which day is this flight number flying?">
-      <button class="lookupbtn" id="lookupBtn">🔍 look up my flight</button>
-      <span class="lookupmsg" id="lookupMsg">type a flight number above, we'll find the rest</span>
+      <button class="lookupbtn" id="lookupBtn">🔍 find flight</button>
     </div>
-    <div class="bmain">
-      <div class="previewbox" id="previewBox">
-        <div class="previewinner">
-          <svg id="previewSvg" viewBox="0 0 110 56"><path id="prevArc" d="" fill="none" stroke="#5b7ea3" stroke-width="1.6" stroke-dasharray="3 4"/>
-            <circle id="prevA" class="prev-dot" r="3.2" fill="#5b7ea3"/><circle id="prevB" r="3.2" fill="#c25562"/>
-            <text id="prevPlane" font-size="13">✈️</text>
-          </svg>
-          <div class="previewstats">
-            <div class="row1" id="prevRoute">–</div>
-            <div class="row2"><span><b id="prevDist">–</b> km</span><span>about <b id="prevDur">–</b> in the air</span></div>
-          </div>
+    <div class="lookupmsg" id="lookupMsg">type a flight number above, we'll find the rest</div>
+
+    <!-- the pass itself: one continuous document -->
+    <div class="passdoc" id="passdoc" style="display:none">
+      <div class="pband">
+        <span class="pbrand">BOARDING PASS</span>
+        <span class="pflightno" id="pFlightNo">–</span>
+      </div>
+
+      <div class="proute">
+        <div class="pport">
+          <div class="pcode" id="pFrom">–</div>
+          <div class="pcity" id="pFromCity">–</div>
         </div>
+        <div class="pplane">✈</div>
+        <div class="pport" style="text-align:right">
+          <div class="pcode" id="pTo">–</div>
+          <div class="pcity" id="pToCity">–</div>
+        </div>
+      </div>
+
+      <div class="pfields">
+        <div class="pfield"><span class="pk">date</span><span class="pv" id="pDate">–</span></div>
+        <div class="pfield"><span class="pk">departs</span><span class="pv" id="pDep">–</span></div>
+        <div class="pfield"><span class="pk">arrives</span><span class="pv" id="pArr">–</span></div>
+        <div class="pfield"><span class="pk">passenger</span><span class="pv"><input id="fName" placeholder="you" maxlength="30"></span></div>
+        <div class="pfield"><span class="pk">seat</span><span class="pv"><input id="fSeat" placeholder="12A" maxlength="4"></span></div>
+        <div class="pfield"><span class="pk">distance</span><span class="pv" id="pDist">–</span></div>
       </div>
       <!-- filled only by the flight-number lookup -->
       <input id="fFrom" type="hidden"><input id="fTo" type="hidden">
       <input id="fDate" type="hidden"><input id="fDep" type="hidden"><input id="fArr" type="hidden">
-    </div>
-    <div class="bstub">
-      <div class="timesFound" id="timesFound" style="display:none">
-        <label>when</label>
-        <div class="foundwhen" id="foundWhen">–</div>
-      </div>
-      <div class="stubrow">
-        <div><label>traveller</label><input id="fName" placeholder="you" maxlength="30"></div>
-        <div><label>seat</label><input id="fSeat" placeholder="12A" maxlength="4"></div>
-      </div>
-      <span class="seatbadge">🎫</span>
-      <div class="barcode"></div>
-      <div class="barcode-label">scan for good vibes only</div>
-    </div>
-  </div>
-  <div class="sharerow fade in">
-    <button class="sharebtn" id="shareBtn">✈ copy share link</button>
-    <span class="shared" id="sharedMsg">link copied ✈</span>
-  </div>
 
-  <div class="pass" id="pass" style="display:none">
-    <div class="route">
-      <div class="port"><div class="code" id="pFrom"></div><div class="city" id="pFromCity"></div></div>
-      <div class="mid" id="pFlight"></div>
-      <div class="port"><div class="code" id="pTo"></div><div class="city" id="pToCity"></div></div>
-    </div>
-    <div id="lmapbox"><div id="lmap" style="height:100%"></div></div>
-    <div class="progressbar"><i id="pbar" style="width:0%"></i></div>
-    <div class="statusline">
-      <span class="chip" id="chip">upcoming</span>
-      <div class="clocklabel" id="clockLabel" style="display:none"></div>
-      <div class="bigclock" id="bigClock" style="display:none">
-        <div class="unit"><b id="cD">0</b><span>days</span></div>
-        <div class="unit"><b id="cH">00</b><span>hrs</span></div>
-        <div class="unit"><b id="cM">00</b><span>min</span></div>
-        <div class="unit"><b id="cS">00</b><span>sec</span></div>
+      <div class="perf"></div>
+
+      <div class="pstub">
+        <div class="statusline">
+          <span class="chip" id="chip">upcoming</span>
+          <div class="clocklabel" id="clockLabel" style="display:none"></div>
+          <div class="bigclock" id="bigClock" style="display:none">
+            <div class="unit"><b id="cD">0</b><span>days</span></div>
+            <div class="unit"><b id="cH">00</b><span>hrs</span></div>
+            <div class="unit"><b id="cM">00</b><span>min</span></div>
+            <div class="unit"><b id="cS">00</b><span>sec</span></div>
+          </div>
+          <div class="eta" id="eta"></div>
+          <div class="live" id="live"></div>
+        </div>
+        <div class="progressbar"><i id="pbar" style="width:0%"></i></div>
+        <details class="mapfold">
+          <summary>show live route on map</summary>
+          <div id="lmapbox"><div id="lmap" style="height:100%"></div></div>
+        </details>
+        <div class="pextra" id="pWxWrap" style="display:none">weather at arrival: <b id="pWx"></b></div>
+        <div class="barcode"></div>
       </div>
-      <div class="eta" id="eta"></div>
-      <div class="live" id="live"></div>
     </div>
-    <div class="divider"></div>
-    <div class="facts">
-      <div class="fact"><div class="k">date</div><div class="v" id="pDate">–</div></div>
-      <div class="fact"><div class="k">departs</div><div class="v" id="pDep">–</div></div>
-      <div class="fact"><div class="k">lands</div><div class="v" id="pArr">–</div></div>
-      <div class="fact"><div class="k">distance</div><div class="v" id="pDist">–</div></div>
-      <div class="fact" id="pSeatWrap" style="display:none"><div class="k">seat</div><div class="v" id="pSeat"></div></div>
-      <div class="fact" id="pWxWrap" style="display:none"><div class="k">weather there</div><div class="v" id="pWx"></div></div>
-      <div class="fact" id="pWhoWrap" style="display:none"><div class="k">traveller</div><div class="v" id="pWho"></div></div>
+
+    <div class="sharerow fade in" id="sharerow" style="display:none">
+      <button class="sharebtn" id="shareBtn">✈ copy share link</button>
+      <span class="shared" id="sharedMsg">link copied ✈</span>
     </div>
   </div>
 
@@ -350,33 +299,6 @@ fetch('https://cdn.jsdelivr.net/gh/ip2location/ip2location-iata-icao@master/iata
 /* the flight number lookup is the only way selFrom/selTo ever get set */
 let selFrom = null, selTo = null;
 
-/* the instant sketch preview: shows the moment both airports are chosen,
-   well before there's enough info to build the full tracking card */
-function haversineQuick(a, b) {
-  const R = 6371, r = Math.PI / 180;
-  const dLa = (b[2] - a[2]) * r, dLo = (b[3] - a[3]) * r;
-  const s = Math.sin(dLa / 2) ** 2 + Math.cos(a[2] * r) * Math.cos(b[2] * r) * Math.sin(dLo / 2) ** 2;
-  return Math.round(2 * R * Math.asin(Math.sqrt(s)));
-}
-function updatePreview() {
-  const box = $('previewBox');
-  if (!selFrom || !selTo || selFrom[0] === selTo[0]) { box.classList.remove('show'); return; }
-  const km = haversineQuick(selFrom, selTo);
-  // a gentle bow, same spirit as the real map route but drawn tiny and fast
-  const x0 = 8, x1 = 102, y = 40, bow = 16;
-  $('prevArc').setAttribute('d', `M${x0} ${y} Q 55 ${y - bow} ${x1} ${y}`);
-  $('prevA').setAttribute('cx', x0); $('prevA').setAttribute('cy', y);
-  $('prevB').setAttribute('cx', x1); $('prevB').setAttribute('cy', y);
-  $('prevPlane').setAttribute('x', 46); $('prevPlane').setAttribute('y', y - bow * .55 + 4);
-  $('prevRoute').textContent = selFrom[0] + ' → ' + selTo[0];
-  $('prevDist').textContent = km.toLocaleString();
-  // rough cruise-speed estimate: ~800km/h average including climb/descent
-  const hrs = km / 800;
-  const h = Math.floor(hrs), m = Math.round((hrs - h) * 60);
-  $('prevDur').textContent = (h ? h + 'h ' : '') + m + 'm';
-  box.classList.add('show');
-}
-
 /* ================= form ================= */
 (function prefill() {
   const now = new Date();
@@ -422,11 +344,22 @@ async function lookupFlight() {
       msg.className = 'lookupmsg err';
       return;
     }
-    // a flight number can fly more than one leg a day; prefer whichever hasn't landed yet
-    const flight = list.find(f => {
-      const arrLocal = f.arrival && f.arrival.scheduledTime && f.arrival.scheduledTime.local;
+    // a flight number can fly more than one leg a day; prefer whichever hasn't landed yet,
+    // and skip any entries missing the airport/location fields we actually need
+    const usable = list.filter(f =>
+      f.departure && f.departure.airport && f.departure.airport.location &&
+      f.arrival && f.arrival.airport && f.arrival.airport.location &&
+      f.departure.scheduledTime && f.arrival.scheduledTime
+    );
+    if (!usable.length) {
+      msg.textContent = "found that flight, but the airport data for it was incomplete — try another date";
+      msg.className = 'lookupmsg err';
+      return;
+    }
+    const flight = usable.find(f => {
+      const arrLocal = f.arrival.scheduledTime.local;
       return !arrLocal || new Date(arrLocal.replace(' ', 'T')) > new Date();
-    }) || list[0];
+    }) || usable[0];
     const depAp = flight.departure.airport, arrAp = flight.arrival.airport;
     const A = [depAp.iata, depAp.shortName || depAp.name, depAp.location.lat, depAp.location.lon];
     const B = [arrAp.iata, arrAp.shortName || arrAp.name, arrAp.location.lat, arrAp.location.lon];
@@ -434,38 +367,27 @@ async function lookupFlight() {
     if (!byCode[B[0]]) { AIRPORTS.push(B); byCode[B[0]] = B; }
     selFrom = A; selTo = B;
     $('fFrom').value = A[0]; $('fTo').value = B[0];
-    updatePreview();
 
     const depT = toLocalDate(flight.departure.scheduledTime.local);
     const arrT = toLocalDate(flight.arrival.scheduledTime.local);
     if (depT) { $('fDate').value = depT.dt; $('fDep').value = depT.tm; }
     if (arrT) $('fArr').value = arrT.tm;
-    if (flight.arrival.terminal) msg.dataset.terminal = flight.arrival.terminal;
 
     const airline = flight.airline ? flight.airline.name : '';
-    msg.textContent = `found it! ${airline} ${flight.number || raw} · ${A[0]} → ${B[0]}`;
+    msg.textContent = `${airline} ${flight.number || raw} — found it`;
     msg.className = 'lookupmsg ok';
-    showFoundTimes(depT, arrT);
+    $('pFlightNo').textContent = (flight.number || raw).toUpperCase();
     refresh();
   } catch (e) {
     msg.textContent = 'the lookup hiccupped, try again in a moment';
     msg.className = 'lookupmsg err';
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🔍 look up my flight';
+    btn.innerHTML = '🔍 find flight';
   }
 }
 $('lookupBtn').addEventListener('click', lookupFlight);
 $('fFlight').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); lookupFlight(); } });
-
-/* once a flight number lookup fills in real times, show a tidy summary */
-function showFoundTimes(depT, arrT) {
-  if (!depT) return;
-  const d = new Date(depT.dt + 'T00:00');
-  const dayStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
-  $('foundWhen').textContent = `${dayStr} · ${depT.tm}${arrT ? ' → ' + arrT.tm : ''}`;
-  $('timesFound').style.display = 'block';
-}
 
 let F = null;   // {fl,nm,st,fr:[code,name,lat,lon],to:[...],dt,dp,ar}
 
@@ -527,7 +449,7 @@ function tickStatus() {
   const chip = $('chip');
   if (s.key !== lastKey) {
     chip.classList.remove('pulse'); void chip.offsetWidth; chip.classList.add('pulse');
-    $('pass').classList.toggle('landed-glow', s.key === 'landed');
+    $('passdoc').classList.toggle('landed-glow', s.key === 'landed');
     if (s.key === 'landed' && lastKey && lastKey !== 'landed') launchConfetti();
     lastKey = s.key;
   }
@@ -704,18 +626,17 @@ function positionPlane() {
   }
 }
 
-/* ================= the card ================= */
+/* ================= the pass ================= */
 function showPass(f) {
-  $('pass').style.display = 'block';
+  $('passdoc').style.display = 'block';
+  $('sharerow').style.display = 'flex';
   $('pFrom').textContent = f.fr[0]; $('pFromCity').textContent = f.fr[1];
   $('pTo').textContent = f.to[0]; $('pToCity').textContent = f.to[1];
-  $('pFlight').textContent = f.fl || 'direct';
+  $('pFlightNo').textContent = f.fl ? f.fl.toUpperCase() : 'DIRECT';
   $('pDate').textContent = new Date(f.dt + 'T00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
   $('pDep').textContent = f.dp; $('pArr').textContent = f.ar || '–';
   const km = haversine(f.fr, f.to);
   $('pDist').textContent = km.toLocaleString() + ' km';
-  $('pSeatWrap').style.display = f.st ? 'block' : 'none'; $('pSeat').textContent = f.st.toUpperCase();
-  $('pWhoWrap').style.display = f.nm ? 'block' : 'none'; $('pWho').textContent = f.nm;
   buildMap(f);
   tickStatus();
   fetchWeather(f.to);
